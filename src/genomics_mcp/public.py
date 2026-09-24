@@ -31,7 +31,6 @@ from genomics_mcp.errors import (
     ConsentRequiredError,
     DeadlineExceededError,
     GenomicsError,
-    InvalidInputError,
     NotFoundError,
     UnauthorizedError,
     UnsupportedError,
@@ -39,11 +38,20 @@ from genomics_mcp.errors import (
     redact_url,
 )
 from genomics_mcp.models import FileRef, Provenance, Visibility
+from genomics_mcp.security import check_network_destination
 
 log = logging.getLogger("genomics_mcp.public")
 
 USER_AGENT = f"rewire-genomics-mcp/{__version__} (+https://github.com/rewire-bio/genomics-mcp)"
 RETRY_STATUSES = frozenset({429, 502, 503, 504})
+REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
+MAX_REDIRECTS = 5
+CROSS_ORIGIN_SAFE_HEADERS = frozenset(
+    {"user-agent", "accept", "accept-encoding", "accept-language", "range", "if-range"}
+)
+
+# Indirection so tests can observe backoff without real sleeping.
+_sleep = asyncio.sleep
 
 
 class Deadline:
@@ -111,8 +119,14 @@ class SourcePolicy:
     default_headers: Mapping[str, str] = field(default_factory=dict)
 
     def hosts(self) -> frozenset[str]:
+        """Base URL host plus explicit mirrors/redirect targets. Nothing else is contacted."""
         host = urlsplit(self.base_url).hostname or ""
         return self.allowed_hosts | {host}
+
+    @property
+    def allow_http(self) -> bool:
+        """Plain http only when the (explicitly configured) base URL is http, e.g. a fixture."""
+        return self.base_url.lower().startswith("http://")
 
 
 class _RateLimiter:
@@ -167,8 +181,7 @@ class PublicHttpClient:
         self._client = httpx.AsyncClient(
             transport=transport,
             trust_env=False,
-            follow_redirects=True,
-            max_redirects=5,
+            follow_redirects=False,  # every hop is validated in _send
             headers={"User-Agent": USER_AGENT},
         )
         self._policies: dict[str, SourcePolicy] = {}
@@ -231,15 +244,9 @@ class PublicHttpClient:
         policy = self.policy(policy)
         method = method.upper()
         url = urljoin(policy.base_url.rstrip("/") + "/", path_or_url)
-        parts = urlsplit(url)
-        if parts.scheme not in ("https", "http") or parts.hostname not in policy.hosts():
-            raise InvalidInputError(
-                f"URL host is not allowed for source {policy.name}",
-                source=policy.name,
-                details={"url": redact_url(url)},
-            )
-        if parts.scheme == "http" and not policy.base_url.startswith("http://"):
-            raise InvalidInputError("plain http is not allowed for this source", source=policy.name)
+        check_network_destination(
+            url, source=policy.name, allowed_hosts=policy.hosts(), allow_http=policy.allow_http
+        )
         safe = method in ("GET", "HEAD") if idempotent is None else idempotent
         cap = max_response_bytes or policy.max_response_bytes
         hdrs = {**policy.default_headers, **(headers or {})}
@@ -247,6 +254,7 @@ class PublicHttpClient:
 
         last_error: GenomicsError | None = None
         for attempt in range(attempts):
+            retry_after: float | None = None
             deadline.ensure(f"{policy.name} request")
             await self._limiters[policy.name].acquire(deadline, policy.name)
             try:
@@ -254,7 +262,7 @@ class PublicHttpClient:
                     timeout = min(policy.timeout_s, deadline.ensure(f"{policy.name} request"))
                     started = time.monotonic()
                     resp = await self._send(
-                        method, url, params, hdrs, json_body, timeout, cap, policy.name
+                        policy, method, url, params, hdrs, json_body, timeout, cap
                     )
             except (httpx.TimeoutException, TimeoutError):
                 last_error = DeadlineExceededError(
@@ -294,13 +302,12 @@ class PublicHttpClient:
                 if status not in RETRY_STATUSES:
                     raise last_error
                 retry_after = _retry_after(resp_headers.get("retry-after"))
-                if retry_after is not None and retry_after >= deadline.remaining():
-                    raise last_error
             if attempt + 1 < attempts:
-                delay = policy.backoff_s * (2**attempt)
+                delay = max(policy.backoff_s * (2**attempt), retry_after or 0.0)
                 if delay >= deadline.remaining():
+                    # Waiting as the source asks would overrun the deadline: fail now.
                     break
-                await asyncio.sleep(delay)
+                await _sleep(delay)
         assert last_error is not None
         raise last_error
 
@@ -329,6 +336,7 @@ class PublicHttpClient:
 
     async def _send(
         self,
+        policy: SourcePolicy,
         method: str,
         url: str,
         params: Mapping[str, Any] | None,
@@ -336,29 +344,86 @@ class PublicHttpClient:
         json_body: Any,
         timeout_s: float,
         cap: int,
-        source: str,
     ) -> tuple[int, str, dict[str, str], bytes]:
+        source = policy.name
+        hosts = policy.hosts()
         async with asyncio.timeout(timeout_s):
-            async with self._client.stream(
+            request = self._client.build_request(
                 method, url, params=params, headers=headers, json=json_body, timeout=timeout_s
-            ) as resp:
-                declared = resp.headers.get("content-length")
-                if declared and declared.isdigit() and int(declared) > cap:
-                    raise BudgetExceededError(
-                        f"{source} response is {declared} bytes; limit is {cap}", source=source
-                    )
-                chunks: list[bytes] = []
-                total = 0
-                async for chunk in resp.aiter_bytes():
-                    total += len(chunk)
-                    if total > cap:
-                        raise BudgetExceededError(
-                            f"{source} response exceeded {cap} bytes", source=source
+            )
+            for _hop in range(MAX_REDIRECTS + 1):
+                resp = await self._client.send(request, stream=True)
+                try:
+                    location = resp.headers.get("location")
+                    if resp.status_code in REDIRECT_STATUSES and location:
+                        current = str(request.url)
+                        target = urljoin(current, location)
+                        # Validate before anything is sent to the next hop.
+                        check_network_destination(
+                            target,
+                            source=source,
+                            allowed_hosts=hosts,
+                            allow_http=policy.allow_http,
+                            previous_url=current,
                         )
-                    chunks.append(chunk)
-                keep = ("content-type", "retry-after", "etag", "last-modified", "content-range")
-                hdrs = {k: resp.headers[k] for k in keep if k in resp.headers}
-                return resp.status_code, str(resp.url), hdrs, b"".join(chunks)
+                        request = self._redirect_request(request, resp.status_code, target)
+                        continue
+                    return await _read_bounded(resp, cap, source)
+                finally:
+                    await resp.aclose()
+            raise UpstreamError(f"{source}: more than {MAX_REDIRECTS} redirects", source=source)
+
+    def _redirect_request(self, previous: httpx.Request, status: int, target: str) -> httpx.Request:
+        method = previous.method
+        body: bytes | None = None
+        if status in (307, 308):
+            body = previous.content or None
+        elif method != "HEAD":
+            method = "GET"
+        headers = dict(previous.headers)
+        if _origin(str(previous.url)) != _origin(target):
+            # Never carry credentials or source-specific headers to another origin.
+            headers = {k: v for k, v in headers.items() if k.lower() in CROSS_ORIGIN_SAFE_HEADERS}
+        if body is None:
+            headers = {
+                k: v
+                for k, v in headers.items()
+                if k.lower() not in ("content-length", "content-type")
+            }
+        return self._client.build_request(
+            method,
+            target,
+            headers=headers,
+            content=body,
+            timeout=previous.extensions.get("timeout"),
+        )
+
+
+async def _read_bounded(
+    resp: httpx.Response, cap: int, source: str
+) -> tuple[int, str, dict[str, str], bytes]:
+    declared = resp.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > cap:
+        raise BudgetExceededError(
+            f"{source} response is {declared} bytes; limit is {cap}", source=source
+        )
+    chunks: list[bytes] = []
+    total = 0
+    async for chunk in resp.aiter_bytes():
+        total += len(chunk)
+        if total > cap:
+            raise BudgetExceededError(f"{source} response exceeded {cap} bytes", source=source)
+        chunks.append(chunk)
+    keep = ("content-type", "retry-after", "etag", "last-modified", "content-range")
+    hdrs = {k: resp.headers[k] for k in keep if k in resp.headers}
+    return resp.status_code, str(resp.request.url), hdrs, b"".join(chunks)
+
+
+def _origin(url: str) -> tuple[str, str, int | None]:
+    parts = urlsplit(url)
+    scheme = parts.scheme.lower()
+    port = parts.port or {"http": 80, "https": 443}.get(scheme)
+    return scheme, (parts.hostname or "").lower(), port
 
 
 class UnsupportedSourceDisabled(UnsupportedError):

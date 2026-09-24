@@ -185,3 +185,36 @@ def test_provider_with_broken_dependency_is_not_hidden(monkeypatch, tmp_path):
     monkeypatch.syspath_prepend(str(tmp_path))
     with pytest.raises(ModuleNotFoundError):
         Registry().load_providers({"gm_broken_provider": "E4"})
+
+
+async def test_fanout_timeouts_are_per_source(settings):
+    async def fast_timeout_hang(req, ctx):
+        await asyncio.sleep(5)
+
+    async def slow_but_in_budget(req, ctx):
+        await asyncio.sleep(0.3)
+        return OperationOutput(data={"ok": True})
+
+    def register(r):
+        r.register(Operation.LOOKUP_GENE, "hgnc", fast_timeout_hang, provider="t")
+        r.register(Operation.LOOKUP_GENE, "ensembl", slow_but_in_budget, provider="t")
+
+    settings.sources["hgnc"] = settings.source("hgnc").model_copy(update={"timeout_s": 0.05})
+    settings.sources["ensembl"] = settings.source("ensembl").model_copy(update={"timeout_s": 2.0})
+    svc = make(settings, register)
+    res = await svc.call(Operation.LOOKUP_GENE, {"gene": "TP53", "sources": ["hgnc", "ensembl"]})
+    states = {s.source: s.state for s in res.source_status}
+    assert states == {"hgnc": "timeout", "ensembl": "ok"}
+    assert res.data == {"by_source": {"ensembl": {"ok": True}}}
+
+
+async def test_fanout_source_timeout_still_bounded_by_call_deadline(settings):
+    settings.limits.interactive_timeout_s = 0.1
+
+    async def slow(req, ctx):
+        await asyncio.sleep(5)
+
+    settings.sources["hgnc"] = settings.source("hgnc").model_copy(update={"timeout_s": 60})
+    svc = make(settings, lambda r: r.register(Operation.LOOKUP_GENE, "hgnc", slow, provider="t"))
+    res = await svc.call(Operation.LOOKUP_GENE, {"gene": "TP53"})
+    assert res.status is ResultStatus.ERROR and res.error.code == "timeout"

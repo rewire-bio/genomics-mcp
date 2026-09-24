@@ -29,9 +29,12 @@ DUMMY_AWS = {
 
 
 def server_env(tmp_path: Path, **extra: str) -> dict[str, str]:
+    # HOME is inherited unchanged (never repurposed); isolation comes from an explicit work
+    # dir and empty AWS config/credential files.
+    inherited = {k: os.environ[k] for k in ("HOME",) if k in os.environ}
     env = {
+        **inherited,
         "PATH": os.environ.get("PATH", ""),
-        "HOME": str(tmp_path),
         "GENOMICS_MCP_WORK_DIR": str(tmp_path / "work"),
         "AWS_EC2_METADATA_DISABLED": "true",
         "AWS_CONFIG_FILE": str(tmp_path / "aws-config"),
@@ -63,7 +66,11 @@ async def exercise(client: Client) -> None:
     body = res.structured_content
     assert body["status"] == "ok"
     assert {s["name"] for s in body["data"]["records"]} >= {"ega", "ena", "clinvar"}
-    assert json.loads(res.content[0].text) == body
+    # Text is a short summary; the full envelope is only in structuredContent.
+    summary = res.content[0].text
+    assert summary.startswith("list_sources: ok")
+    assert f"records: {len(body['data']['records'])}" in summary
+    assert len(summary) < 2000 and '"records"' not in summary
 
     res = await client.call_tool(
         "describe_dataset", {"source": "no_such_source", "accession": "X1"}
@@ -71,6 +78,8 @@ async def exercise(client: Client) -> None:
     assert res.is_error is True
     assert res.structured_content["status"] == "error"
     assert res.structured_content["error"]["code"] == "unsupported"
+    assert "error unsupported:" in res.content[0].text
+    assert res.structured_content["error"]["message"] in res.content[0].text
 
     bad = await client.call_tool(
         "get_reads",

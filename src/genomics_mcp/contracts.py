@@ -2,7 +2,8 @@
 
 `FileResolver` turns a `FileRef` into something a reader library can open. E2
 registers resolvers for file/http(s)/s3/ftp; E6 may register ega/htsget. Readers
-(E3-E5) call `ctx.resolve_file(file)` and never build storage clients themselves.
+(E3-E5) call `ctx.resolve_file(file, interval=...)` and never build storage clients
+themselves. Resolvers that can fetch just a region also implement `RegionFileResolver`.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from genomics_mcp.models import FileRef, Readiness
+from genomics_mcp.models import FileRef, Interval, Readiness
 
 if TYPE_CHECKING:
     from genomics_mcp.context import OperationContext
@@ -38,6 +39,10 @@ class ResolvedFile(BaseModel):
     )
     readiness: Readiness = Field(default_factory=Readiness)
     expires_at: datetime | None = Field(default=None, description="When signed URLs expire.")
+    region: Interval | None = Field(
+        default=None,
+        description="Set when open_uri serves only this region (e.g. an htsget slice).",
+    )
 
 
 @runtime_checkable
@@ -48,4 +53,19 @@ class FileResolver(Protocol):
 
     async def stat(self, file: FileRef, ctx: OperationContext) -> FileRef:
         """Return `file` enriched with size, checksums and readiness observed from storage."""
+        ...
+
+
+# Schemes whose resolvers must serve region queries via resolve_region, never whole files.
+REGION_ONLY_SCHEMES = frozenset({"ega", "htsget"})
+
+
+@runtime_checkable
+class RegionFileResolver(Protocol):
+    """Optional: resolve only the bytes/records needed for one interval (e.g. EGA htsget)."""
+
+    async def resolve_region(
+        self, file: FileRef, interval: Interval, ctx: OperationContext
+    ) -> ResolvedFile:
+        """Return a ResolvedFile whose `region` is set and covers `interval`, or raise."""
         ...

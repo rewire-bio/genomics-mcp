@@ -46,7 +46,7 @@ from genomics_mcp.result import OperationOutput, take_records
 
 
 async def get_reads_bam(req: ReadsRequest, ctx: OperationContext) -> OperationOutput:
-    resolved = await ctx.resolve_file(req.file)  # E2 resolver; raises on failure
+    resolved = await ctx.resolve_file(req.file, interval=req.interval)  # always pass the interval
     # _fetch uses pysam and take_records(iterator, max_records) -> (records, truncation)
     records, truncation = await ctx.run_blocking(_fetch, resolved, req, ctx.limits.max_records)
     return OperationOutput(data={"records": records}, truncation=truncation, provenance=[...])
@@ -72,7 +72,7 @@ def register(registry: Registry) -> None:
 | source | `search_datasets`, `describe_dataset`, `list_files`, `list_samples`, `get_sample_metadata` | `request.source` (lower-cased); disabled sources return `unsupported` |
 | format | genomics ops | `file.format` or inferred from the name. Wrong format → `invalid_input`; interval over `max_region_bp` → `budget_exceeded` (checked before the handler runs) |
 | default | transfers, composition | `"default"` |
-| fanout | reference ops | `"default"` planner if registered; else each requested source concurrently via `fan_out`, `data = {"by_source": {source: data}}` |
+| fanout | reference ops | `"default"` planner if registered; else each requested source concurrently via `fan_out`, each with its own `[sources.<name>] timeout_s` capped by the call deadline; `data = {"by_source": {source: data}}` |
 
 Missing handler → `unsupported` with `hint` naming the planned epic. The whole dispatch runs under the interactive deadline.
 
@@ -90,7 +90,7 @@ Missing handler → `unsupported` with `hint` naming the planned epic. The whole
 ### OperationContext
 
 Fields: `operation`, `settings`, `limits` (`EffectiveLimits`: `max_region_bp`, `max_records`, `max_response_bytes`, `timeout_s`), `deadline` (`Deadline`), `registry`, `http` (`PublicHttpClient`), `request_id`, `allow_external_annotation`.
-Methods: `resolve_file(FileRef) -> ResolvedFile`, `resolve_local_path(path)`, `check_region(interval)`, `run_blocking(fn, *args)`, `egress_for(files) -> EgressContext`, `child(timeout_s)`, `component(name)`, `require_component(name)`. Module function `fan_out(ctx, {name: async fn(ctx) -> OperationOutput}, timeout_s=None) -> FanOutResult(outputs, statuses, errors)` isolates each task's failure or timeout.
+Methods: `resolve_file(FileRef, *, interval=None) -> ResolvedFile`, `resolve_local_path(path)`, `check_region(interval)`, `run_blocking(fn, *args)`, `egress_for(files) -> EgressContext`, `child(timeout_s)`, `component(name)`, `require_component(name)`. Module function `fan_out(ctx, {name: async fn(ctx) -> OperationOutput}, timeout_s=None, timeouts=None) -> FanOutResult(outputs, statuses, errors)` isolates each task's failure or timeout. `timeouts[name]` (else `timeout_s`) bounds that task only, always within the remaining call deadline.
 
 ### FileResolver (E2, E6)
 
@@ -101,6 +101,8 @@ class FileResolver(Protocol):
 ```
 
 `ResolvedFile`: `file`, `open_uri`, `index_open_uri`, `reference_open_uri`, `local_path`, `range_capable` (True only when verified), `readiness`, `expires_at`. `open_uri` may be a signed URL: never log or return it; report `file.display_uri()`.
+Region queries: readers always call `ctx.resolve_file(file, interval=req.interval)`. If the resolver also implements the optional `RegionFileResolver` protocol (`async resolve_region(file, interval, ctx) -> ResolvedFile`), that is used, and the result must set `ResolvedFile.region` covering the interval. For `ega` and `htsget` (`REGION_ONLY_SCHEMES`), a region request to a resolver without `resolve_region` fails with `unsupported`, and a returned region that does not cover the request fails with `upstream_error`; whole-file resolution is never used to satisfy a region. `fetch_file` resolves without an interval.
+
 Resolvers must: call `ctx.resolve_local_path` for local files (allowed roots, symlink-safe); use `settings.s3_profile(name)` / `settings.s3_credentials(name)` for private S3 and unsigned requests for public S3; never create a default boto3 session or let HTSlib read `AWS_*`/`~/.aws`; refuse requester-pays unless the profile enables it; never guess an index or CRAM reference that is not explicitly given or source-asserted.
 
 ### Public HTTP (E6–E8)
@@ -117,12 +119,12 @@ data, prov = await ctx.http.get_json(
 )
 ```
 
-`request(policy, method, path_or_url, *, deadline, egress, params, headers, json_body, idempotent, max_response_bytes, record_id)`. Hosts are restricted to the policy base URL host plus `allowed_hosts`. GET/HEAD retry on 429/502/503/504 and connection errors; POST retries only with `idempotent=True`. 401/403 → `unauthorized`, 404 → `not_found`, other → `upstream_error`. Responses over `max_response_bytes` (default 16 MiB) → `budget_exceeded`. `egress` is required: use `ctx.egress_for(files)` whenever query values come from files, so private-derived queries fail with `consent_required` unless the caller set `allow_external_annotation`.
+`request(policy, method, path_or_url, *, deadline, egress, params, headers, json_body, idempotent, max_response_bytes, record_id)`. Hosts are restricted to the policy base URL host plus `allowed_hosts` (explicit mirrors and redirect targets). Redirects are followed manually, at most 5, and every hop is validated with `security.check_network_destination` before it is sent: allowed host, https only (http only when the configured base URL is http, e.g. a loopback fixture), no https→http downgrade, and never a cloud metadata destination (`169.254.169.254`, `169.254.170.2`, `fd00:ec2::254`, `instance-data*`, any link-local address) even if listed. Cross-origin hops carry only `User-Agent`, `Accept*`, `Range`/`If-Range`; auth and source headers are dropped. 301/302/303 become GET (HEAD stays HEAD); 307/308 keep method and body. Boundary errors name the host only, never the URL. Retries wait `max(backoff_s * 2**attempt, Retry-After)` (seconds or HTTP-date); if that would pass the deadline the request fails immediately. Storage resolvers (E2) must apply `check_network_destination` to every HTTP(S) hop they make, including redirects, and use `scrubbed_env(empty_aws_config_dir=..., empty_ref_dir=...)` for any reader subprocess (clears `REF_PATH`/`REF_CACHE`/`BOTO_CONFIG` and ambient cloud variables; without `empty_ref_dir` HTSlib would fall back to its network reference server). Hostnames that merely resolve to a metadata IP are not detected by name; resolvers that connect directly must also refuse link-local peer addresses. GET/HEAD retry on 429/502/503/504 and connection errors; POST retries only with `idempotent=True`. 401/403 → `unauthorized`, 404 → `not_found`, other → `upstream_error`. Responses over `max_response_bytes` (default 16 MiB) → `budget_exceeded`. `egress` is required: use `ctx.egress_for(files)` whenever query values come from files, so private-derived queries fail with `consent_required` unless the caller set `allow_external_annotation`.
 Config (`[sources.<name>]`) can disable a source, override `base_url`, timeout and concurrency, and lower (never raise) the rate.
 
 ### Result envelope
 
-`ToolResult{schema_version, operation, status, data, error, errors, source_status, provenance, warnings, truncation, limits}`. MCP responses carry it as structured content and as JSON text, with `isError` true when `status == "error"`. Argument-schema violations detected by the SDK before the service runs (e.g. `end <= start`) return an MCP tool error with the validation text instead of an envelope.
+`ToolResult{schema_version, operation, status, data, error, errors, source_status, provenance, warnings, truncation, limits}`. MCP responses carry the full envelope only as `structuredContent`; the text block is a short summary (status, error code/message/hint, record count, truncation, partial errors), at most 2,000 characters, with `isError` true when `status == "error"`. `max_response_bytes` bounds the serialized envelope (the `structuredContent` JSON); the text summary adds at most 2,000 characters, so the wire response stays close to the budget rather than doubling it. Record trimming for the byte budget and `max_records` truncation are both reported in `truncation`. Argument-schema violations detected by the SDK before the service runs (e.g. `end <= start`) return an MCP tool error with the validation text instead of an envelope.
 
 ## Transports and auth
 

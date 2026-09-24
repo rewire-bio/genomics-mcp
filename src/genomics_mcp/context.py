@@ -11,13 +11,14 @@ from pathlib import Path
 from typing import Any
 
 from genomics_mcp.config import Settings
-from genomics_mcp.contracts import ResolvedFile
+from genomics_mcp.contracts import REGION_ONLY_SCHEMES, RegionFileResolver, ResolvedFile
 from genomics_mcp.errors import (
     DeadlineExceededError,
     ErrorCode,
     ErrorInfo,
     GenomicsError,
     UnsupportedError,
+    UpstreamError,
     redact,
 )
 from genomics_mcp.models import FileRef, Interval, SourceState, SourceStatus
@@ -56,13 +57,35 @@ class OperationContext:
     def resolve_local_path(self, path: str | Path, *, must_exist: bool = True) -> Path:
         return resolve_local_path(self.settings, path, must_exist=must_exist)
 
-    async def resolve_file(self, file: FileRef) -> ResolvedFile:
+    async def resolve_file(
+        self, file: FileRef, *, interval: Interval | None = None
+    ) -> ResolvedFile:
+        """Resolve a file for reading. Pass `interval` for every region query.
+
+        With an interval, a resolver implementing `RegionFileResolver.resolve_region` is used
+        (e.g. EGA htsget returns only that region). Region-only schemes (ega, htsget) are never
+        resolved as whole files when an interval is given.
+        """
         resolver = self.registry.resolver(file.scheme)
         if resolver is None:
             raise UnsupportedError(
                 f"no storage resolver for {file.scheme!r} URIs in this build",
                 details={"scheme": file.scheme},
             )
+        if interval is not None:
+            if isinstance(resolver, RegionFileResolver):
+                resolved = await resolver.resolve_region(file, interval, self)
+                if file.scheme in REGION_ONLY_SCHEMES and not _covers(resolved.region, interval):
+                    raise UpstreamError(
+                        f"{file.scheme!r} resolver did not return a region covering the request",
+                        source=file.scheme,
+                    )
+                return resolved
+            if file.scheme in REGION_ONLY_SCHEMES:
+                raise UnsupportedError(
+                    f"{file.scheme!r} resolver cannot serve a bounded region",
+                    details={"scheme": file.scheme},
+                )
         return await resolver.resolve(file, self)
 
     def egress_for(self, files: Iterable[FileRef]) -> EgressContext:
@@ -91,6 +114,16 @@ class OperationContext:
         return dataclasses.replace(self, deadline=Deadline(seconds))
 
 
+def _covers(region: Interval | None, interval: Interval) -> bool:
+    return (
+        region is not None
+        and region.assembly == interval.assembly
+        and region.contig == interval.contig
+        and region.start <= interval.start
+        and region.end >= interval.end
+    )
+
+
 _STATE_BY_CODE = {
     ErrorCode.NOT_FOUND: SourceState.NOT_FOUND,
     ErrorCode.UNAUTHORIZED: SourceState.UNAUTHORIZED,
@@ -116,15 +149,23 @@ Task = Callable[[OperationContext], Awaitable[OperationOutput]]
 
 
 async def fan_out(
-    ctx: OperationContext, tasks: Mapping[str, Task], *, timeout_s: float | None = None
+    ctx: OperationContext,
+    tasks: Mapping[str, Task],
+    *,
+    timeout_s: float | None = None,
+    timeouts: Mapping[str, float | None] | None = None,
 ) -> FanOutResult:
     """Run named tasks concurrently. One task failing or timing out never fails the others.
+
+    Each task gets its own bound: `timeouts[name]` if given, else `timeout_s`, always capped by
+    the remaining call deadline. One task's short timeout never shortens another's.
 
     Unexpected exceptions become `internal_error` for that task only and are logged.
     """
 
     async def run(name: str, task: Task) -> tuple[str, OperationOutput | ErrorInfo]:
-        sub = ctx.child(timeout_s)
+        own = timeouts.get(name) if timeouts and name in timeouts else timeout_s
+        sub = ctx.child(own)
         try:
             async with asyncio.timeout(sub.deadline.remaining()):
                 return name, await task(sub)

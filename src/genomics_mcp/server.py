@@ -108,10 +108,44 @@ _TOOL_DOCS: dict[Operation, str] = {
 }
 
 
+SUMMARY_MAX_CHARS = 2000
+
+
+def summarize(result: ToolResult) -> str:
+    """Short text for the MCP text block. The full envelope is in structuredContent.
+
+    `max_response_bytes` bounds the serialized envelope; this summary adds at most
+    SUMMARY_MAX_CHARS, so the wire response stays near the budget instead of doubling it.
+    """
+    parts = [f"{result.operation}: {result.status.value}"]
+    if result.error is not None:
+        parts.append(f"error {result.error.code.value}: {result.error.message}")
+        if result.error.hint:
+            parts.append(f"hint: {result.error.hint}")
+    data = result.data
+    if isinstance(data, dict) and isinstance(data.get("records"), list):
+        parts.append(f"records: {len(data['records'])}")
+    elif isinstance(data, list):
+        parts.append(f"records: {len(data)}")
+    elif isinstance(data, dict) and isinstance(data.get("by_source"), dict):
+        parts.append(f"sources with data: {', '.join(sorted(data['by_source']))}")
+    if result.truncation is not None:
+        t = result.truncation
+        parts.append(f"truncated ({t.reason}, returned {t.returned}, limit {t.limit})")
+    if result.errors:
+        failed = ", ".join(f"{e.source or '?'}={e.code.value}" for e in result.errors)
+        parts.append(f"partial errors: {failed}")
+    if result.warnings:
+        parts.append(f"warnings: {len(result.warnings)}")
+    parts.append("full result in structuredContent")
+    text = "; ".join(parts)
+    return text if len(text) <= SUMMARY_MAX_CHARS else text[: SUMMARY_MAX_CHARS - 3] + "..."
+
+
 def to_call_result(result: ToolResult) -> CallToolResult:
     payload = result.model_dump(mode="json")
     return CallToolResult(
-        content=[TextContent(type="text", text=json.dumps(payload, separators=(",", ":")))],
+        content=[TextContent(type="text", text=summarize(result))],
         structured_content=payload,
         is_error=result.status == "error",
     )

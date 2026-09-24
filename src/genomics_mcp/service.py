@@ -224,9 +224,8 @@ class GenomicsService:
                     errors[0].message, hint=errors[0].hint, source=errors[0].source
                 )
             raise self._unsupported(op, "for the requested sources")
-        timeouts = [self.settings.source(k).timeout_s for k in tasks]
-        per_task = min((t for t in timeouts if t), default=None)
-        fo = await fan_out(ctx, tasks, timeout_s=per_task)
+        timeouts = {k: self.settings.source(k).timeout_s for k in tasks}
+        fo = await fan_out(ctx, tasks, timeouts=timeouts)
         data = {"by_source": {k: out.data for k, out in fo.outputs.items()}} if fo.outputs else None
         return OperationOutput(
             data=data,
