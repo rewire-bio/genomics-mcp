@@ -1,0 +1,44 @@
+# genomics-mcp example configuration. Pass with --config or GENOMICS_MCP_CONFIG.
+# Secrets are never written here: name the environment variable that holds them.
+
+[paths]
+# Local directories tools may read. Empty means no local files.
+allowed_roots = ["~/genomics/data"]
+# Downloads, prepared indexes and references. Must be writable.
+work_dir = "~/.cache/genomics-mcp"
+
+[limits]
+max_region_bp = 1000000
+max_records = 10000
+max_response_bytes = 1048576
+interactive_timeout_s = 30
+max_transfer_bytes = 104857600           # without an explicit caller budget
+transfer_budget_ceiling_bytes = 21474836480
+workspace_max_bytes = 53687091200
+
+[http]
+host = "127.0.0.1"
+port = 8765
+path = "/mcp"
+token_env = "GENOMICS_MCP_HTTP_TOKEN"    # or: token_file = "~/.config/genomics-mcp/token"
+allow_non_loopback = false
+
+[logging]
+level = "INFO"
+log_query_content = false
+
+# Personal S3-compatible storage. AWS_* variable names are refused on purpose.
+# [storage.profiles.minio]
+# endpoint_url = "http://127.0.0.1:9000"
+# region = "us-east-1"
+# access_key_id_env = "MINIO_ACCESS_KEY"
+# secret_access_key_env = "MINIO_SECRET_KEY"
+# addressing_style = "path"
+# requester_pays = false
+
+# Per-source overrides. Config can slow a source down, not exceed its documented rate.
+# [sources.clinvar]
+# api_key_env = "NCBI_API_KEY"
+# [sources.alphagenome_atlas]
+# enabled = true
+# api_key_env = "ALPHAGENOME_API_KEY"
