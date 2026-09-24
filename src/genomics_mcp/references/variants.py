@@ -22,7 +22,13 @@ import re
 from dataclasses import dataclass, field
 from typing import Literal
 
-from .assemblies import AssemblyError, normalize_assembly, normalize_contig, refseq_accession, refseq_to_contig
+from .assemblies import (
+    AssemblyError,
+    normalize_assembly,
+    normalize_contig,
+    refseq_accession,
+    refseq_to_contig,
+)
 from .models import (
     Assembly,
     CanonicalVariant,
@@ -48,7 +54,9 @@ InputKind = Literal[
 
 RSID_RE = re.compile(r"^rs(\d+)$", re.IGNORECASE)
 SPDI_RE = re.compile(r"^(NC_\d+\.\d+):(\d+):([ACGTNacgtn]*):([ACGTNacgtn]*)$")
-HGVS_RE = re.compile(r"^(?P<acc>[A-Za-z0-9_.\-]+?)(?:\((?P<paren>[^)]*)\))?:(?P<kind>[gcnmrp])\.(?P<change>.+)$")
+HGVS_RE = re.compile(
+    r"^(?P<acc>[A-Za-z0-9_.\-]+?)(?:\((?P<paren>[^)]*)\))?:(?P<kind>[gcnmrp])\.(?P<change>.+)$"
+)
 VCF_RE = re.compile(
     r"^(?P<contig>(?:chr)?(?:[0-9]{1,2}|X|Y|M|MT)|NC_\d+\.\d+)[:\-\s_]+(?P<pos>\d+)[:\-\s_]*"
     r"(?P<ref>[ACGTN]+)[:\-\s>_/]+(?P<alt>[ACGTN]+(?:,[ACGTN]+)*)$",
@@ -131,7 +139,9 @@ class ReferenceWindow:
 def _bases(value: str, what: str) -> str:
     upper = value.strip().upper()
     if upper in (".", "*") or upper.startswith("<"):
-        raise VariantInputError(f"{what} {value!r} is a symbolic/missing allele; only sequence alleles are supported")
+        raise VariantInputError(
+            f"{what} {value!r} is a symbolic/missing allele; only sequence alleles are supported"
+        )
     if not _BASES.match(upper):
         raise VariantInputError(f"{what} {value!r} must contain only A, C, G, T or N")
     return upper
@@ -156,7 +166,9 @@ def structured_allele(
         raise VariantInputError("give exactly one of position (1-based VCF POS) or start (0-based)")
     ref_u = _bases(ref, "ref")
     if not ref_u:
-        raise VariantInputError("ref must not be empty; use a VCF anchor base or a 0-based start with ref=''")
+        raise VariantInputError(
+            "ref must not be empty; use a VCF anchor base or a 0-based start with ref=''"
+        )
     if position is not None:
         if position < 1:
             raise VariantInputError("position is 1-based and must be >= 1")
@@ -315,7 +327,9 @@ def parse_hgvs_genomic(text: str, assembly: str | None) -> list[RawAllele]:
     transformations: list[Transformation] = []
     if accession.startswith("NC_"):
         if not accession_has_version(accession):
-            raise VariantInputError(f"{accession} has no version; a versioned chromosome accession is required")
+            raise VariantInputError(
+                f"{accession} has no version; a versioned chromosome accession is required"
+            )
         asm_value = _assembly_from_refseq(accession, assembly)
         asm = normalize_assembly(asm_value, transformations)
         chrom = normalize_contig(accession, asm, transformations)
@@ -330,7 +344,9 @@ def parse_hgvs_genomic(text: str, assembly: str | None) -> list[RawAllele]:
     origin = "hgvs_genomic"
     if (s := _G_SUB.match(change)) is not None:
         pos = int(s.group(1))
-        return [RawAllele(asm, chrom, pos - 1, pos, s.group(2), s.group(3), origin, transformations)]
+        return [
+            RawAllele(asm, chrom, pos - 1, pos, s.group(2), s.group(3), origin, transformations)
+        ]
     if (s := _G_DELINS.match(change)) is not None:
         first, last = int(s.group(1)), int(s.group(2) or s.group(1))
         _check_range(first, last)
@@ -349,12 +365,15 @@ def parse_hgvs_genomic(text: str, assembly: str | None) -> list[RawAllele]:
         if given is not None and len(given) != last - first + 1:
             raise VariantInputError("duplicated sequence length does not match the range")
         # Represent the duplication as the reference span replaced by two copies.
-        dup = RawAllele(asm, chrom, first - 1, last, given, given * 2 if given else "", origin, transformations)
-        dup.transformations = transformations + [
+        dup = RawAllele(
+            asm, chrom, first - 1, last, given, given * 2 if given else "", origin, transformations
+        )
+        dup.transformations = [
+            *transformations,
             Transformation(
                 operation="dup_as_span",
                 detail="duplication represented as reference span replaced by two copies before trimming",
-            )
+            ),
         ]
         return [dup]
     if (s := _G_INS.match(change)) is not None:
@@ -447,7 +466,9 @@ class NormalizationOutcome:
     limitations: list[str]
 
 
-def normalize_allele(raw: RawAllele, window: ReferenceWindow | None, *, allow_incomplete: bool = False) -> NormalizationOutcome:
+def normalize_allele(
+    raw: RawAllele, window: ReferenceWindow | None, *, allow_incomplete: bool = False
+) -> NormalizationOutcome:
     """Normalize one allele, using ``window`` when real reference sequence is available.
 
     Raises ``NeedMoreReference`` when an indel shift reaches the window edge and
@@ -472,8 +493,12 @@ def normalize_allele(raw: RawAllele, window: ReferenceWindow | None, *, allow_in
                     after={"ref": observed},
                 )
             )
-            check = ReferenceCheck(status="verified", source=window.source, observed_ref=observed,
-                                   detail="ref not supplied in input; filled from reference")
+            check = ReferenceCheck(
+                status="verified",
+                source=window.source,
+                observed_ref=observed,
+                detail="ref not supplied in input; filled from reference",
+            )
         elif observed != ref_in:
             check = ReferenceCheck(
                 status="mismatch",
@@ -484,16 +509,23 @@ def normalize_allele(raw: RawAllele, window: ReferenceWindow | None, *, allow_in
             )
             return _mismatch(raw, accession, check, steps)
         else:
-            check = ReferenceCheck(status="verified", source=window.source, expected_ref=ref_in, observed_ref=observed)
+            check = ReferenceCheck(
+                status="verified", source=window.source, expected_ref=ref_in, observed_ref=observed
+            )
     else:
         if ref_in is None:
-            raise VariantInputError("deleted/replaced bases are not given; reference sequence is required")
+            raise VariantInputError(
+                "deleted/replaced bases are not given; reference sequence is required"
+            )
         check = ReferenceCheck(status="not_checked", detail="no reference sequence was available")
 
     alt_in = raw.alt
     # Duplications are stored as span -> two copies; make that concrete now.
-    if raw.origin == "hgvs_genomic" and raw.ref is None and alt_in == "" and any(
-        t.operation == "dup_as_span" for t in raw.transformations
+    if (
+        raw.origin == "hgvs_genomic"
+        and raw.ref is None
+        and alt_in == ""
+        and any(t.operation == "dup_as_span" for t in raw.transformations)
     ):
         alt_in = ref_in * 2
 
@@ -528,7 +560,9 @@ def normalize_allele(raw: RawAllele, window: ReferenceWindow | None, *, allow_in
             if not allow_incomplete:
                 raise
             status = "trimmed_only"
-            limitations.append("Repeat extends beyond the fetched reference window; the indel was not shifted.")
+            limitations.append(
+                "Repeat extends beyond the fetched reference window; the indel was not shifted."
+            )
         else:
             status = "reference_normalized"
             if left[0] != start:
@@ -563,7 +597,9 @@ def normalize_allele(raw: RawAllele, window: ReferenceWindow | None, *, allow_in
         limitations.append("HGVS genomic form not derived: the 3' rule needs reference sequence.")
     if vcf is None and pure_indel:
         if window is None:
-            limitations.append("VCF form not derived: the indel anchor base is unknown without reference sequence.")
+            limitations.append(
+                "VCF form not derived: the indel anchor base is unknown without reference sequence."
+            )
         else:
             limitations.append(
                 "VCF form not derived: no reference base is available on either side of the indel to anchor it."
@@ -587,7 +623,9 @@ def normalize_allele(raw: RawAllele, window: ReferenceWindow | None, *, allow_in
     return NormalizationOutcome(variant=variant, transformations=steps, limitations=limitations)
 
 
-def _mismatch(raw: RawAllele, accession: str | None, check: ReferenceCheck, steps: list[Transformation]) -> NormalizationOutcome:
+def _mismatch(
+    raw: RawAllele, accession: str | None, check: ReferenceCheck, steps: list[Transformation]
+) -> NormalizationOutcome:
     ref = raw.ref or ""
     variant = CanonicalVariant(
         assembly=raw.assembly,
@@ -604,11 +642,15 @@ def _mismatch(raw: RawAllele, accession: str | None, check: ReferenceCheck, step
     return NormalizationOutcome(
         variant=variant,
         transformations=steps,
-        limitations=["Input REF disagrees with the reference; the variant was not normalized or looked up."],
+        limitations=[
+            "Input REF disagrees with the reference; the variant was not normalized or looked up."
+        ],
     )
 
 
-def _vcf(raw: RawAllele, start: int, ref: str, alt: str, window: ReferenceWindow | None) -> VcfRepresentation | None:
+def _vcf(
+    raw: RawAllele, start: int, ref: str, alt: str, window: ReferenceWindow | None
+) -> VcfRepresentation | None:
     if ref and alt:
         return VcfRepresentation(contig=raw.contig, pos=start + 1, ref=ref, alt=alt)
     if start == 0:
@@ -665,7 +707,7 @@ def _ncbi_canonical_spdi(
     window: ReferenceWindow,
 ) -> str:
     """Fully justified SPDI (NCBI VOCA) spanning the whole ambiguous region."""
-    r_start, r_ref, r_alt = right
+    r_start, r_ref, _r_alt = right
     if left_ref:
         region_end = r_start + len(r_ref)
         region = window.get(left_start, region_end)

@@ -48,17 +48,25 @@ query GnomadConstraint($geneId: String!, $referenceGenome: ReferenceGenomeId!) {
 def dataset_for(assembly: Assembly, dataset: str | None) -> GnomadDataset:
     chosen = dataset or DEFAULT_DATASET[assembly]
     if chosen not in DATASET_ASSEMBLY:
-        raise failure("gnomad", "variant", "invalid_input", f"unsupported gnomAD dataset {chosen!r}")
+        raise failure(
+            "gnomad", "variant", "invalid_input", f"unsupported gnomAD dataset {chosen!r}"
+        )
     if DATASET_ASSEMBLY[chosen] != assembly:
         raise failure(
-            "gnomad", "variant", "invalid_input",
+            "gnomad",
+            "variant",
+            "invalid_input",
             f"{chosen} is {DATASET_ASSEMBLY[chosen]}; variant is {assembly}. No liftover is applied.",
         )
     return chosen  # type: ignore[return-value]
 
 
-def _frequency_block(block: dict[str, Any] | None, label: str, transformations: list[Transformation],
-                     limitations: list[str]) -> dict[str, Any] | None:
+def _frequency_block(
+    block: dict[str, Any] | None,
+    label: str,
+    transformations: list[Transformation],
+    limitations: list[str],
+) -> dict[str, Any] | None:
     if block is None:
         return None
     ac, an = block.get("ac"), block.get("an")
@@ -80,7 +88,9 @@ def _frequency_block(block: dict[str, Any] | None, label: str, transformations: 
                 )
             )
         else:
-            limitations.append(f"{label}: allele number is missing or zero; no frequency can be computed.")
+            limitations.append(
+                f"{label}: allele number is missing or zero; no frequency can be computed."
+            )
     seen: set[tuple[Any, ...]] = set()
     populations = []
     duplicates = 0
@@ -95,12 +105,16 @@ def _frequency_block(block: dict[str, Any] | None, label: str, transformations: 
         populations.append({k: v for k, v in p.items() if v is not None})
     if duplicates:
         transformations.append(
-            Transformation(operation="drop_duplicate_population_rows",
-                           detail=f"{label}: {duplicates} identical population row(s) returned twice were dropped")
+            Transformation(
+                operation="drop_duplicate_population_rows",
+                detail=f"{label}: {duplicates} identical population row(s) returned twice were dropped",
+            )
         )
     missing_an = [p.get("id") for p in populations if not p.get("an")]
     if missing_an:
-        limitations.append(f"{label}: populations without allele number: {', '.join(str(x) for x in missing_an)}.")
+        limitations.append(
+            f"{label}: populations without allele number: {', '.join(str(x) for x in missing_an)}."
+        )
     out["populations"] = populations
     return {k: v for k, v in out.items() if v is not None}
 
@@ -109,45 +123,86 @@ class GnomadClient:
     def __init__(self, http: SourceHttp):
         self.http = http
 
-    async def _graphql(self, query: str, variables: dict[str, Any], operation: str, deadline: float | None) -> dict[str, Any]:
+    async def _graphql(
+        self, query: str, variables: dict[str, Any], operation: str, deadline: float | None
+    ) -> dict[str, Any]:
         response = await self.http.request(
-            "POST", API, operation=operation, json_body={"query": query, "variables": variables},
-            headers={"Content-Type": "application/json"}, deadline=deadline, accept_status=(200, 400),
+            "POST",
+            API,
+            operation=operation,
+            json_body={"query": query, "variables": variables},
+            headers={"Content-Type": "application/json"},
+            deadline=deadline,
+            accept_status=(200, 400),
         )
         body = self.http.decode_json(response, operation)
         if not isinstance(body, dict):
-            raise failure("gnomad", operation, "invalid_response", "GraphQL response is not an object")
+            raise failure(
+                "gnomad", operation, "invalid_response", "GraphQL response is not an object"
+            )
         return body
 
-    async def variant(self, variant: CanonicalVariant, *, dataset: str | None = None,
-                      deadline: float | None = None) -> Evidence:
+    async def variant(
+        self,
+        variant: CanonicalVariant,
+        *,
+        dataset: str | None = None,
+        deadline: float | None = None,
+    ) -> Evidence:
         chosen = dataset_for(variant.assembly, dataset)
         if variant.vcf is None:
-            raise failure("gnomad", "variant", "unsupported",
-                          "gnomAD variant IDs need an anchored VCF representation; reference sequence was unavailable")
+            raise failure(
+                "gnomad",
+                "variant",
+                "unsupported",
+                "gnomAD variant IDs need an anchored VCF representation; reference sequence was unavailable",
+            )
         vid = f"{variant.contig}-{variant.vcf.pos}-{variant.vcf.ref}-{variant.vcf.alt}"
-        body = await self._graphql(VARIANT_QUERY, {"variantId": vid, "dataset": chosen}, "variant", deadline)
+        body = await self._graphql(
+            VARIANT_QUERY, {"variantId": vid, "dataset": chosen}, "variant", deadline
+        )
         errors = body.get("errors") or []
         data = (body.get("data") or {}).get("variant")
         if data is None:
-            messages = "; ".join(str(e.get("message")) for e in errors if isinstance(e, dict)) or "no data"
+            messages = (
+                "; ".join(str(e.get("message")) for e in errors if isinstance(e, dict)) or "no data"
+            )
             kind = "not_found" if "not found" in messages.lower() else "upstream"
             raise failure("gnomad", "variant", kind, f"{vid} in {chosen}: {messages}")
         if data.get("reference_genome") and data["reference_genome"] != variant.assembly:
-            raise failure("gnomad", "variant", "invalid_response",
-                          f"gnomAD returned {data['reference_genome']} for a {variant.assembly} query")
+            raise failure(
+                "gnomad",
+                "variant",
+                "invalid_response",
+                f"gnomAD returned {data['reference_genome']} for a {variant.assembly} query",
+            )
         if (str(data.get("chrom")), data.get("pos"), data.get("ref"), data.get("alt")) != (
-            variant.contig, variant.vcf.pos, variant.vcf.ref, variant.vcf.alt
+            variant.contig,
+            variant.vcf.pos,
+            variant.vcf.ref,
+            variant.vcf.alt,
         ):
-            raise failure("gnomad", "variant", "invalid_response", "gnomAD returned a different allele than requested")
+            raise failure(
+                "gnomad",
+                "variant",
+                "invalid_response",
+                "gnomAD returned a different allele than requested",
+            )
         transformations = [
-            Transformation(operation="to_gnomad_variant_id", detail=f"queried {vid} (left-aligned VCF form)")
+            Transformation(
+                operation="to_gnomad_variant_id", detail=f"queried {vid} (left-aligned VCF form)"
+            )
         ]
         limitations = [
             "Frequencies are gnomAD aggregate counts; AN varies by site and population and must be used as the denominator.",
         ]
-        if variant.normalization_status != "reference_normalized" and variant.variant_class not in ("SNV", "MNV"):
-            limitations.append("The indel was not reference-normalized; gnomAD may store it at a different position.")
+        if variant.normalization_status != "reference_normalized" and variant.variant_class not in (
+            "SNV",
+            "MNV",
+        ):
+            limitations.append(
+                "The indel was not reference-normalized; gnomAD may store it at a different position."
+            )
         payload: dict[str, Any] = {
             "dataset": chosen,
             "variant_id": data.get("variant_id"),
@@ -162,8 +217,10 @@ class GnomadClient:
             if block is None:
                 limitations.append(f"No {label} data for this variant in {chosen}.")
         if errors:
-            limitations.append("gnomAD returned partial GraphQL errors: " + "; ".join(
-                str(e.get("message"))[:200] for e in errors if isinstance(e, dict)))
+            limitations.append(
+                "gnomAD returned partial GraphQL errors: "
+                + "; ".join(str(e.get("message"))[:200] for e in errors if isinstance(e, dict))
+            )
         return Evidence(
             source="gnomad",
             evidence_type="population_frequency",
@@ -176,15 +233,27 @@ class GnomadClient:
             limitations=limitations,
         )
 
-    async def constraint(self, gene_id: str, assembly: Assembly, *, deadline: float | None = None) -> Evidence:
+    async def constraint(
+        self, gene_id: str, assembly: Assembly, *, deadline: float | None = None
+    ) -> Evidence:
         body = await self._graphql(
-            CONSTRAINT_QUERY, {"geneId": gene_id, "referenceGenome": assembly}, "gene_constraint", deadline
+            CONSTRAINT_QUERY,
+            {"geneId": gene_id, "referenceGenome": assembly},
+            "gene_constraint",
+            deadline,
         )
         gene = (body.get("data") or {}).get("gene")
         if gene is None:
-            messages = "; ".join(str(e.get("message")) for e in body.get("errors") or [] if isinstance(e, dict))
+            messages = "; ".join(
+                str(e.get("message")) for e in body.get("errors") or [] if isinstance(e, dict)
+            )
             kind = "not_found" if "not found" in messages.lower() else "upstream"
-            raise failure("gnomad", "gene_constraint", kind, f"{gene_id} ({assembly}): {messages or 'no data'}")
+            raise failure(
+                "gnomad",
+                "gene_constraint",
+                kind,
+                f"{gene_id} ({assembly}): {messages or 'no data'}",
+            )
         constraint = gene.get("gnomad_constraint")
         limitations = [
             "The API query does not report the constraint release; values are those served for this reference genome.",

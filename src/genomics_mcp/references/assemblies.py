@@ -16,8 +16,58 @@ ASSEMBLY_ACCESSIONS: dict[str, str] = {
 
 _CHROMS = [str(i) for i in range(1, 23)] + ["X", "Y", "MT"]
 
-_GRCH38_VERSIONS = [11, 12, 12, 12, 10, 12, 14, 11, 12, 11, 10, 12, 11, 9, 10, 10, 11, 10, 10, 11, 9, 11, 11, 10]
-_GRCH37_VERSIONS = [10, 11, 11, 11, 9, 11, 13, 10, 11, 10, 9, 11, 10, 8, 9, 9, 10, 9, 9, 10, 8, 10, 10, 9]
+_GRCH38_VERSIONS = [
+    11,
+    12,
+    12,
+    12,
+    10,
+    12,
+    14,
+    11,
+    12,
+    11,
+    10,
+    12,
+    11,
+    9,
+    10,
+    10,
+    11,
+    10,
+    10,
+    11,
+    9,
+    11,
+    11,
+    10,
+]
+_GRCH37_VERSIONS = [
+    10,
+    11,
+    11,
+    11,
+    9,
+    11,
+    13,
+    10,
+    11,
+    10,
+    9,
+    11,
+    10,
+    8,
+    9,
+    9,
+    10,
+    9,
+    9,
+    10,
+    8,
+    10,
+    10,
+    9,
+]
 
 
 def _table(versions: list[int]) -> dict[str, str]:
@@ -47,7 +97,9 @@ class AssemblyError(ValueError):
 
 def normalize_assembly(value: str | None, transformations: list[Transformation]) -> Assembly:
     if not value:
-        raise AssemblyError("assembly is required (GRCh38 or GRCh37); no default or liftover is applied")
+        raise AssemblyError(
+            "assembly is required (GRCh38 or GRCh37); no default or liftover is applied"
+        )
     key = value.strip().lower()
     if "." in key:
         key = key.split(".", 1)[0]
@@ -81,7 +133,9 @@ def normalize_contig(value: str, assembly: Assembly, transformations: list[Trans
     if raw.upper().startswith("NC_"):
         hits = [c for a, c in refseq_to_contig(raw.upper()) if a == assembly]
         if not hits:
-            raise AssemblyError(f"{raw} is not a {assembly} chromosome accession; no liftover is applied")
+            raise AssemblyError(
+                f"{raw} is not a {assembly} chromosome accession; no liftover is applied"
+            )
         contig = hits[0]
         transformations.append(
             Transformation(
@@ -103,7 +157,9 @@ def normalize_contig(value: str, assembly: Assembly, transformations: list[Trans
             )
         upper = "MT"
     if upper not in _CHROMS:
-        raise AssemblyError(f"unsupported contig {raw!r}; only primary human chromosomes are supported")
+        raise AssemblyError(
+            f"unsupported contig {raw!r}; only primary human chromosomes are supported"
+        )
     if upper != raw:
         transformations.append(
             Transformation(

@@ -59,10 +59,13 @@ class _VariantRequest(_Req):
         description="VCF string (7-140753336-A-T), SPDI, genomic/coding/protein HGVS with versioned accession, "
         "rsID, or a structured allele"
     )
-    assembly: str | None = Field(default=None, description="Required unless implied by a versioned NC_ accession")
+    assembly: str | None = Field(
+        default=None, description="Required unless implied by a versioned NC_ accession"
+    )
     reference: ReferenceSequenceInput | None = None
     use_remote_reference: bool = Field(
-        default=True, description="Fetch reference bases from Ensembl (then NCBI) to verify REF and shift indels"
+        default=True,
+        description="Fetch reference bases from Ensembl (then NCBI) to verify REF and shift indels",
     )
     query_origin: Literal["user_supplied", "private_file"] = "user_supplied"
     allow_external_queries: bool = Field(
@@ -78,13 +81,19 @@ class NormalizeVariantRequest(_VariantRequest):
 class LookupVariantRequest(_VariantRequest):
     sources: list[VariantSource] = Field(default_factory=lambda: ["ensembl", "clinvar", "gnomad"])
     gnomad_dataset: Literal["gnomad_r4", "gnomad_r3", "gnomad_r2_1"] | None = None
-    atlas_scorers: list[str] = Field(default_factory=list, description="Atlas scorer names; empty returns all scorers")
+    atlas_scorers: list[str] = Field(
+        default_factory=list, description="Atlas scorer names; empty returns all scorers"
+    )
     max_clinvar_records: int = Field(default=3, ge=1, le=10)
 
 
 class LookupGeneRequest(_Req):
-    gene: str = Field(description="HGNC symbol/alias/previous symbol, HGNC:ID, Ensembl gene ID or UniProt accession")
-    id_type: Literal["symbol", "hgnc_id", "ensembl_gene_id", "entrez_id", "uniprot_ids"] | None = None
+    gene: str = Field(
+        description="HGNC symbol/alias/previous symbol, HGNC:ID, Ensembl gene ID or UniProt accession"
+    )
+    id_type: Literal["symbol", "hgnc_id", "ensembl_gene_id", "entrez_id", "uniprot_ids"] | None = (
+        None
+    )
     assembly: Literal["GRCh38", "GRCh37"] = "GRCh38"
     include: list[GeneInclude] = Field(
         default_factory=lambda: ["identifiers", "transcripts", "protein", "disease", "constraint"]
@@ -93,15 +102,21 @@ class LookupGeneRequest(_Req):
 
 
 class LookupProteinRequest(_Req):
-    protein: str = Field(description="UniProt accession, Ensembl protein/transcript ID, RefSeq protein, or gene")
+    protein: str = Field(
+        description="UniProt accession, Ensembl protein/transcript ID, RefSeq protein, or gene"
+    )
     assembly: Literal["GRCh38", "GRCh37"] = "GRCh38"
     include_all_features: bool = False
 
 
 class ResolveIdentifierRequest(_Req):
     identifier: str
-    id_type: Literal["symbol", "hgnc_id", "ensembl_gene_id", "entrez_id", "uniprot_ids"] | None = None
-    assembly: str | None = Field(default=None, description="Needed for variant identifiers and Ensembl coordinates")
+    id_type: Literal["symbol", "hgnc_id", "ensembl_gene_id", "entrez_id", "uniprot_ids"] | None = (
+        None
+    )
+    assembly: str | None = Field(
+        default=None, description="Needed for variant identifiers and Ensembl coordinates"
+    )
 
 
 class ToolResult(BaseModel):
@@ -115,13 +130,17 @@ class ToolResult(BaseModel):
     transformations: list[Transformation] = Field(default_factory=list)
     truncation: list[Truncation] = Field(default_factory=list)
     limitations: list[str] = Field(default_factory=list)
+    sources_consulted: list[str] = Field(
+        default_factory=list, description="Sources that answered at least one request in this call"
+    )
 
 
 class NormalizeVariantResult(ToolResult):
     input_kind: str
     canonical_variant: CanonicalVariant | None = None
     alleles: list[CanonicalVariant] = Field(
-        default_factory=list, description="Every normalized allele; more than one means the input was multi-allelic"
+        default_factory=list,
+        description="Every normalized allele; more than one means the input was multi-allelic",
     )
     candidates: list[VariantCandidate] = Field(default_factory=list)
     evidence: list[Evidence] = Field(default_factory=list)

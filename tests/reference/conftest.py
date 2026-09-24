@@ -18,7 +18,9 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    config.addinivalue_line("markers", "live: calls public reference services (set GENOMICS_MCP_LIVE=1)")
+    config.addinivalue_line(
+        "markers", "live: calls public reference services (set GENOMICS_MCP_LIVE=1)"
+    )
 
 
 def load_json(name: str) -> Any:
@@ -52,7 +54,9 @@ class Router:
         self.routes: list[tuple[str, re.Pattern[str], Handler | list[Handler]]] = []
         self.calls: list[httpx.Request] = []
 
-    def add(self, method: str, pattern: str, handler: Handler | httpx.Response | list[Any]) -> Router:
+    def add(
+        self, method: str, pattern: str, handler: Handler | httpx.Response | list[Any]
+    ) -> Router:
         if isinstance(handler, httpx.Response):
             response = handler
             handler = lambda request, r=response: r  # noqa: E731
@@ -61,7 +65,14 @@ class Router:
         self.routes.append((method, re.compile(pattern), handler))
         return self
 
-    def json(self, method: str, pattern: str, body: Any, status: int = 200, headers: dict[str, str] | None = None) -> Router:
+    def json(
+        self,
+        method: str,
+        pattern: str,
+        body: Any,
+        status: int = 200,
+        headers: dict[str, str] | None = None,
+    ) -> Router:
         return self.add(method, pattern, httpx.Response(status, json=body, headers=headers))
 
     def handle(self, request: httpx.Request) -> httpx.Response:
@@ -81,8 +92,11 @@ class Router:
 
 
 def html_500() -> httpx.Response:
-    return httpx.Response(500, text="<!doctype html><html><title>Error: 500</title></html>",
-                          headers={"content-type": "text/html"})
+    return httpx.Response(
+        500,
+        text="<!doctype html><html><title>Error: 500</title></html>",
+        headers={"content-type": "text/html"},
+    )
 
 
 @pytest.fixture
@@ -99,13 +113,17 @@ def router() -> Router:
 def make_service(router: Router, clock: FakeClock):
     def build(config: ReferenceConfig | None = None, **kwargs: Any) -> ReferenceService:
         client = httpx.AsyncClient(transport=httpx.MockTransport(router.handle))
-        return ReferenceService(client, config or ReferenceConfig(), clock=clock, sleep=clock.sleep, **kwargs)
+        return ReferenceService(
+            client, config or ReferenceConfig(), clock=clock, sleep=clock.sleep, **kwargs
+        )
 
     return build
 
 
 def ncbi_fasta(accession: str, seq: str) -> httpx.Response:
-    return httpx.Response(200, text=f">{accession}:1-{len(seq)} test\n{seq}\n", headers={"content-type": "text/plain"})
+    return httpx.Response(
+        200, text=f">{accession}:1-{len(seq)} test\n{seq}\n", headers={"content-type": "text/plain"}
+    )
 
 
 def ensembl_sequence_handler(assembly: str, contig_seq: dict[str, tuple[int, str]]) -> Handler:
@@ -124,10 +142,13 @@ def ensembl_sequence_handler(assembly: str, contig_seq: dict[str, tuple[int, str
         bases = "".join(
             seq[i - offset] if offset <= i < offset + len(seq) else "N" for i in range(start0, end0)
         )
-        return httpx.Response(200, json={
-            "seq": bases,
-            "id": f"chromosome:{assembly}:{contig}:{start0 + 1}:{end0}:1",
-            "molecule": "dna",
-        })
+        return httpx.Response(
+            200,
+            json={
+                "seq": bases,
+                "id": f"chromosome:{assembly}:{contig}:{start0 + 1}:{end0}:1",
+                "molecule": "dna",
+            },
+        )
 
     return handler

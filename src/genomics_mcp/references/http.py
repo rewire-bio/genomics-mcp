@@ -17,6 +17,10 @@ from typing import Any
 
 import httpx
 
+from genomics_mcp.errors import GenomicsError
+from genomics_mcp.errors import redact as core_redact
+from genomics_mcp.security import check_network_destination
+
 from .models import ErrorKind, SourceError
 
 USER_AGENT = "rewire-genomics-mcp-references/0.1 (+https://github.com/rewire-bio/genomics-mcp)"
@@ -36,7 +40,8 @@ _SECRET_PATTERN = re.compile(
 
 
 def redact_text(text: str) -> str:
-    return _SECRET_PATTERN.sub(lambda m: f"{m.group(1)}=REDACTED", text)
+    """Local key=value redaction plus the core redactor (URLs, bearer tokens, registered secrets)."""
+    return core_redact(_SECRET_PATTERN.sub(lambda m: f"{m.group(1)}=REDACTED", text))
 
 
 def redact_url(url: str | httpx.URL) -> str:
@@ -224,8 +229,13 @@ class SourceHttp:
         sleep: Sleep = asyncio.sleep,
         default_headers: Mapping[str, str] | None = None,
         max_bytes: int = DEFAULT_MAX_BYTES,
+        allowed_hosts: Iterable[str] | None = None,
+        gate: Callable[[str], bool] | None = None,
     ):
+        self._gate = gate
         self.max_bytes = max_bytes
+        # Hosts this source may contact. Every request URL is checked; redirects are never followed.
+        self.allowed_hosts = frozenset(h.lower() for h in allowed_hosts) if allowed_hosts else None
         self.client = client
         self.source = source
         self.limiter = limiter
@@ -251,12 +261,29 @@ class SourceHttp:
         accepted = set(accept_status)
         limit = max_bytes or self.max_bytes
         safe_url = redact_url(url)
+        if self._gate is not None and not self._gate(self.source):
+            raise failure(
+                self.source,
+                operation,
+                "not_configured",
+                f"{self.source} is disabled by configuration or not selected for this call",
+            )
+        try:
+            check_network_destination(url, source=self.source, allowed_hosts=self.allowed_hosts)
+        except GenomicsError as exc:
+            raise failure(
+                self.source, operation, "forbidden", exc.info.message, url=safe_url
+            ) from None
         last: SourceFailure | None = None
         for attempt in range(self.max_retries + 1):
             remaining = None if deadline is None else deadline - self._clock()
             if remaining is not None and remaining <= 0:
                 raise last or failure(
-                    self.source, operation, "timeout", "deadline exhausted before request", url=safe_url
+                    self.source,
+                    operation,
+                    "timeout",
+                    "deadline exhausted before request",
+                    url=safe_url,
                 )
             try:
                 await self.limiter.acquire(deadline)
@@ -273,21 +300,36 @@ class SourceHttp:
             retry_wait: float | None = None
             try:
                 response = await asyncio.wait_for(
-                    self._attempt(method, url, params, json_body, headers, timeout, accepted, limit),
+                    self._attempt(
+                        method, url, params, json_body, headers, timeout, accepted, limit
+                    ),
                     timeout + 1.0,
                 )
             except BodyTooLarge as exc:
-                raise failure(self.source, operation, "invalid_response", f"{exc}; response not read further",
-                              url=safe_url) from None
+                raise failure(
+                    self.source,
+                    operation,
+                    "invalid_response",
+                    f"{exc}; response not read further",
+                    url=safe_url,
+                ) from None
             except (httpx.TimeoutException, TimeoutError):
                 last = failure(
-                    self.source, operation, "timeout", f"no response within {timeout:.1f}s",
-                    retryable=True, url=safe_url,
+                    self.source,
+                    operation,
+                    "timeout",
+                    f"no response within {timeout:.1f}s",
+                    retryable=True,
+                    url=safe_url,
                 )
             except httpx.TransportError as exc:
                 last = failure(
-                    self.source, operation, "upstream", f"transport error: {type(exc).__name__}",
-                    retryable=True, url=safe_url,
+                    self.source,
+                    operation,
+                    "upstream",
+                    f"transport error: {type(exc).__name__}",
+                    retryable=True,
+                    url=safe_url,
                 )
             else:
                 if response.status_code in accepted:
@@ -324,7 +366,7 @@ class SourceHttp:
         params: Mapping[str, Any] | None,
         json_body: Any,
         headers: Mapping[str, str] | None,
-        timeout: float,
+        timeout_s: float,
         accepted: set[int],
         limit: int,
     ) -> httpx.Response:
@@ -334,15 +376,19 @@ class SourceHttp:
             params=params,
             json=json_body,
             headers={**self._headers, **(headers or {})},
-            timeout=httpx.Timeout(timeout),
+            timeout=httpx.Timeout(timeout_s),
             follow_redirects=False,
         ) as streamed:
             if streamed.status_code in accepted:
                 body = await read_bounded(streamed, limit)
             else:
                 body = await read_bounded(streamed, ERROR_BODY_BYTES, truncate=True)
-            kept = [(k, v) for k, v in streamed.headers.multi_items() if k.lower() not in _DROP_HEADERS]
-            return httpx.Response(streamed.status_code, headers=kept, content=body, request=streamed.request)
+            kept = [
+                (k, v) for k, v in streamed.headers.multi_items() if k.lower() not in _DROP_HEADERS
+            ]
+            return httpx.Response(
+                streamed.status_code, headers=kept, content=body, request=streamed.request
+            )
 
     async def get_json(self, url: str, *, operation: str, **kwargs: Any) -> Any:
         response = await self.request("GET", url, operation=operation, **kwargs)

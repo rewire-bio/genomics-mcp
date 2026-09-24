@@ -60,13 +60,20 @@ class EnsemblClient:
 
         return await self._release[assembly].get(load)
 
-    async def _release_or_none(self, assembly: Assembly, deadline: float | None) -> tuple[str | None, list[str]]:
+    async def _release_or_none(
+        self, assembly: Assembly, deadline: float | None
+    ) -> tuple[str | None, list[str]]:
         release, err = await optional(self.release(assembly, deadline))
         return release, ([f"Ensembl release lookup failed: {err.message}"] if err else [])
 
     # ------------------------------------------------------------------ lookup
     async def lookup_id(
-        self, identifier: str, assembly: Assembly, *, expand: bool = False, deadline: float | None = None
+        self,
+        identifier: str,
+        assembly: Assembly,
+        *,
+        expand: bool = False,
+        deadline: float | None = None,
     ) -> dict[str, Any]:
         stable_id, _ = split_version(identifier)
         params = {"expand": "1"} if expand else None
@@ -80,7 +87,12 @@ class EnsemblClient:
         return require_dict(self.http, data, "lookup/id")
 
     async def lookup_symbol(
-        self, symbol: str, assembly: Assembly, *, expand: bool = False, deadline: float | None = None
+        self,
+        symbol: str,
+        assembly: Assembly,
+        *,
+        expand: bool = False,
+        deadline: float | None = None,
     ) -> dict[str, Any]:
         params = {"expand": "1"} if expand else None
         data = await self.http.get_json(
@@ -101,7 +113,9 @@ class EnsemblClient:
         deadline: float | None = None,
     ) -> Evidence:
         release, notes = await self._release_or_none(assembly, deadline)
-        return self.entity_to_evidence(record, assembly, release, requested_id=requested_id, notes=notes)
+        return self.entity_to_evidence(
+            record, assembly, release, requested_id=requested_id, notes=notes
+        )
 
     def entity_to_evidence(
         self,
@@ -117,20 +131,30 @@ class EnsemblClient:
         version = record.get("version")
         versioned = f"{stable}.{version}" if stable and version is not None else stable
         limitations = list(notes or [])
-        transformations = [
-            Transformation(
-                operation="ensembl_to_zero_based",
-                source="ensembl",
-                detail="Ensembl 1-based inclusive start/end reported as 0-based half-open",
-            )
-        ] if "start" in record else []
+        transformations = (
+            [
+                Transformation(
+                    operation="ensembl_to_zero_based",
+                    source="ensembl",
+                    detail="Ensembl 1-based inclusive start/end reported as 0-based half-open",
+                )
+            ]
+            if "start" in record
+            else []
+        )
         truncation: list[Truncation] = []
         returned_assembly = record.get("assembly_name")
         if returned_assembly and returned_assembly != assembly:
-            limitations.append(f"Ensembl returned assembly {returned_assembly}, requested {assembly}.")
+            limitations.append(
+                f"Ensembl returned assembly {returned_assembly}, requested {assembly}."
+            )
         if requested_id:
             _, requested_version = split_version(requested_id)
-            if requested_version is not None and version is not None and requested_version != version:
+            if (
+                requested_version is not None
+                and version is not None
+                and requested_version != version
+            ):
                 limitations.append(
                     f"Requested version {requested_id} differs from the current Ensembl version {versioned}; "
                     "the record describes the current version, not the requested one."
@@ -145,7 +169,16 @@ class EnsemblClient:
             **_half_open(record),
             "strand": record.get("strand"),
         }
-        for key in ("description", "Parent", "is_canonical", "canonical_transcript", "gencode_primary", "length", "source", "logic_name"):
+        for key in (
+            "description",
+            "Parent",
+            "is_canonical",
+            "canonical_transcript",
+            "gencode_primary",
+            "length",
+            "source",
+            "logic_name",
+        ):
             if key in record:
                 data[key] = record[key]
         if object_type == "Transcript" and isinstance(record.get("Translation"), dict):
@@ -158,8 +191,12 @@ class EnsemblClient:
             data["transcript_count"] = len(transcripts)
             if len(transcripts) > MAX_TRANSCRIPTS:
                 truncation.append(
-                    Truncation(field="data.transcripts", returned=MAX_TRANSCRIPTS, available=len(transcripts),
-                               reason="compact response limit; canonical transcript listed first")
+                    Truncation(
+                        field="data.transcripts",
+                        returned=MAX_TRANSCRIPTS,
+                        available=len(transcripts),
+                        reason="compact response limit; canonical transcript listed first",
+                    )
                 )
             data["transcripts"] = transcripts[:MAX_TRANSCRIPTS]
         data = {k: v for k, v in data.items() if v is not None}
@@ -205,10 +242,18 @@ class EnsemblClient:
 
     # ---------------------------------------------------------------- sequence
     async def sequence(
-        self, assembly: Assembly, contig: str, start: int, end: int, *, deadline: float | None = None
+        self,
+        assembly: Assembly,
+        contig: str,
+        start: int,
+        end: int,
+        *,
+        deadline: float | None = None,
     ) -> ReferenceWindow:
         if start < 0 or end <= start:
-            raise failure("ensembl", "sequence/region", "invalid_input", "empty or negative sequence interval")
+            raise failure(
+                "ensembl", "sequence/region", "invalid_input", "empty or negative sequence interval"
+            )
         region = f"{contig}:{start + 1}..{end}:1"
         data = await self.http.get_json(
             f"{self.server(assembly)}/sequence/region/human/{region}",
@@ -224,7 +269,9 @@ class EnsemblClient:
         parts = str(seq_id).split(":")
         if len(parts) >= 2 and parts[1] and parts[1] != assembly:
             raise failure(
-                "ensembl", "sequence/region", "invalid_response",
+                "ensembl",
+                "sequence/region",
+                "invalid_response",
                 f"sequence reported for {parts[1]}, requested {assembly}",
             )
         returned_end = start + len(seq)
@@ -248,7 +295,14 @@ class EnsemblClient:
 
     async def vep(self, variant: CanonicalVariant, *, deadline: float | None = None) -> Evidence:
         region, allele = self.vep_region(variant)
-        params = {"canonical": "1", "mane": "1", "hgvs": "1", "protein": "1", "uniprot": "1", "variant_class": "1"}
+        params = {
+            "canonical": "1",
+            "mane": "1",
+            "hgvs": "1",
+            "protein": "1",
+            "uniprot": "1",
+            "variant_class": "1",
+        }
         data = await self.http.get_json(
             f"{self.server(variant.assembly)}/vep/human/region/{region}/{allele}",
             operation="vep/region",
@@ -258,7 +312,12 @@ class EnsemblClient:
         )
         items = require_list(self.http, data, "vep/region")
         if len(items) != 1 or not isinstance(items[0], dict):
-            raise failure("ensembl", "vep/region", "invalid_response", f"expected one VEP result, got {len(items)}")
+            raise failure(
+                "ensembl",
+                "vep/region",
+                "invalid_response",
+                f"expected one VEP result, got {len(items)}",
+            )
         release, notes = await self._release_or_none(variant.assembly, deadline)
         return self.vep_to_evidence(items[0], variant, region, allele, release, notes)
 
@@ -275,19 +334,37 @@ class EnsemblClient:
         limitations.append(
             "Consequences are for Ensembl/GENCODE transcripts only; RefSeq transcript consequences were not requested."
         )
-        limitations.append("SIFT/PolyPhen values are Ensembl-reported predictions, not observations.")
+        limitations.append(
+            "SIFT/PolyPhen values are Ensembl-reported predictions, not observations."
+        )
         if item.get("assembly_name") and item["assembly_name"] != variant.assembly:
             raise failure(
-                "ensembl", "vep/region", "invalid_response",
+                "ensembl",
+                "vep/region",
+                "invalid_response",
                 f"VEP answered for {item['assembly_name']}, requested {variant.assembly}",
             )
-        consequences = [self._consequence(tc) for tc in item.get("transcript_consequences") or [] if isinstance(tc, dict)]
-        consequences.sort(key=lambda c: (not c.get("mane_select"), not c.get("canonical"), c.get("transcript_id") or ""))
+        consequences = [
+            self._consequence(tc)
+            for tc in item.get("transcript_consequences") or []
+            if isinstance(tc, dict)
+        ]
+        consequences.sort(
+            key=lambda c: (
+                not c.get("mane_select"),
+                not c.get("canonical"),
+                c.get("transcript_id") or "",
+            )
+        )
         truncation = []
         if len(consequences) > MAX_CONSEQUENCES:
             truncation.append(
-                Truncation(field="data.transcript_consequences", returned=MAX_CONSEQUENCES, available=len(consequences),
-                           reason="compact response limit; MANE/canonical transcripts listed first")
+                Truncation(
+                    field="data.transcript_consequences",
+                    returned=MAX_CONSEQUENCES,
+                    available=len(consequences),
+                    reason="compact response limit; MANE/canonical transcripts listed first",
+                )
             )
         colocated = [
             {k: c.get(k) for k in ("id", "allele_string", "start", "end") if c.get(k) is not None}
@@ -295,8 +372,14 @@ class EnsemblClient:
             if isinstance(c, dict)
         ]
         if len(colocated) > MAX_COLOCATED:
-            truncation.append(Truncation(field="data.colocated_variants", returned=MAX_COLOCATED,
-                                         available=len(colocated), reason="compact response limit"))
+            truncation.append(
+                Truncation(
+                    field="data.colocated_variants",
+                    returned=MAX_COLOCATED,
+                    available=len(colocated),
+                    reason="compact response limit",
+                )
+            )
         data = {
             "input": item.get("input"),
             "assembly": item.get("assembly_name"),
@@ -329,10 +412,30 @@ class EnsemblClient:
     @staticmethod
     def _consequence(tc: dict[str, Any]) -> dict[str, Any]:
         keys = (
-            "transcript_id", "gene_id", "gene_symbol", "hgnc_id", "biotype", "consequence_terms", "impact",
-            "hgvsc", "hgvsp", "mane_select", "mane_plus_clinical", "strand", "protein_start", "protein_end",
-            "amino_acids", "codons", "cds_start", "cds_end", "swissprot", "sift_prediction", "sift_score",
-            "polyphen_prediction", "polyphen_score", "flags",
+            "transcript_id",
+            "gene_id",
+            "gene_symbol",
+            "hgnc_id",
+            "biotype",
+            "consequence_terms",
+            "impact",
+            "hgvsc",
+            "hgvsp",
+            "mane_select",
+            "mane_plus_clinical",
+            "strand",
+            "protein_start",
+            "protein_end",
+            "amino_acids",
+            "codons",
+            "cds_start",
+            "cds_end",
+            "swissprot",
+            "sift_prediction",
+            "sift_score",
+            "polyphen_prediction",
+            "polyphen_score",
+            "flags",
         )
         out = {k: tc[k] for k in keys if k in tc and tc[k] not in (None, "", [])}
         if "canonical" in tc:
@@ -343,7 +446,9 @@ class EnsemblClient:
         return out
 
     # ---------------------------------------------------------- variant_recoder
-    async def variant_recoder(self, text: str, assembly: Assembly, *, deadline: float | None = None) -> list[dict[str, Any]]:
+    async def variant_recoder(
+        self, text: str, assembly: Assembly, *, deadline: float | None = None
+    ) -> list[dict[str, Any]]:
         data = await self.http.get_json(
             f"{self.server(assembly)}/variant_recoder/human/{quote(text, safe='')}",
             operation="variant_recoder",

@@ -13,20 +13,28 @@ HGNC = r"rest\.genenames\.org"
 EMPTY = load_json("hgnc_empty.json")
 
 
-def hgnc_routes(router: Router, symbol: dict | None = None, alias: dict | None = None, prev: dict | None = None) -> None:
+def hgnc_routes(
+    router: Router, symbol: dict | None = None, alias: dict | None = None, prev: dict | None = None
+) -> None:
     router.json("GET", HGNC + r"/info$", load_json("hgnc_info.json"))
     router.json("GET", HGNC + r"/fetch/symbol/", symbol or EMPTY)
     router.json("GET", HGNC + r"/fetch/alias_symbol/", alias or EMPTY)
     router.json("GET", HGNC + r"/fetch/prev_symbol/", prev or EMPTY)
 
 
-async def test_previous_symbol_resolves_with_explicit_transformation(router: Router, make_service) -> None:
+async def test_previous_symbol_resolves_with_explicit_transformation(
+    router: Router, make_service
+) -> None:
     hgnc_routes(router, prev=load_json("hgnc_prev_symbol_FANCD1.json"))
     service = make_service()
     result = await service.resolve_identifier(ResolveIdentifierRequest(identifier="FANCD1"))
     assert result.status == "ok"
     gene = result.resolved["gene"]
-    assert (gene["symbol"], gene["hgnc_id"], gene["ensembl_gene_id"]) == ("BRCA2", "HGNC:1101", "ENSG00000139618")
+    assert (gene["symbol"], gene["hgnc_id"], gene["ensembl_gene_id"]) == (
+        "BRCA2",
+        "HGNC:1101",
+        "ENSG00000139618",
+    )
     assert result.resolved["match_type"] == "previous_symbol"
     assert [t.operation for t in result.transformations] == ["previous_symbol_to_approved"]
     ev = result.evidence[0]
@@ -37,7 +45,11 @@ async def test_previous_symbol_resolves_with_explicit_transformation(router: Rou
 
 
 async def test_approved_symbol_reports_alias_collisions(router: Router, make_service) -> None:
-    hgnc_routes(router, symbol=load_json("hgnc_symbol_CAP2.json"), alias=load_json("hgnc_alias_symbol_CAP2.json"))
+    hgnc_routes(
+        router,
+        symbol=load_json("hgnc_symbol_CAP2.json"),
+        alias=load_json("hgnc_alias_symbol_CAP2.json"),
+    )
     result = await make_service().resolve_identifier(ResolveIdentifierRequest(identifier="CAP2"))
     assert result.status == "ok"
     assert result.resolved["gene"]["symbol"] == "CAP2"
@@ -59,15 +71,25 @@ async def test_alias_shared_by_two_genes_is_ambiguous(router: Router, make_servi
 
 async def test_unknown_symbol_is_unresolved(router: Router, make_service) -> None:
     hgnc_routes(router)
-    result = await make_service().resolve_identifier(ResolveIdentifierRequest(identifier="NOTAGENE1"))
+    result = await make_service().resolve_identifier(
+        ResolveIdentifierRequest(identifier="NOTAGENE1")
+    )
     assert result.status == "unresolved"
     assert "HGNC has no record for 'NOTAGENE1'" in result.warnings
 
 
-async def test_versioned_ensembl_gene_id_drops_version_only_for_hgnc(router: Router, make_service) -> None:
+async def test_versioned_ensembl_gene_id_drops_version_only_for_hgnc(
+    router: Router, make_service
+) -> None:
     router.json("GET", HGNC + r"/info$", load_json("hgnc_info.json"))
-    router.json("GET", HGNC + r"/fetch/ensembl_gene_id/ENSG00000139618$", load_json("hgnc_symbol_BRCA2.json"))
-    result = await make_service().resolve_identifier(ResolveIdentifierRequest(identifier="ENSG00000139618.17"))
+    router.json(
+        "GET",
+        HGNC + r"/fetch/ensembl_gene_id/ENSG00000139618$",
+        load_json("hgnc_symbol_BRCA2.json"),
+    )
+    result = await make_service().resolve_identifier(
+        ResolveIdentifierRequest(identifier="ENSG00000139618.17")
+    )
     assert result.status == "ok"
     assert result.transformations[0].operation == "drop_version_for_lookup"
     assert result.resolved["gene"]["symbol"] == "BRCA2"

@@ -73,8 +73,22 @@ def _trait_names(trait_set: ET.Element) -> list[dict[str, Any]]:
         xrefs = []
         for x in trait.findall("XRef"):
             if x.get("DB") in ("MedGen", "MONDO", "OMIM", "Orphanet", "HP", "MeSH") and x.get("ID"):
-                xrefs.append(f"{x.get('DB')}:{x.get('ID')}" if not x.get("ID", "").startswith(x.get("DB", "") + ":") else x.get("ID"))
-        traits.append({k: v for k, v in {"name": preferred, "type": trait.get("Type"), "xrefs": xrefs[:6]}.items() if v})
+                xrefs.append(
+                    f"{x.get('DB')}:{x.get('ID')}"
+                    if not x.get("ID", "").startswith(x.get("DB", "") + ":")
+                    else x.get("ID")
+                )
+        traits.append(
+            {
+                k: v
+                for k, v in {
+                    "name": preferred,
+                    "type": trait.get("Type"),
+                    "xrefs": xrefs[:6],
+                }.items()
+                if v
+            }
+        )
     return traits
 
 
@@ -98,20 +112,26 @@ class ClinvarClient:
     async def release(self, deadline: float | None = None) -> str | None:
         async def load() -> str | None:
             data = await self.http.get_json(
-                f"{EUTILS}/einfo.fcgi", operation="einfo", params=self._params(db="clinvar", retmode="json"),
+                f"{EUTILS}/einfo.fcgi",
+                operation="einfo",
+                params=self._params(db="clinvar", retmode="json"),
                 deadline=deadline,
             )
             try:
                 info = data["einforesult"]["dbinfo"][0]
             except (KeyError, IndexError, TypeError):
-                raise failure("clinvar", "einfo", "invalid_response", "missing einforesult.dbinfo") from None
+                raise failure(
+                    "clinvar", "einfo", "invalid_response", "missing einforesult.dbinfo"
+                ) from None
             build, last = info.get("dbbuild"), info.get("lastupdate")
             return f"ClinVar Entrez {build} (lastupdate {last})" if build else None
 
         return await self._einfo.get(load)
 
     # --------------------------------------------------------------- matching
-    async def esearch(self, term: str, *, retmax: int = 50, deadline: float | None = None) -> tuple[list[str], int]:
+    async def esearch(
+        self, term: str, *, retmax: int = 50, deadline: float | None = None
+    ) -> tuple[list[str], int]:
         data = await self.http.get_json(
             f"{EUTILS}/esearch.fcgi",
             operation="esearch",
@@ -126,7 +146,9 @@ class ClinvarClient:
         ids = [str(i) for i in body.get("idlist") or []]
         return ids, int(body.get("count") or 0)
 
-    async def esummary(self, ids: list[str], *, deadline: float | None = None) -> dict[str, dict[str, Any]]:
+    async def esummary(
+        self, ids: list[str], *, deadline: float | None = None
+    ) -> dict[str, dict[str, Any]]:
         if not ids:
             return {}
         data = await self.http.get_json(
@@ -138,7 +160,9 @@ class ClinvarClient:
         result = require_dict(self.http, data, "esummary").get("result")
         if not isinstance(result, dict):
             raise failure("clinvar", "esummary", "invalid_response", "missing result")
-        return {uid: result[uid] for uid in result.get("uids", []) if isinstance(result.get(uid), dict)}
+        return {
+            uid: result[uid] for uid in result.get("uids", []) if isinstance(result.get(uid), dict)
+        }
 
     def search_term(self, variant: CanonicalVariant) -> str:
         field_name = "CHRPOS" if variant.assembly == "GRCh38" else "CHRPOS37"
@@ -149,7 +173,9 @@ class ClinvarClient:
             hi = max(hi, int(pos) + len(deleted) + 1)
         return f"{variant.contig}[chr] AND {lo}:{hi}[{field_name}]"
 
-    async def match_variant(self, variant: CanonicalVariant, *, deadline: float | None = None) -> ClinvarMatch:
+    async def match_variant(
+        self, variant: CanonicalVariant, *, deadline: float | None = None
+    ) -> ClinvarMatch:
         term = self.search_term(variant)
         ids, count = await self.esearch(term, deadline=deadline)
         match = ClinvarMatch(matched_ids=[])
@@ -161,7 +187,9 @@ class ClinvarClient:
             )
         )
         if count > len(ids):
-            match.notes.append(f"Only the first {len(ids)} of {count} ClinVar records at this position were examined.")
+            match.notes.append(
+                f"Only the first {len(ids)} of {count} ClinVar records at this position were examined."
+            )
         summaries = await self.esummary(ids, deadline=deadline)
         target_spdi = variant.ncbi_canonical_spdi if variant.assembly == "GRCh38" else None
         need_xml: list[tuple[tuple[int, int, int], str]] = []
@@ -173,24 +201,34 @@ class ClinvarClient:
             spdis = [v.get("canonical_spdi") for v in sets if isinstance(v, dict)]
             if len(sets) == 1 and target_spdi and spdis[0] == target_spdi:
                 match.matched_ids.append(uid)
-            elif len(sets) == 1 and not target_spdi and (
-                rank := self._location_rank(sets[0], doc.get("obj_type"), variant)
-            ) is not None:
+            elif (
+                len(sets) == 1
+                and not target_spdi
+                and (rank := self._location_rank(sets[0], doc.get("obj_type"), variant)) is not None
+            ):
                 need_xml.append((rank, uid))
             else:
                 match.other_records.append(
-                    {"variation_id": uid, "accession": doc.get("accession_version"), "title": doc.get("title"),
-                     "canonical_spdi": [s for s in spdis if s]}
+                    {
+                        "variation_id": uid,
+                        "accession": doc.get("accession_version"),
+                        "title": doc.get("title"),
+                        "canonical_spdi": [s for s in spdis if s],
+                    }
                 )
         if need_xml:
             if variant.vcf is None:
-                match.notes.append("Allele matching needs a VCF representation; ClinVar records were not matched.")
+                match.notes.append(
+                    "Allele matching needs a VCF representation; ClinVar records were not matched."
+                )
                 match.other_records.extend({"variation_id": uid} for _, uid in need_xml)
             else:
                 need_xml.sort()
                 examined = [uid for _, uid in need_xml[:MAX_XML_CANDIDATES]]
                 if len(need_xml) > len(examined):
-                    match.notes.append(f"Only {len(examined)} of {len(need_xml)} candidate records were compared by allele.")
+                    match.notes.append(
+                        f"Only {len(examined)} of {len(need_xml)} candidate records were compared by allele."
+                    )
                 roots = await self.fetch_vcv(examined, deadline=deadline)
                 for archive in roots:
                     uid = archive.get("VariationID", "")
@@ -198,8 +236,11 @@ class ClinvarClient:
                         match.matched_ids.append(uid)
                     else:
                         match.other_records.append(
-                            {"variation_id": uid, "accession": f"{archive.get('Accession')}.{archive.get('Version')}",
-                             "title": archive.get("VariationName")}
+                            {
+                                "variation_id": uid,
+                                "accession": f"{archive.get('Accession')}.{archive.get('Version')}",
+                                "title": archive.get("VariationName"),
+                            }
                         )
                 match.transformations.append(
                     Transformation(
@@ -220,7 +261,9 @@ class ClinvarClient:
         return match
 
     @staticmethod
-    def _location_rank(variation: dict[str, Any], obj_type: Any, variant: CanonicalVariant) -> tuple[int, int, int] | None:
+    def _location_rank(
+        variation: dict[str, Any], obj_type: Any, variant: CanonicalVariant
+    ) -> tuple[int, int, int] | None:
         """ESummary pre-filter on the requested assembly's 1-based start/stop.
 
         Returns None for incompatible records, otherwise a sort key so the most
@@ -239,7 +282,11 @@ class ClinvarClient:
             if start > variant.end + 1 or stop < variant.start:
                 return None
             span = stop - start + 1
-            return (0 if type_ok else 1, abs(span - max(1, len(variant.ref))), abs(start - (variant.start + 1)))
+            return (
+                0 if type_ok else 1,
+                abs(span - max(1, len(variant.ref))),
+                abs(start - (variant.start + 1)),
+            )
         return None
 
     @staticmethod
@@ -258,25 +305,40 @@ class ClinvarClient:
         return False
 
     # ------------------------------------------------------------------ fetch
-    async def fetch_vcv(self, variation_ids: list[str], *, deadline: float | None = None) -> list[ET.Element]:
+    async def fetch_vcv(
+        self, variation_ids: list[str], *, deadline: float | None = None
+    ) -> list[ET.Element]:
         response = await self.http.request(
             "GET",
             f"{EUTILS}/efetch.fcgi",
             operation="efetch/vcv",
-            params=self._params(db="clinvar", rettype="vcv", is_variationid="true", id=",".join(variation_ids)),
+            params=self._params(
+                db="clinvar", rettype="vcv", is_variationid="true", id=",".join(variation_ids)
+            ),
             deadline=deadline,
             max_bytes=MAX_XML_BYTES,
         )
         try:
-            root = ET.fromstring(response.content)
+            # NCBI HTTPS only, body size-bounded while streaming; ElementTree does not resolve
+            # external entities and bundled expat (>= 2.4.1) limits entity amplification.
+            root = ET.fromstring(response.content)  # noqa: S314
         except ET.ParseError:
-            raise failure("clinvar", "efetch/vcv", "invalid_response", "VCV response is not valid XML") from None
+            raise failure(
+                "clinvar", "efetch/vcv", "invalid_response", "VCV response is not valid XML"
+            ) from None
         archives = root.findall("VariationArchive")
         if not archives:
-            raise failure("clinvar", "efetch/vcv", "not_found", f"no VCV record for variation ID(s) {','.join(variation_ids)}")
+            raise failure(
+                "clinvar",
+                "efetch/vcv",
+                "not_found",
+                f"no VCV record for variation ID(s) {','.join(variation_ids)}",
+            )
         return archives
 
-    async def evidence_for_ids(self, variation_ids: list[str], *, deadline: float | None = None) -> list[Evidence]:
+    async def evidence_for_ids(
+        self, variation_ids: list[str], *, deadline: float | None = None
+    ) -> list[Evidence]:
         archives = await self.fetch_vcv(variation_ids, deadline=deadline)
         release, err = await optional(self.release(deadline))
         out: list[Evidence] = []
@@ -303,7 +365,12 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
         "ClinVar classifications are submitter assertions; this service does not reconcile them into a verdict.",
     ]
     if body is None:
-        raise failure("clinvar", "efetch/vcv", "invalid_response", f"VCV {accession} has no ClassifiedRecord/IncludedRecord")
+        raise failure(
+            "clinvar",
+            "efetch/vcv",
+            "invalid_response",
+            f"VCV {accession} has no ClassifiedRecord/IncludedRecord",
+        )
     allele = body.find("SimpleAllele")
     locations = []
     if allele is not None:
@@ -312,9 +379,14 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
                 {
                     k: loc.get(a)
                     for k, a in (
-                        ("assembly", "Assembly"), ("accession", "Accession"), ("chr", "Chr"),
-                        ("position_vcf", "positionVCF"), ("ref_vcf", "referenceAlleleVCF"),
-                        ("alt_vcf", "alternateAlleleVCF"), ("start_1based", "start"), ("stop_1based", "stop"),
+                        ("assembly", "Assembly"),
+                        ("accession", "Accession"),
+                        ("chr", "Chr"),
+                        ("position_vcf", "positionVCF"),
+                        ("ref_vcf", "referenceAlleleVCF"),
+                        ("alt_vcf", "alternateAlleleVCF"),
+                        ("start_1based", "start"),
+                        ("stop_1based", "stop"),
                     )
                     if loc.get(a) is not None
                 }
@@ -322,8 +394,18 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
     genes = []
     if allele is not None:
         for g in allele.findall("GeneList/Gene"):
-            genes.append({k: g.get(a) for k, a in (("symbol", "Symbol"), ("gene_id", "GeneID"), ("hgnc_id", "HGNC_ID"),
-                                                    ("relationship", "RelationshipType")) if g.get(a)})
+            genes.append(
+                {
+                    k: g.get(a)
+                    for k, a in (
+                        ("symbol", "Symbol"),
+                        ("gene_id", "GeneID"),
+                        ("hgnc_id", "HGNC_ID"),
+                        ("relationship", "RelationshipType"),
+                    )
+                    if g.get(a)
+                }
+            )
     xrefs = []
     if allele is not None:
         for x in allele.findall("XRefList/XRef"):
@@ -347,24 +429,47 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
             for c in rcv.findall("ClassifiedConditionList/ClassifiedCondition")
         ]
         per_type = {}
-        for child in rcv.find("RCVClassifications") if rcv.find("RCVClassifications") is not None else []:
+        for child in (
+            rcv.find("RCVClassifications") if rcv.find("RCVClassifications") is not None else []
+        ):
             ctype = CLASSIFICATION_TYPES.get(child.tag)
             if ctype:
                 desc = child.find("Description")
                 per_type[ctype] = {
                     "review_status": _text(child.find("ReviewStatus")),
                     "description": _text(desc),
-                    **({"clinical_impact_assertion_type": desc.get("ClinicalImpactAssertionType")} if desc is not None and desc.get("ClinicalImpactAssertionType") else {}),
-                    **({"clinical_impact_clinical_significance": desc.get("ClinicalImpactClinicalSignificance")} if desc is not None and desc.get("ClinicalImpactClinicalSignificance") else {}),
+                    **(
+                        {"clinical_impact_assertion_type": desc.get("ClinicalImpactAssertionType")}
+                        if desc is not None and desc.get("ClinicalImpactAssertionType")
+                        else {}
+                    ),
+                    **(
+                        {
+                            "clinical_impact_clinical_significance": desc.get(
+                                "ClinicalImpactClinicalSignificance"
+                            )
+                        }
+                        if desc is not None and desc.get("ClinicalImpactClinicalSignificance")
+                        else {}
+                    ),
                 }
-        rcvs.append({"accession": f"{rcv.get('Accession')}.{rcv.get('Version')}",
-                     "conditions": [{k: v for k, v in c.items() if v} for c in conds], "classifications": per_type})
+        rcvs.append(
+            {
+                "accession": f"{rcv.get('Accession')}.{rcv.get('Version')}",
+                "conditions": [{k: v for k, v in c.items() if v} for c in conds],
+                "classifications": per_type,
+            }
+        )
     trait_map: dict[str, list[dict[str, str]]] = {}
     for tm in body.findall("TraitMappingList/TraitMapping"):
         medgen = tm.find("MedGen")
         if medgen is not None:
             trait_map.setdefault(tm.get("ClinicalAssertionID", ""), []).append(
-                {"medgen": medgen.get("CUI", ""), "name": medgen.get("Name", ""), "mapped_from": f"{tm.get('MappingRef')}:{tm.get('MappingValue')}"}
+                {
+                    "medgen": medgen.get("CUI", ""),
+                    "name": medgen.get("Name", ""),
+                    "mapped_from": f"{tm.get('MappingRef')}:{tm.get('MappingValue')}",
+                }
             )
     assertions_all = [
         _assertion(ca, trait_map) for ca in body.findall("ClinicalAssertionList/ClinicalAssertion")
@@ -376,10 +481,17 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
         key = a.get("classification") or "not provided"
         if a.get("classification_type") == "somatic_clinical_impact":
             key = " | ".join(
-                x for x in (a.get("classification"), a.get("clinical_impact_assertion_type"),
-                            a.get("clinical_impact_clinical_significance")) if x
+                x
+                for x in (
+                    a.get("classification"),
+                    a.get("clinical_impact_assertion_type"),
+                    a.get("clinical_impact_clinical_significance"),
+                )
+                if x
             )
-        bucket = "contributing_to_aggregate" if a.get("contributes_to_aggregate") else "not_contributing"
+        bucket = (
+            "contributing_to_aggregate" if a.get("contributes_to_aggregate") else "not_contributing"
+        )
         per_type = tallies.setdefault(a.get("classification_type") or "unspecified", {})
         per_type.setdefault(bucket, Counter())[key] += 1
     deleted_scvs = len(body.findall("DeletedSCVList/SCV"))
@@ -407,7 +519,9 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
             "locations": locations,
             "genes": genes,
             "xrefs": xrefs,
-            "protein_changes": [t for t in (_text(p) for p in allele.findall("ProteinChange"))] if allele is not None else [],
+            "protein_changes": [t for t in (_text(p) for p in allele.findall("ProteinChange"))]
+            if allele is not None
+            else [],
             "aggregate_classifications": aggregate,
             "rcv_records": rcvs[:40],
             "submitted_classification_counts": {
@@ -425,13 +539,29 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
             )
         ],
         limitations=limitations
-        + (["IncludedRecord: this variant has no direct ClinVar classification of its own."] if record is None else []),
-        truncation=[Truncation(field="data.rcv_records", returned=40, available=len(rcvs), reason="compact response limit")]
-        if len(rcvs) > 40 else [],
+        + (
+            ["IncludedRecord: this variant has no direct ClinVar classification of its own."]
+            if record is None
+            else []
+        ),
+        truncation=[
+            Truncation(
+                field="data.rcv_records",
+                returned=40,
+                available=len(rcvs),
+                reason="compact response limit",
+            )
+        ]
+        if len(rcvs) > 40
+        else [],
     )
-    evidence_record.data = {k: v for k, v in evidence_record.data.items() if v not in (None, [], {})}
+    evidence_record.data = {
+        k: v for k, v in evidence_record.data.items() if v not in (None, [], {})
+    }
     out = [evidence_record]
-    ordered = sorted(assertions_all, key=lambda a: (a.get("classification_type") or "", a.get("scv") or ""))
+    ordered = sorted(
+        assertions_all, key=lambda a: (a.get("classification_type") or "", a.get("scv") or "")
+    )
     for a in ordered[:MAX_ASSERTIONS]:
         cut = a.pop("_comment_truncated", False)
         out.append(
@@ -444,14 +574,23 @@ def parse_variation_archive(archive: ET.Element, release: str | None) -> list[Ev
                 source_release=release,
                 source_updated_at=a.get("date_updated"),
                 terms_url=INFO.terms_url,
-                data={k: v for k, v in a.items() if v not in (None, [], {})} | {"vcv": f"{accession}.{version}"},
-                truncation=[Truncation(field="data.comment", returned=600, reason="comment shortened")] if cut else [],
+                data={k: v for k, v in a.items() if v not in (None, [], {})}
+                | {"vcv": f"{accession}.{version}"},
+                truncation=[
+                    Truncation(field="data.comment", returned=600, reason="comment shortened")
+                ]
+                if cut
+                else [],
             )
         )
     if len(ordered) > MAX_ASSERTIONS:
         evidence_record.truncation.append(
-            Truncation(field="clinical_assertion evidence", returned=MAX_ASSERTIONS, available=len(ordered),
-                       reason="compact response limit; counts above include all current SCVs")
+            Truncation(
+                field="clinical_assertion evidence",
+                returned=MAX_ASSERTIONS,
+                available=len(ordered),
+                reason="compact response limit; counts above include all current SCVs",
+            )
         )
     return out
 
@@ -462,13 +601,17 @@ def _aggregate(el: ET.Element) -> dict[str, Any]:
     if cond_list is not None:
         for ts in cond_list.findall("TraitSet"):
             for t in _trait_names(ts):
-                t["contributes_to_aggregate"] = ts.get("ContributesToAggregateClassification") == "true"
+                t["contributes_to_aggregate"] = (
+                    ts.get("ContributesToAggregateClassification") == "true"
+                )
                 conditions.append(t)
     descriptions = []
     for d in el.findall("Description"):
         entry = {"value": _text(d)}
-        for attr, key in (("ClinicalImpactAssertionType", "clinical_impact_assertion_type"),
-                          ("ClinicalImpactClinicalSignificance", "clinical_impact_clinical_significance")):
+        for attr, key in (
+            ("ClinicalImpactAssertionType", "clinical_impact_assertion_type"),
+            ("ClinicalImpactClinicalSignificance", "clinical_impact_clinical_significance"),
+        ):
             if d.get(attr):
                 entry[key] = d.get(attr)
         descriptions.append(entry)
@@ -476,10 +619,14 @@ def _aggregate(el: ET.Element) -> dict[str, Any]:
     review = _text(el.find("ReviewStatus"))
     out = {
         "review_status": review,
-        "description": descriptions[0]["value"] if len(descriptions) == 1 and len(descriptions[0]) == 1 else descriptions,
+        "description": descriptions[0]["value"]
+        if len(descriptions) == 1 and len(descriptions[0]) == 1
+        else descriptions,
         "explanation": explanation,
-        "conflict_reported_by_clinvar": bool(review and "conflicting" in review.lower()) or bool(
-            descriptions and any("conflicting" in (d.get("value") or "").lower() for d in descriptions)
+        "conflict_reported_by_clinvar": bool(review and "conflicting" in review.lower())
+        or bool(
+            descriptions
+            and any("conflicting" in (d.get("value") or "").lower() for d in descriptions)
         ),
         "date_last_evaluated": el.get("DateLastEvaluated"),
         "number_of_submissions": el.get("NumberOfSubmissions"),
@@ -517,7 +664,9 @@ def _assertion(ca: ET.Element, trait_map: dict[str, list[dict[str, str]]]) -> di
                 out["classification"] = _text(node)
                 if tag == "SomaticClinicalImpact":
                     out["clinical_impact_assertion_type"] = node.get("ClinicalImpactAssertionType")
-                    out["clinical_impact_clinical_significance"] = node.get("ClinicalImpactClinicalSignificance")
+                    out["clinical_impact_clinical_significance"] = node.get(
+                        "ClinicalImpactClinicalSignificance"
+                    )
                     out["drug_for_therapeutic_assertion"] = node.get("DrugForTherapeuticAssertion")
                 break
         comments = [_text(c) for c in cls.findall("Comment")]
@@ -525,13 +674,17 @@ def _assertion(ca: ET.Element, trait_map: dict[str, list[dict[str, str]]]) -> di
         out["comment"], out["_comment_truncated"] = compact_text(comment)
         cites = _citations(cls)
         out["citations"] = cites[:MAX_CITATIONS]
-    methods = [_text(a) for a in ca.findall("AttributeSet/Attribute") if a.get("Type") == "AssertionMethod"]
+    methods = [
+        _text(a) for a in ca.findall("AttributeSet/Attribute") if a.get("Type") == "AssertionMethod"
+    ]
     out["assertion_method"] = [m for m in methods if m]
     origins, affected, method_types = [], [], []
     for obs in ca.findall("ObservedInList/ObservedIn"):
-        for value, bucket in ((_text(obs.find("Sample/Origin")), origins),
-                              (_text(obs.find("Sample/AffectedStatus")), affected),
-                              (_text(obs.find("Method/MethodType")), method_types)):
+        for value, bucket in (
+            (_text(obs.find("Sample/Origin")), origins),
+            (_text(obs.find("Sample/AffectedStatus")), affected),
+            (_text(obs.find("Method/MethodType")), method_types),
+        ):
             if value and value not in bucket:
                 bucket.append(value)
     out["allele_origin"] = origins
@@ -542,6 +695,10 @@ def _assertion(ca: ET.Element, trait_map: dict[str, list[dict[str, str]]]) -> di
         submitted_conditions.extend(_trait_names(ts))
     out["submitted_conditions"] = submitted_conditions[:10]
     out["mapped_conditions"] = trait_map.get(ca.get("ID", ""), [])[:10]
-    hgvs = [_text(a) for a in ca.findall("SimpleAllele/AttributeSet/Attribute") if a.get("Type") == "HGVS"]
+    hgvs = [
+        _text(a)
+        for a in ca.findall("SimpleAllele/AttributeSet/Attribute")
+        if a.get("Type") == "HGVS"
+    ]
     out["submitted_hgvs"] = [h for h in hgvs if h][:3]
     return out

@@ -18,7 +18,9 @@ INFO = SOURCES["hgnc"]
 
 HGNC_ID_RE = re.compile(r"^HGNC:(\d+)$", re.IGNORECASE)
 ENSG_RE = re.compile(r"^(ENSG\d{11})(?:\.(\d+))?$", re.IGNORECASE)
-UNIPROT_RE = re.compile(r"^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})(?:-\d+)?$")
+UNIPROT_RE = re.compile(
+    r"^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})(?:-\d+)?$"
+)
 
 GeneIdType = Literal["symbol", "hgnc_id", "ensembl_gene_id", "entrez_id", "uniprot_ids"]
 
@@ -80,24 +82,36 @@ class HgncClient:
     async def info(self, deadline: float | None = None) -> dict[str, Any]:
         async def load() -> dict[str, Any]:
             data = await self.http.get_json(
-                f"{BASE}/info", operation="info", headers={"Accept": "application/json"}, deadline=deadline
+                f"{BASE}/info",
+                operation="info",
+                headers={"Accept": "application/json"},
+                deadline=deadline,
             )
             return require_dict(self.http, data, "info")
 
         return await self._info.get(load)
 
-    async def fetch(self, field_name: str, value: str, deadline: float | None = None) -> list[dict[str, Any]]:
+    async def fetch(
+        self, field_name: str, value: str, deadline: float | None = None
+    ) -> list[dict[str, Any]]:
         url = f"{BASE}/fetch/{field_name}/{quote(value, safe=':')}"
         data = await self.http.get_json(
-            url, operation=f"fetch/{field_name}", headers={"Accept": "application/json"}, deadline=deadline
+            url,
+            operation=f"fetch/{field_name}",
+            headers={"Accept": "application/json"},
+            deadline=deadline,
         )
         body = require_dict(self.http, data, f"fetch/{field_name}")
         response = body.get("response")
         if not isinstance(response, dict) or not isinstance(response.get("docs"), list):
-            raise failure("hgnc", f"fetch/{field_name}", "invalid_response", "missing response.docs")
+            raise failure(
+                "hgnc", f"fetch/{field_name}", "invalid_response", "missing response.docs"
+            )
         return [d for d in response["docs"] if isinstance(d, dict)]
 
-    def evidence(self, doc: dict[str, Any], release: str | None, *, match_type: str, query: str) -> Evidence:
+    def evidence(
+        self, doc: dict[str, Any], release: str | None, *, match_type: str, query: str
+    ) -> Evidence:
         data = {k: doc[k] for k in _FIELDS if k in doc}
         data["match_type"] = match_type
         data["query"] = query
@@ -109,7 +123,9 @@ class HgncClient:
             source="hgnc",
             evidence_type="gene_nomenclature",
             source_record_id=hgnc_id,
-            source_url=f"https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/{hgnc_id}" if hgnc_id else None,
+            source_url=f"https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/{hgnc_id}"
+            if hgnc_id
+            else None,
             source_release=release,
             source_updated_at=doc.get("date_modified"),
             terms_url=INFO.terms_url,
@@ -123,7 +139,9 @@ class HgncClient:
             return f"HGNC index lastModified {info['lastModified']}", None
         return None, err
 
-    async def resolve(self, query: str, *, id_type: GeneIdType | None = None, deadline: float | None = None) -> GeneResolution:
+    async def resolve(
+        self, query: str, *, id_type: GeneIdType | None = None, deadline: float | None = None
+    ) -> GeneResolution:
         detected, value = detect_gene_id_type(query)
         kind = id_type or detected
         if kind == "entrez_id":
@@ -163,17 +181,25 @@ class HgncClient:
                 result.errors.append(err)
         return self._finish_symbol(result, value, approved, alias or [], prev or [], release)
 
-    def _finish_direct(self, result: GeneResolution, docs: list[dict[str, Any]], kind: str, release: str | None) -> GeneResolution:
+    def _finish_direct(
+        self, result: GeneResolution, docs: list[dict[str, Any]], kind: str, release: str | None
+    ) -> GeneResolution:
         if len(docs) == 1:
             result.status = "resolved"
             result.record = docs[0]
             result.match_type = kind
-            result.evidence.append(self.evidence(docs[0], release, match_type=kind, query=result.query))
+            result.evidence.append(
+                self.evidence(docs[0], release, match_type=kind, query=result.query)
+            )
         elif len(docs) > 1:
             result.status = "ambiguous"
             result.candidates = [self._candidate(d, kind) for d in docs]
-            result.evidence = [self.evidence(d, release, match_type=kind, query=result.query) for d in docs]
-            result.warnings.append(f"{len(docs)} HGNC records match {kind} {result.query!r}; none was selected")
+            result.evidence = [
+                self.evidence(d, release, match_type=kind, query=result.query) for d in docs
+            ]
+            result.warnings.append(
+                f"{len(docs)} HGNC records match {kind} {result.query!r}; none was selected"
+            )
         return result
 
     def _finish_symbol(
@@ -204,7 +230,9 @@ class HgncClient:
                         detail=f"{value!r} matched approved symbol {doc.get('symbol')!r}",
                     )
                 )
-            result.evidence.append(self.evidence(doc, release, match_type="approved_symbol", query=value))
+            result.evidence.append(
+                self.evidence(doc, release, match_type="approved_symbol", query=value)
+            )
             others = [(d, m) for hid, (d, m) in by_id.items() if hid != doc.get("hgnc_id")]
             for d, m in others:
                 result.candidates.append(self._candidate(d, m))
@@ -233,7 +261,9 @@ class HgncClient:
         if pool:
             result.status = "ambiguous"
             result.candidates = [self._candidate(d, m) for d, m in pool]
-            result.evidence = [self.evidence(d, release, match_type=m, query=value) for d, m in pool]
+            result.evidence = [
+                self.evidence(d, release, match_type=m, query=value) for d, m in pool
+            ]
             result.warnings.append(
                 f"{value!r} is not a unique approved HGNC symbol; {len(pool)} candidate records were returned and none was selected"
             )

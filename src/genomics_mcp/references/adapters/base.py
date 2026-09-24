@@ -33,7 +33,7 @@ class TtlValue:
             return value
 
 
-async def optional(awaitable: Awaitable[T]) -> tuple[T | None, SourceError | None]:
+async def optional[T](awaitable: Awaitable[T]) -> tuple[T | None, SourceError | None]:
     """Run a supporting request whose failure must not fail the main result."""
     try:
         return await awaitable, None
@@ -43,11 +43,21 @@ async def optional(awaitable: Awaitable[T]) -> tuple[T | None, SourceError | Non
 
 def require_dict(http: SourceHttp, value: Any, operation: str) -> dict[str, Any]:
     if not isinstance(value, dict):
-        raise failure(http.source, operation, "invalid_response", f"expected a JSON object, got {type(value).__name__}")
+        raise failure(
+            http.source,
+            operation,
+            "invalid_response",
+            f"expected a JSON object, got {type(value).__name__}",
+        )
     return value
 
 
 def require_list(http: SourceHttp, value: Any, operation: str) -> list[Any]:
     if not isinstance(value, list):
-        raise failure(http.source, operation, "invalid_response", f"expected a JSON array, got {type(value).__name__}")
+        raise failure(
+            http.source,
+            operation,
+            "invalid_response",
+            f"expected a JSON array, got {type(value).__name__}",
+        )
     return value

@@ -87,8 +87,8 @@ SOURCES: dict[str, SourceInfo] = {
         auth="none",
         rate_limit="10 requests/second locally",
     ),
-    "opentargets": SourceInfo(
-        name="opentargets",
+    "open_targets": SourceInfo(
+        name="open_targets",
         title="Open Targets Platform GraphQL",
         base_urls=("https://api.platform.opentargets.org/api/v4/graphql",),
         docs_url="https://platform-docs.opentargets.org/data-access/graphql-api",

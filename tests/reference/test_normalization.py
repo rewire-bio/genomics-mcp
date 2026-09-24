@@ -64,7 +64,9 @@ def test_structured_start_and_position_agree() -> None:
     b = one(structured_allele(assembly="GRCh38", contig="7", start=1003, ref="T", alt="G"))
     assert (a.start, a.end) == (b.start, b.end) == (1003, 1004)
     with pytest.raises(VariantInputError):
-        structured_allele(assembly="GRCh38", contig="7", position=1004, start=1003, ref="T", alt="G")
+        structured_allele(
+            assembly="GRCh38", contig="7", position=1004, start=1003, ref="T", alt="G"
+        )
 
 
 def test_assembly_is_required_and_aliases_are_reported() -> None:
@@ -145,7 +147,9 @@ def test_multiallelic_vcf_is_split_into_snv_and_indel() -> None:
 
 
 def test_shift_at_window_edge_requests_more_reference() -> None:
-    narrow = ReferenceWindow(assembly="GRCh38", contig="7", start=1004, sequence="CACACAG", source="test")
+    narrow = ReferenceWindow(
+        assembly="GRCh38", contig="7", start=1004, sequence="CACACAG", source="test"
+    )
     raw = one(parse_vcf_string("7-1008-ACA-A", "GRCh38"))
     with pytest.raises(NeedMoreReference):
         normalize_allele(raw, narrow)

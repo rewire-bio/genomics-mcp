@@ -19,10 +19,19 @@ from .conftest import FakeClock, Router, html_500
 pytestmark = pytest.mark.asyncio
 
 
-def make_http(router: Router, clock: FakeClock, *, rate: int = 100, per: float = 1.0, retries: int = 2) -> SourceHttp:
+def make_http(
+    router: Router, clock: FakeClock, *, rate: int = 100, per: float = 1.0, retries: int = 2
+) -> SourceHttp:
     client = httpx.AsyncClient(transport=httpx.MockTransport(router.handle))
-    return SourceHttp(client, source="test", limiter=RateLimiter(rate, per, clock=clock, sleep=clock.sleep),
-                      timeout=5.0, max_retries=retries, clock=clock, sleep=clock.sleep)
+    return SourceHttp(
+        client,
+        source="test",
+        limiter=RateLimiter(rate, per, clock=clock, sleep=clock.sleep),
+        timeout=5.0,
+        max_retries=retries,
+        clock=clock,
+        sleep=clock.sleep,
+    )
 
 
 async def test_gnomad_style_limit_spaces_requests(clock: FakeClock) -> None:
@@ -45,10 +54,14 @@ async def test_limiter_fails_fast_when_wait_exceeds_deadline(clock: FakeClock) -
 
 
 async def test_429_is_retried_after_retry_after(router: Router, clock: FakeClock) -> None:
-    router.add("GET", r"example\.org/x", [
-        httpx.Response(429, json={"error": "slow down"}, headers={"retry-after": "2"}),
-        httpx.Response(200, json={"ok": True}),
-    ])
+    router.add(
+        "GET",
+        r"example\.org/x",
+        [
+            httpx.Response(429, json={"error": "slow down"}, headers={"retry-after": "2"}),
+            httpx.Response(200, json={"ok": True}),
+        ],
+    )
     http = make_http(router, clock)
     assert await http.get_json("https://example.org/x", operation="x") == {"ok": True}
     assert clock.sleeps == [2.0]
@@ -65,8 +78,13 @@ async def test_429_exhausting_retries_is_rate_limited(router: Router, clock: Fak
     assert len(router.calls) == 2
 
 
-@pytest.mark.parametrize(("status", "kind"), [(401, "unauthorized"), (403, "forbidden"), (404, "not_found"), (400, "invalid_input")])
-async def test_client_errors_are_typed_and_not_retried(router: Router, clock: FakeClock, status: int, kind: str) -> None:
+@pytest.mark.parametrize(
+    ("status", "kind"),
+    [(401, "unauthorized"), (403, "forbidden"), (404, "not_found"), (400, "invalid_input")],
+)
+async def test_client_errors_are_typed_and_not_retried(
+    router: Router, clock: FakeClock, status: int, kind: str
+) -> None:
     router.add("GET", r"example\.org/x", httpx.Response(status, json={"error": "nope"}))
     http = make_http(router, clock)
     with pytest.raises(SourceFailure) as exc:
@@ -99,10 +117,14 @@ async def test_html_500_body_is_not_echoed(router: Router, clock: FakeClock) -> 
 
 
 async def test_errors_never_include_query_strings_or_keys(router: Router, clock: FakeClock) -> None:
-    router.add("GET", r"example\.org/x", httpx.Response(403, json={"error": "bad api_key=SECRET123"}))
+    router.add(
+        "GET", r"example\.org/x", httpx.Response(403, json={"error": "bad api_key=SECRET123"})
+    )
     http = make_http(router, clock)
     with pytest.raises(SourceFailure) as exc:
-        await http.get_json("https://example.org/x", operation="x", params={"api_key": "SECRET123", "id": "1"})
+        await http.get_json(
+            "https://example.org/x", operation="x", params={"api_key": "SECRET123", "id": "1"}
+        )
     err = exc.value.error
     assert err.url == "https://example.org/x"
     assert "SECRET123" not in err.model_dump_json()
@@ -119,4 +141,7 @@ async def test_deadline_bounds_retries(router: Router, clock: FakeClock) -> None
 
 async def test_redaction_helpers() -> None:
     assert redact_url("https://h.org/p?api_key=abc&x=1") == "https://h.org/p"
-    assert redact_text("token=abc&x=1 X-Amz-Signature=zz") == "token=REDACTED&x=1 X-Amz-Signature=REDACTED"
+    assert (
+        redact_text("token=abc&x=1 X-Amz-Signature=zz")
+        == "token=REDACTED&x=1 X-Amz-Signature=REDACTED"
+    )

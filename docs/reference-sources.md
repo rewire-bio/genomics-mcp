@@ -55,6 +55,45 @@ result: dict = await call_tool(service, "lookup_variant", {"variant": "7-1407533
 
 `TOOLS[name]` gives the request/result Pydantic models and the method name. `call_tool` returns `status="error"` with `invalid_input` for bad arguments instead of raising. `ReferenceProvider` is the protocol for a local FASTA-backed reference. Nothing is read from the environment.
 
+## MCP integration (`genomics_mcp.evidence`)
+
+- `register(registry)` (loaded through core `PROVIDER_MODULES`) registers:
+  - one `default` planner for each of `resolve_identifier`, `normalize_variant`, `lookup_variant`, `lookup_gene` and `lookup_protein`;
+  - `SourceInfo` for hgnc, ensembl, clinvar, ncbi_variation, ncbi_nuccore, gnomad, uniprot, open_targets and alphagenome_atlas, with their operations;
+  - the `reference_runtime` and `reference_evidence` components, and a shutdown hook.
+
+  `list_sources` reports planner-served sources as available, via `SourceInfo.operations`. Atlas shows `not_configured` without a key.
+- Settings drive everything; nothing is discovered from the environment:
+  - `sources.<name>.enabled`: a disabled source is never contacted and reports `disabled`.
+  - The NCBI key and contact email come from `sources.clinvar.api_key_env` / `contact_email`.
+  - The Atlas key comes from `sources.alphagenome_atlas.api_key_env`.
+  - `timeout_s` is both the per-attempt timeout and the whole-call budget for that source, capped by the call deadline.
+  - `requests_per_minute` can only slow a source down.
+
+  One `ReferenceService` per effective configuration keeps rate limiters across calls.
+- Output mapping:
+  - Each evidence item becomes a validated core `EvidenceRecord` under `data.records`. Source-native `data` is kept intact (ClinVar SCVs, gnomAD AC/AN/populations), plus `category`, `source_record_version`, `transformation_trace` and `source_truncation`.
+  - For budget trimming, records are ordered with summaries first and individual SCVs last. `max_records` and `max_response_bytes` truncation is reported in the envelope.
+  - `ErrorInfo` preserves the native error kind, operation, HTTP status and a query-less URL. A missing consent becomes `consent_required`.
+  - `SourceStatus` lists every consulted source: ok/partial/unavailable/timeout/not_found/unauthorized/disabled/not_configured/not_implemented/skipped.
+  - Top-level provenance is one compact entry per source and release; per-record provenance is in each record.
+  - `data.result_status` keeps `ambiguous` and `unresolved`.
+- `sources`: names outside an operation's list are reported as `not_implemented` (never dropped); if none remain, the call is `invalid_input`. For `lookup_variant`, `sources`/`include` select annotation sources (`include`: consequence, clinical, population, prediction). Normalization support (Ensembl/NCBI reference, rsID/HGVS resolution) is still used.
+- Local FASTA (`reference`): the FileRef must carry an explicit assembly equal to the variant's. Local paths go through `ctx.resolve_local_path` (allowed roots only); other schemes go through `ctx.resolve_file`. An existing `.fai` is required (no implicit indexing). Contig names `7`, `chr7` and, for GRCh38 only, `chrM` are accepted and the choice is reported. Reading it sends nothing externally.
+- Composition facade: `ctx.component("reference_evidence").normalize_variant(ctx, variant, egress=ctx.egress_for(files), reference=...)` and `.lookup_variant(ctx, variant, egress=..., sources=..., include=...)` return `OperationOutput`. Private-derived input without consent makes zero external requests; local FASTA validation still runs. The first external step returns `consent_required` (state `skipped`).
+- HTTP (`references/http.py`):
+  - Bodies are streamed and cut off at 8 MiB (25 MiB for ClinVar VCV XML), with a Content-Length precheck. Error bodies are read to at most 64 KiB.
+  - Redirects are never followed, and every URL must be https on the source's documented hosts (core `check_network_destination`). There is no URL passthrough.
+  - Errors and messages are redacted with the core redactor; each attempt has a hard timeout.
+  - The provider sets the `httpx` logger to WARNING, because httpx logs full request URLs at INFO.
+- Atlas extra: `uv sync --extra atlas` installs `alphagenome==0.9.0` (pinned, in `uv.lock`); its protos are imported and a request is built offline in `tests/reference/test_atlas_sdk.py`. Without the extra, or without a key, the result is an explicit `unsupported`/`not_configured`. Atlas has not been verified live (no key).
+
+Core fixes made in this integration (narrow, with regression tests in `tests/test_fanout_budget.py`):
+
+- `service.call`: the outer timeout adds a bounded grace (`min(1 s, max(0.05 s, 5% of timeout))`) past the call deadline. Fan-out children and planners time out at the deadline and still return completed sources' results. Before the fix, a fast source plus a stalled one at 0.05 s returned `timeout` with no data. Handlers that ignore the deadline are still cut off, and cancelling the call cancels the workers.
+- `result.fit_to_response_budget`: every envelope, including `budget_exceeded` and error envelopes, fits `max_response_bytes`. Complete data is kept first: trailing provenance, warnings, source_status and errors are dropped only as needed. Records are trimmed (reported in `truncation` with `available`) only if that is not enough. Error details, hint and text are shortened by serialized bytes, keeping the original error code. Anything dropped is counted in the new optional `metadata_omitted` field; a randomized check of 400 multibyte cases found no envelope over the cap.
+- `service.describe_source`: planner-served sources are listed with their operations.
+
 ## Test evidence
 
 - Offline: `PYTHONPATH=src .work/venv/bin/python -m pytest tests/reference -q -p no:cacheprovider`. Fixtures are real responses captured on 2026-09-24, trimmed, plus the full gzipped VCV000013961.143, plus synthetic XML for somatic conflicts and IncludedRecord.
@@ -71,3 +110,12 @@ result: dict = await call_tool(service, "lookup_variant", {"variant": "7-1407533
   - One GRCh38 ClinVar lookup exceeded the 30 s deadline; gnomAD's result was kept. Two immediate repeats completed in about 6 s.
 - The other cited docs/terms URLs returned 200 on 2026-09-25. The Ensembl disclaimer URL returned 403 (the Ensembl web servers were also failing) and is unverified.
 - Not verified live: Atlas (no key; tested only with an injected fake transport), and NCBI keyed rate.
+- Integration, 2026-09-24 ~23:57 UTC (scrubbed environment):
+  - Full suite (core and reference): passed, with the 5 live tests skipped by default. The live tests passed (5/5, including the MCP-server path) when enabled.
+  - Live MCP calls through `build_server` → `GenomicsService` → provider:
+    - `lookup_variant` GRCh38 V600E: partial, 48 records (45 SCVs). ClinVar, gnomAD and NCBI nuccore were ok; Ensembl GRCh38 was unavailable (HTML 500 on sequence and VEP) and reported. GRCh37 was not substituted. One ClinVar EFetch 429 was retried successfully.
+    - `lookup_variant` GRCh37: ok (grch37 Ensembl VEP, gnomAD r2_1, ClinVar matched by VCV VCF fields).
+    - `normalize_variant rs113488022`: ambiguous (3 alleles).
+    - `lookup_gene FANCD1`: partial. HGNC, UniProt, Open Targets and gnomAD were ok; Ensembl lookup returned 500.
+    - `lookup_protein P51587` and `resolve_identifier NM_000059.4`: ok.
+    - Atlas without a key: `not_configured`, with no request sent.

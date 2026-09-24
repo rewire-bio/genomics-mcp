@@ -20,11 +20,24 @@ pytestmark = pytest.mark.asyncio
 GNOMAD = r"gnomad\.broadinstitute\.org/api"
 
 
-def variant(assembly: str = "GRCh38", *, pos: int = 140753336, ref: str = "A", alt: str = "T",
-            klass: str = "SNV") -> CanonicalVariant:
+def variant(
+    assembly: str = "GRCh38",
+    *,
+    pos: int = 140753336,
+    ref: str = "A",
+    alt: str = "T",
+    klass: str = "SNV",
+) -> CanonicalVariant:
     return CanonicalVariant(
-        assembly=assembly, contig="7", start=pos - 1, end=pos - 1 + len(ref), ref=ref, alt=alt, variant_class=klass,
-        normalization_status="reference_normalized", reference_check=ReferenceCheck(status="verified"),
+        assembly=assembly,
+        contig="7",
+        start=pos - 1,
+        end=pos - 1 + len(ref),
+        ref=ref,
+        alt=alt,
+        variant_class=klass,
+        normalization_status="reference_normalized",
+        reference_check=ReferenceCheck(status="verified"),
         vcf=VcfRepresentation(contig="7", pos=pos, ref=ref, alt=alt),
     )
 
@@ -53,12 +66,29 @@ async def test_gnomad_keeps_counts_and_denominators(router: Router, make_service
     assert b'"dataset":"gnomad_r4"' in sent.content.replace(b" ", b"")
 
 
-async def test_gnomad_missing_denominator_is_not_turned_into_a_frequency(router: Router, make_service) -> None:
-    body = {"data": {"variant": {
-        "variant_id": "7-140753336-A-T", "reference_genome": "GRCh38", "chrom": "7", "pos": 140753336,
-        "ref": "A", "alt": "T", "exome": {"ac": 3, "an": None, "af": None,
-                                            "populations": [{"id": "afr", "ac": 1, "an": 0}]},
-        "genome": None, "joint": None}}}
+async def test_gnomad_missing_denominator_is_not_turned_into_a_frequency(
+    router: Router, make_service
+) -> None:
+    body = {
+        "data": {
+            "variant": {
+                "variant_id": "7-140753336-A-T",
+                "reference_genome": "GRCh38",
+                "chrom": "7",
+                "pos": 140753336,
+                "ref": "A",
+                "alt": "T",
+                "exome": {
+                    "ac": 3,
+                    "an": None,
+                    "af": None,
+                    "populations": [{"id": "afr", "ac": 1, "an": 0}],
+                },
+                "genome": None,
+                "joint": None,
+            }
+        }
+    }
     router.json("POST", GNOMAD, body)
     ev = await make_service().gnomad.variant(variant())
     assert "af_derived" not in ev.data["exome"]
@@ -68,7 +98,9 @@ async def test_gnomad_missing_denominator_is_not_turned_into_a_frequency(router:
 
 
 async def test_gnomad_not_found_and_build_mismatch(router: Router, make_service) -> None:
-    router.json("POST", GNOMAD, {"errors": [{"message": "Variant not found"}], "data": {"variant": None}})
+    router.json(
+        "POST", GNOMAD, {"errors": [{"message": "Variant not found"}], "data": {"variant": None}}
+    )
     service = make_service()
     with pytest.raises(SourceFailure) as exc:
         await service.gnomad.variant(variant())
@@ -99,8 +131,12 @@ async def test_gnomad_constraint(router: Router, make_service) -> None:
 
 
 async def test_uniprot_entry_identity_function_features(router: Router, make_service) -> None:
-    router.json("GET", r"rest\.uniprot\.org/uniprotkb/P51587\.json", load_json("uniprot_P51587.json"),
-                headers={"x-uniprot-release": "2026_03", "x-uniprot-release-date": "02-September-2026"})
+    router.json(
+        "GET",
+        r"rest\.uniprot\.org/uniprotkb/P51587\.json",
+        load_json("uniprot_P51587.json"),
+        headers={"x-uniprot-release": "2026_03", "x-uniprot-release-date": "02-September-2026"},
+    )
     result = await make_service().lookup_protein(LookupProteinRequest(protein="P51587"))
     assert result.status == "ok"
     ev = result.evidence[0]
@@ -118,19 +154,36 @@ async def test_uniprot_entry_identity_function_features(router: Router, make_ser
     assert {"ENST00000380152.8"} <= {x["id"] for x in d["cross_references"]["Ensembl"]}
 
 
-async def test_uniprot_merged_accession_is_followed_explicitly(router: Router, make_service) -> None:
-    router.json("GET", r"uniprotkb/Q13879\.json", load_json("uniprot_Q13879_inactive.json"), status=303)
+async def test_uniprot_merged_accession_is_followed_explicitly(
+    router: Router, make_service
+) -> None:
+    router.json(
+        "GET", r"uniprotkb/Q13879\.json", load_json("uniprot_Q13879_inactive.json"), status=303
+    )
     router.json("GET", r"uniprotkb/P51587\.json", load_json("uniprot_P51587.json"))
     result = await make_service().lookup_protein(LookupProteinRequest(protein="Q13879"))
     assert result.protein["accession"] == "P51587"
     assert "accession_merged" in [t.operation for t in result.evidence[0].transformations]
 
 
-async def test_uniprot_gene_search_selects_only_a_unique_reviewed_entry(router: Router, make_service) -> None:
+async def test_uniprot_gene_search_selects_only_a_unique_reviewed_entry(
+    router: Router, make_service
+) -> None:
     router.json("GET", r"rest\.genenames\.org/info$", load_json("hgnc_info.json"))
-    router.json("GET", r"rest\.genenames\.org/fetch/symbol/", {"response": {"docs": [
-        {"hgnc_id": "HGNC:1", "symbol": "XYZ", "status": "Approved", "uniprot_ids": []}]}})
-    router.json("GET", r"rest\.genenames\.org/fetch/(alias|prev)_symbol/", load_json("hgnc_empty.json"))
+    router.json(
+        "GET",
+        r"rest\.genenames\.org/fetch/symbol/",
+        {
+            "response": {
+                "docs": [
+                    {"hgnc_id": "HGNC:1", "symbol": "XYZ", "status": "Approved", "uniprot_ids": []}
+                ]
+            }
+        },
+    )
+    router.json(
+        "GET", r"rest\.genenames\.org/fetch/(alias|prev)_symbol/", load_json("hgnc_empty.json")
+    )
     router.json("GET", r"uniprotkb/search", load_json("uniprot_search_BRCA2.json"))
     router.json("GET", r"uniprotkb/P51587\.json", load_json("uniprot_P51587.json"))
     result = await make_service().lookup_protein(LookupProteinRequest(protein="XYZ"))
@@ -150,7 +203,11 @@ async def test_uniprot_404(router: Router, make_service) -> None:
 
 
 async def test_vep_consequences_are_versioned_and_labelled(router: Router, make_service) -> None:
-    router.json("GET", r"grch37\.rest\.ensembl\.org/vep/", load_json("ensembl_grch37_vep_7-140453136-T.json"))
+    router.json(
+        "GET",
+        r"grch37\.rest\.ensembl\.org/vep/",
+        load_json("ensembl_grch37_vep_7-140453136-T.json"),
+    )
     router.json("GET", r"grch37\.rest\.ensembl\.org/info/software", {"release": 116})
     ev = await make_service().ensembl.vep(variant("GRCh37", pos=140453136))
     assert ev.source_release == "Ensembl REST release 116"
@@ -166,13 +223,19 @@ async def test_vep_consequences_are_versioned_and_labelled(router: Router, make_
 async def test_vep_region_notation_for_indels() -> None:
     from genomics_mcp.references.adapters.ensembl import EnsemblClient
 
-    ins = variant(pos=101, ref="", alt="GG", klass="insertion").model_copy(update={"start": 100, "end": 100})
-    dele = variant(pos=101, ref="CA", alt="", klass="deletion").model_copy(update={"start": 100, "end": 102})
+    ins = variant(pos=101, ref="", alt="GG", klass="insertion").model_copy(
+        update={"start": 100, "end": 100}
+    )
+    dele = variant(pos=101, ref="CA", alt="", klass="deletion").model_copy(
+        update={"start": 100, "end": 102}
+    )
     assert EnsemblClient.vep_region(ins) == ("7:101-100:1", "GG")
     assert EnsemblClient.vep_region(dele) == ("7:101-102:1", "-")
 
 
-async def test_ensembl_gene_lookup_is_zero_based_and_versioned(router: Router, make_service) -> None:
+async def test_ensembl_gene_lookup_is_zero_based_and_versioned(
+    router: Router, make_service
+) -> None:
     router.json("GET", r"rest\.ensembl\.org/info/software", {"release": 116})
     record = load_json("ensembl_grch38_lookup_BRCA2.json")
     service = make_service()
@@ -217,20 +280,31 @@ class FakeAtlas:
         self.calls.append(("get_dense_variant_scores", kwargs))
         if self.error:
             raise self.error
-        genes = SimpleNamespace(metadata=[SimpleNamespace(gene_id="ENSG00000157764", name="BRAF",
-                                                          HasField=lambda f: f == "name")])
+        genes = SimpleNamespace(
+            metadata=[
+                SimpleNamespace(
+                    gene_id="ENSG00000157764", name="BRAF", HasField=lambda f: f == "name"
+                )
+            ]
+        )
         tracks = SimpleNamespace(metadata=[SimpleNamespace(name="t0"), SimpleNamespace(name="t1")])
         return SimpleNamespace(
-            variant=SimpleNamespace(chromosome="chr7", position=140753336, reference_bases="A", alternate_bases="T"),
+            variant=SimpleNamespace(
+                chromosome="chr7", position=140753336, reference_bases="A", alternate_bases="T"
+            ),
             HasField=lambda f: False,
-            scores=[SimpleNamespace(
-                variant_scorer=SimpleNamespace(name="GENE_SCORER", is_signed=True),
-                shape=[1, 2],
-                scores=struct.pack("<2f", 0.25, -1.5),
-                calibrated_scores=struct.pack("<2f", 0.6, 0.99),
-                metadata=[SimpleNamespace(payload="gene_scorers", gene_scorers=genes),
-                          SimpleNamespace(payload="tracks", tracks=tracks)],
-            )],
+            scores=[
+                SimpleNamespace(
+                    variant_scorer=SimpleNamespace(name="GENE_SCORER", is_signed=True),
+                    shape=[1, 2],
+                    scores=struct.pack("<2f", 0.25, -1.5),
+                    calibrated_scores=struct.pack("<2f", 0.6, 0.99),
+                    metadata=[
+                        SimpleNamespace(payload="gene_scorers", gene_scorers=genes),
+                        SimpleNamespace(payload="tracks", tracks=tracks),
+                    ],
+                )
+            ],
         )
 
     async def list_variant_scores_metadata(self, **kwargs):
@@ -258,8 +332,13 @@ async def test_atlas_decodes_precomputed_scores_with_labels() -> None:
     s = ev.data["scorers"][0]
     assert s["values_row_major"] == [0.25, -1.5]
     assert s["calibrated_quantiles_row_major"] == pytest.approx([0.6, 0.99])
-    assert s["top_by_abs_score"][0] == {"index": 1, "row": "ENSG00000157764 (BRAF)", "column": "t1",
-                                        "score": -1.5, "quantile": pytest.approx(0.99)}
+    assert s["top_by_abs_score"][0] == {
+        "index": 1,
+        "row": "ENSG00000157764 (BRAF)",
+        "column": "t1",
+        "score": -1.5,
+        "quantile": pytest.approx(0.99),
+    }
     assert fake.calls[0][1]["filter"] == '(scores.variant_scorer.name = "GENE_SCORER")'
     assert fake.calls[0][1]["chromosome"] == "chr7" and fake.calls[0][1]["position"] == 140753336
     assert any("alphagenome.google/terms" in lim for lim in ev.limitations)
@@ -288,11 +367,19 @@ async def test_atlas_grpc_errors_are_typed_and_redact_the_key() -> None:
     assert "AIzaSECRETKEY" not in exc.value.error.model_dump_json()
 
 
-async def test_atlas_not_called_by_default_and_unconfigured_when_requested(router: Router, make_service) -> None:
+async def test_atlas_not_called_by_default_and_unconfigured_when_requested(
+    router: Router, make_service
+) -> None:
     from genomics_mcp.references.schemas import LookupVariantRequest
 
-    result = await make_service().lookup_variant(LookupVariantRequest(
-        variant="7-140753336-A-T", assembly="GRCh38", use_remote_reference=False, sources=["alphagenome_atlas"]))
+    result = await make_service().lookup_variant(
+        LookupVariantRequest(
+            variant="7-140753336-A-T",
+            assembly="GRCh38",
+            use_remote_reference=False,
+            sources=["alphagenome_atlas"],
+        )
+    )
     assert router.calls == []
     assert [(e.source, e.kind) for e in result.errors] == [("alphagenome_atlas", "not_configured")]
 
