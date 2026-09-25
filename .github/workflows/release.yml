@@ -162,10 +162,11 @@ jobs:
           IMAGE_REF: ${{ needs.image.outputs.ref }}
         run: |
           cd artifacts
+          cp ../packaging/build-constraints.txt .
           jq -n --arg ref "$IMAGE_REF" --arg commit "$GITHUB_SHA" --arg version "$VERSION" \
             '{image: $ref, commit: $commit, version: $version, platform: "linux/amd64"}' > image.json
           files=(rewire_genomics_mcp-"$VERSION"-py3-none-any.whl rewire_genomics_mcp-"$VERSION".tar.gz \
-                 requirements.lock.txt genomics-mcp-"$VERSION".mcpb image.json)
+                 requirements.lock.txt build-constraints.txt genomics-mcp-"$VERSION".mcpb image.json)
           sha256sum "${files[@]}" > SHA256SUMS
           cat SHA256SUMS
           gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \

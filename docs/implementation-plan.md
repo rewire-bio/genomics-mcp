@@ -8,7 +8,7 @@ Discover an archive study/dataset, inspect actual sample and available phenotype
 
 ## Sources and formats
 
-- EGA first-class: studies, datasets, samples, phenotypes, files and access policies from public metadata; authorized real file and regional retrieval through existing services. Test only documented public EGA data/account: EGAD00001003338, candidate file EGAF00001775036. Never fetch the entire approximately 1 TB dataset.
+- EGA first-class: studies, datasets, samples, phenotypes, files and access policies from public metadata; authorized real file and regional retrieval through existing services. Test only documented public EGA data/account: EGAD00001003338, BAM file EGAF00007243773 (the earlier candidate EGAF00001775036 is an index file). Never fetch the entire approximately 1 TB dataset.
 - ENA: public studies/runs/analyses, available samples and submitted files, checksums/indexes. Resolve compatible SRA accessions through ENA. FASTQ is downloadable but not locus-ready.
 - ENCODE and GEO: experiments/samples/processed files, actual downloadable artifacts and region queries for supported formats.
 - NCBI Datasets and Ensembl: versioned assemblies, sequences and annotations, explicit local preparation/indexing when needed.

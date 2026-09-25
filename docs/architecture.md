@@ -146,8 +146,8 @@ Tracked until each epic lands; update the capability test when an item is done.
 | Transfers, budgets, resume, checksum; reference prep; FASTA; BED/GFF/GTF | E3 | implemented; see docs/data-access.md |
 | BAM/CRAM/VCF/BCF readers and CRAM reference checks | E4 | implemented; see docs/data-access.md |
 | bigWig/bigBed | E5 | implemented; see docs/data-access.md |
-| EGA/ENA discovery, EGA htsget/ega resolvers | E6 | not started |
-| ENCODE/GEO/NCBI Datasets | E7 | not started |
-| Reference adapters and normalization; source `terms_url` confirmation | E8 | not started |
-| `inspect_locus`, `compare_samples` | E9 | not started |
-| Server `server.json`, container, release | E10–E11 | not started |
+| EGA/ENA discovery, EGA htsget/ega resolvers | E6 | implemented; see docs/archive-sources.md |
+| ENCODE/GEO/NCBI Datasets | E7 | implemented; see docs/archive-sources.md |
+| Reference adapters and normalization; source `terms_url` confirmation | E8 | implemented; see docs/reference-sources.md |
+| `inspect_locus`, `compare_samples` | E9 | implemented; see docs/composition.md |
+| Package, container, MCPB, `server.json`, release workflows | E10–E11 | prepared, not released; see docs/release.md |

@@ -1,0 +1,168 @@
+{
+  "demo": "reference",
+  "title": "Reference sequence and ClinVar evidence",
+  "started_at": "2026-09-25T14:55:01.848758+00:00",
+  "result": {
+    "variant": {
+      "assembly": "GRCh38",
+      "contig": "7",
+      "pos": 140753336,
+      "ref": "A",
+      "alt": "T"
+    },
+    "reference": {
+      "accession": "NC_000007.14",
+      "source": "ncbi_nuccore",
+      "observed_ref": "A",
+      "spdi": "NC_000007.14:140753335:A:T",
+      "hgvs_g": "NC_000007.14:g.140753336A>T"
+    },
+    "clinvar": {
+      "vcv": "VCV000013961.143",
+      "name": "NM_004333.6(BRAF):c.1799T>A (p.Val600Glu)",
+      "source_version": "ClinVar Entrez Build260924-0125.1 (lastupdate 2026/09/24 04:57)",
+      "aggregate_classifications": {
+        "germline": {
+          "description": "Conflicting classifications of pathogenicity",
+          "review_status": "criteria provided, conflicting classifications",
+          "conflict_reported_by_clinvar": true
+        },
+        "somatic_clinical_impact": {
+          "description": "Tier I - Strong",
+          "review_status": "criteria provided, multiple submitters",
+          "conflict_reported_by_clinvar": false
+        },
+        "oncogenicity": {
+          "description": "Oncogenic",
+          "review_status": "criteria provided, single submitter",
+          "conflict_reported_by_clinvar": false
+        }
+      },
+      "submissions_by_classification_type": {
+        "germline": 22,
+        "oncogenicity": 2,
+        "somatic_clinical_impact": 21
+      },
+      "submitted_classification_counts": {
+        "germline": {
+          "contributing_to_aggregate": {
+            "Likely pathogenic": 1,
+            "Pathogenic": 4,
+            "Uncertain significance": 1
+          },
+          "not_contributing": {
+            "Pathogenic": 12,
+            "Likely pathogenic": 2,
+            "Uncertain significance": 1,
+            "not provided": 1
+          }
+        },
+        "oncogenicity": {
+          "contributing_to_aggregate": {
+            "Oncogenic": 1
+          },
+          "not_contributing": {
+            "Oncogenic": 1
+          }
+        },
+        "somatic_clinical_impact": {
+          "contributing_to_aggregate": {
+            "Tier I - Strong | diagnostic | supports diagnosis": 13,
+            "Tier I - Strong | therapeutic | sensitivity/response": 2,
+            "Tier I - Strong | prognostic | poor outcome": 1
+          },
+          "not_contributing": {
+            "Tier II - Potential | diagnostic | supports diagnosis": 5
+          }
+        }
+      }
+    }
+  },
+  "status": "passed",
+  "finished_at": "2026-09-25T14:55:10.617801+00:00",
+  "calls": [
+    {
+      "tool": "normalize_variant",
+      "arguments": {
+        "variant": {
+          "assembly": "GRCh38",
+          "contig": "7",
+          "pos": 140753336,
+          "ref": "A",
+          "alt": "T"
+        },
+        "sources": [
+          "ncbi_nuccore"
+        ]
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.37,
+      "provenance": [],
+      "source_status": [
+        {
+          "source": "ncbi_nuccore",
+          "state": "ok",
+          "message": null,
+          "checked_at": "2026-09-25T14:55:02.815418Z"
+        }
+      ]
+    },
+    {
+      "tool": "lookup_variant",
+      "arguments": {
+        "variant": {
+          "assembly": "GRCh38",
+          "contig": "7",
+          "pos": 140753336,
+          "ref": "A",
+          "alt": "T"
+        },
+        "sources": [
+          "clinvar"
+        ]
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 7.66,
+      "provenance": [
+        {
+          "source": "clinvar",
+          "source_record_id": null,
+          "url": null,
+          "method": "clinvar public API",
+          "retrieved_at": "2026-09-25T14:55:07.595060Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+          "transformations": []
+        },
+        {
+          "source": "clinvar",
+          "source_record_id": null,
+          "url": null,
+          "method": "clinvar public API",
+          "retrieved_at": "2026-09-25T14:55:10.477656Z",
+          "source_version": "ClinVar Entrez Build260924-0125.1 (lastupdate 2026/09/24 04:57)",
+          "source_updated_at": null,
+          "terms_url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+          "transformations": []
+        }
+      ],
+      "source_status": [
+        {
+          "source": "ensembl",
+          "state": "ok",
+          "message": null,
+          "checked_at": "2026-09-25T14:55:10.479003Z"
+        },
+        {
+          "source": "clinvar",
+          "state": "ok",
+          "message": null,
+          "checked_at": "2026-09-25T14:55:10.479010Z"
+        }
+      ]
+    }
+  ]
+}

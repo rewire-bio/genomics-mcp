@@ -1,0 +1,138 @@
+{
+  "project": "rewire-bio/genomics-mcp",
+  "registry_name": "io.github.rewire-bio/genomics-mcp",
+  "version": "0.1.0",
+  "updated": "2026-09-25",
+  "states": ["prepared", "needs_account_setup", "submitted", "published", "approved", "deferred"],
+  "note": "Each route records its own dates. null means not happened. Nothing below has been submitted or published yet.",
+  "routes": [
+    {
+      "route": "github_release",
+      "artifact": "https://github.com/rewire-bio/genomics-mcp/releases/tag/v0.1.0",
+      "how": ".github/workflows/release.yml (manual)",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "Coordinator runs release.yml after package.yml passes on the release commit."
+    },
+    {
+      "route": "ghcr_oci",
+      "artifact": "ghcr.io/rewire-bio/genomics-mcp:0.1.0 (linux/amd64)",
+      "how": "release.yml job image; anonymous check with scripts/check_image.py --docker-config <empty dir>",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "First push is private. An org owner must set the package to Public in GitHub package settings (no API), then check anonymous pull."
+    },
+    {
+      "route": "pypi",
+      "artifact": "https://pypi.org/project/rewire-genomics-mcp/0.1.0/",
+      "how": ".github/workflows/publish-pypi.yml (manual, trusted publishing, environment pypi)",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "state": "needs_account_setup",
+      "gate": "Personal PyPI account with a pending GitHub publisher: project rewire-genomics-mcp, owner rewire-bio, repo genomics-mcp, workflow publish-pypi.yml, environment pypi. Plus the repository environment 'pypi'. Not required for the GitHub/OCI release."
+    },
+    {
+      "route": "official_mcp_registry",
+      "artifact": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/0.1.0",
+      "how": ".github/workflows/publish-mcp-registry.yml (manual, GitHub OIDC); server.json + scripts/render_server_json.py",
+      "validated": "2026-09-25: server.json (OCI) and the rendered OCI+MCPB+PyPI variant pass the 2025-12-11 JSON schema and mcp-publisher 1.8.1 validate. validate does not check package existence; the workflow checks each package anonymously first.",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "GitHub release published and GHCR package public. PyPI entry only after publish-pypi succeeds."
+    },
+    {
+      "route": "github_mcp_registry",
+      "artifact": "https://github.com/mcp",
+      "how": "Populated from the official MCP Registry (GitHub blog, 'Meet the GitHub MCP Registry'). No separate form found.",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "Official registry publication; then check whether the server appears on github.com/mcp."
+    },
+    {
+      "route": "biocontext_ai",
+      "artifact": "PR to biocontext-ai/registry adding servers/rewire-bio-genomics-mcp/{meta.yaml,mcp.json}",
+      "how": "python3 scripts/render_registry.py --commit <release commit> --out build/registry",
+      "validated": "2026-09-25 against biocontext-ai/registry ed5eb26: meta.yaml and mcp.json pass check-jsonschema 0.33.0 with schema.json/mcp_schema.json; validate_mcp_json_schema.py passes (single key 'rewire-bio/genomics-mcp' equals identifier); folder name matches identifier; prettier check passes.",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "Release commit public (mcp.json installs from git+https at that commit). Coordinator opens the PR with the repository checklist."
+    },
+    {
+      "route": "docker_mcp_catalog",
+      "artifact": "PR to docker/mcp-registry adding servers/genomics-mcp/server.yaml (Docker-built image mcp/genomics-mcp)",
+      "how": "scripts/render_registry.py; .github/workflows/registry-checks.yml runs task validate -- --name genomics-mcp and task build -- --tools genomics-mcp at docker/mcp-registry 49b643c",
+      "validated": "2026-09-25 locally: go run ./cmd/validate --name genomics-mcp (what task validate runs) passed every check, on a temporary copy of docker/mcp-registry 49b643c. task build --tools needs Docker and runs only in registry-checks.yml (not yet run).",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "Release commit pushed; registry-checks.yml green; SECURITY.md contact route: enable GitHub private vulnerability reporting (currently disabled). Docker team review."
+    },
+    {
+      "route": "glama",
+      "artifact": "https://glama.ai/mcp/servers (source listing)",
+      "how": "glama.json at repository root (maintainers ['timini']); Glama may ingest from the official registry",
+      "validated": "2026-09-25: glama.json passes https://glama.ai/mcp/schemas/server.json.",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "state": "needs_account_setup",
+      "gate": "glama.json on main; search Glama for an existing entry first; then Glama sign-in with GitHub (timini) to add/claim the server. Glama must build and introspect it."
+    },
+    {
+      "route": "punkpeye_awesome_mcp_servers",
+      "artifact": "PR to punkpeye/awesome-mcp-servers, category 🧬 Biology Medicine and Bioinformatics",
+      "how": "Entry: - [rewire-bio/genomics-mcp](https://github.com/rewire-bio/genomics-mcp) 🐍 🏠 🍎 🐧 - Bounded genomic data (EGA, ENA, ENCODE, GEO, NCBI; BAM/CRAM/VCF/bigWig on local, HTTPS or S3) with versioned ClinVar, gnomAD, Ensembl and UniProt evidence.",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "After a real Glama listing exists (approved plan). Add the Glama badge/link the list uses at that time."
+    },
+    {
+      "route": "mcpservers_org",
+      "artifact": "https://mcpservers.org/submit (free plan, review within 2 weeks)",
+      "how": "Form fields: Server Name 'Genomics MCP'; Category (closest science/data category offered); Short Description (as punkpeye entry); Repository https://github.com/rewire-bio/genomics-mcp; Official MCP Registry Name io.github.rewire-bio/genomics-mcp; remote connection: no; Contact Email: maintainer's choice.",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "gate": "After the GitHub release. Use the free plan only; the $39 expedited option is out of scope."
+    },
+    {
+      "route": "smithery_local_mcpb",
+      "artifact": "genomics-mcp-0.1.0.mcpb (GitHub release asset; Node launcher for the digest-pinned GHCR image)",
+      "how": "smithery mcp publish ./genomics-mcp-0.1.0.mcpb -n <owned namespace>/genomics-mcp; payload {\"type\":\"stdio\",\"runtime\":\"node\"}",
+      "validated": "2026-09-25: bundle validated, packed, unpacked and re-validated with @anthropic-ai/mcpb 2.1.2; launcher MCP round trip and path refusals tested with a recording docker stand-in. Real-container bundle runs are in package.yml/release.yml (not yet run). Host application install flows not tested.",
+      "prepared": "2026-09-25",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "state": "needs_account_setup",
+      "gate": "Smithery sign-in and an owned namespace (free tier only; no paid plan). Bundle must come from the release run with the real image digest."
+    },
+    {
+      "route": "pulsemcp",
+      "state": "deferred",
+      "gate": "New submissions paused (checked 2026-09-24)."
+    },
+    {
+      "route": "mcp_so",
+      "state": "deferred",
+      "gate": "Listing requires a $39 payment; outside the approved unpaid launch."
+    }
+  ]
+}

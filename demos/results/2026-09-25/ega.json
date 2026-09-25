@@ -1,0 +1,137 @@
+{
+  "demo": "ega",
+  "title": "EGA public test BAM region",
+  "started_at": "2026-09-25T14:54:03.832239+00:00",
+  "result": {
+    "dataset": {
+      "accession": "EGAD00001003338",
+      "title": "Test dataset: Sequence and variant data from public 1000 Genomes Project"
+    },
+    "file": "EGAF00007243773",
+    "interval": {
+      "contig": "chr10",
+      "start": 10000,
+      "end": 10050,
+      "assembly": "GRCh38"
+    },
+    "records_received_from_htsget": 91,
+    "records_overlapping": 42,
+    "records_returned": 42,
+    "record_span": [
+      10000,
+      10149
+    ],
+    "assembly": {
+      "requested": "GRCh38",
+      "file_declared": "GRCh38",
+      "status": "file_header_declared"
+    },
+    "region_slice": {
+      "served_format": "bam",
+      "requested_format": "bam",
+      "slice_region": {
+        "contig": "chr10",
+        "start": 10000,
+        "end": 10050,
+        "assembly": "GRCh38"
+      },
+      "post_filtered": "records are filtered to the interval after reading the slice"
+    },
+    "access": "EGA documented public test account (GENOMICS_MCP_EGA_PUBLIC_TEST_ACCOUNT=1)"
+  },
+  "status": "passed",
+  "finished_at": "2026-09-25T14:54:11.913545+00:00",
+  "calls": [
+    {
+      "tool": "describe_dataset",
+      "arguments": {
+        "source": "ega",
+        "accession": "EGAD00001003338"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 1.74,
+      "provenance": [
+        {
+          "source": "ega",
+          "source_record_id": "EGAD00001003338",
+          "url": "https://metadata.ega-archive.org/datasets/EGAD00001003338",
+          "method": "EGA public metadata API",
+          "retrieved_at": "2026-09-25T14:54:09.549373Z",
+          "source_version": "metadata-api v3",
+          "source_updated_at": null,
+          "terms_url": "https://ega-archive.org/legal-notice/",
+          "transformations": []
+        },
+        {
+          "source": "ega",
+          "source_record_id": null,
+          "url": "https://metadata.ega-archive.org/datasets/EGAD00001003338/studies",
+          "method": "EGA public metadata API (paged)",
+          "retrieved_at": "2026-09-25T14:54:09.858016Z",
+          "source_version": "metadata-api v3",
+          "source_updated_at": null,
+          "terms_url": "https://ega-archive.org/legal-notice/",
+          "transformations": []
+        },
+        {
+          "source": "ega",
+          "source_record_id": "EGAP00001000598",
+          "url": "https://metadata.ega-archive.org/policies/EGAP00001000598",
+          "method": "EGA public metadata API",
+          "retrieved_at": "2026-09-25T14:54:10.463864Z",
+          "source_version": "metadata-api v3",
+          "source_updated_at": null,
+          "terms_url": "https://ega-archive.org/legal-notice/",
+          "transformations": []
+        },
+        {
+          "source": "ega",
+          "source_record_id": "EGAC00001000514",
+          "url": "https://metadata.ega-archive.org/dacs/EGAC00001000514",
+          "method": "EGA public metadata API",
+          "retrieved_at": "2026-09-25T14:54:10.683437Z",
+          "source_version": "metadata-api v3",
+          "source_updated_at": null,
+          "terms_url": "https://ega-archive.org/legal-notice/",
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_reads",
+      "arguments": {
+        "file": {
+          "uri": "ega://EGAF00007243773",
+          "format": "bam"
+        },
+        "interval": {
+          "contig": "chr10",
+          "start": 10000,
+          "end": 10050,
+          "assembly": "GRCh38"
+        }
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 1.02,
+      "provenance": [
+        {
+          "source": "ega",
+          "source_record_id": null,
+          "url": "ega://EGAF00007243773",
+          "method": "pysam 0.24.1 / HTSlib 1.24 fetch",
+          "retrieved_at": "2026-09-25T14:54:11.746145Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": [
+            "0-based half-open coordinates"
+          ]
+        }
+      ],
+      "source_status": []
+    }
+  ]
+}

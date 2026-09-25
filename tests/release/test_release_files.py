@@ -172,3 +172,16 @@ def test_built_distributions_contain_only_allowed_files(tmp_path):
     )
     report = json.loads(proc.stdout)
     assert proc.returncode == 0 and report["problems"] == [], report["problems"]
+
+
+def test_release_notes_and_ledger_are_consistent():
+    assert (ROOT / f"docs/release-notes/{VERSION}.md").is_file()
+    ledger = load("registry/ledger.json")
+    assert ledger["registry_name"] == NAME and ledger["version"] == VERSION
+    for route in ledger["routes"]:
+        # A route can only be approved after it was published, and published after submission
+        # (GitHub/GHCR/PyPI are published directly by workflows, without a submission step).
+        if route.get("approved"):
+            assert route.get("published"), route["route"]
+        if route.get("published") and route["route"] not in {"github_release", "ghcr_oci", "pypi"}:
+            assert route.get("submitted"), route["route"]
