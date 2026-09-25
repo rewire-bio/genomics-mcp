@@ -66,6 +66,11 @@ class ListFilesRequest(_Bounded):
     accession: str = Field(min_length=1)
     formats: list[FileFormat] | None = None
     cursor: str | None = None
+    storage_profile: str | None = Field(
+        default=None,
+        description="Configured storage profile for private S3 listings (source 's3'). "
+        "Omitted: anonymous public S3.",
+    )
 
 
 class ListSamplesRequest(_Bounded):
@@ -91,6 +96,11 @@ class FetchFileRequest(_Request):
         description="Explicit byte budget. Required when the file exceeds the default transfer limit.",
     )
     verify_checksum: bool = True
+    prepare: bool = Field(
+        default=False,
+        description="Build missing indexes on the local copy in the work dir (FASTA .fai/.gzi, "
+        "tabix, BAM/BCF index; ordinary gzip is recompressed to BGZF). Sources are never modified.",
+    )
 
 
 class TransferStatusRequest(_Request):

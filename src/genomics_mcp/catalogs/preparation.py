@@ -10,6 +10,7 @@ removes partial files on any failure or cancellation.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from genomics_mcp.archives._common.core import (
@@ -34,8 +35,15 @@ class NcbiGenomePreparer:
         self.make_client = make_client
 
     async def prepare(
-        self, accession: str, ctx: OperationContext, *, budget_bytes: int | None = None
+        self,
+        accession: str,
+        ctx: OperationContext,
+        *,
+        budget_bytes: int | None = None,
+        workspace: Path | None = None,
     ) -> LocalArtifact:
+        """`workspace`: a caller-owned directory (e.g. one transfer job's), so a failed or
+        cancelled preparation never touches another request's outputs. Default: shared dir."""
         require_enabled(ctx, "ncbi_datasets")
         limits = ctx.settings.limits
         budget = budget_bytes or limits.max_transfer_bytes
@@ -59,7 +67,7 @@ class NcbiGenomePreparer:
             try:
                 art = await c.prepare_genome_fasta(
                     accession,
-                    workspace=work / "catalogs" / "ncbi-genomes",
+                    workspace=workspace or (work / "catalogs" / "ncbi-genomes"),
                     budget_bytes=budget,
                     timeout_s=self.runtime.timeout(ctx),
                 )
