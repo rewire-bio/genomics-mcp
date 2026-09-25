@@ -66,6 +66,9 @@ Results use models whose field names and enum values match core `genomics_mcp.mo
   - `md5sum.txt` is read with a 1 MiB decompressed cap.
   - Cancellation stops the extraction thread, and partial files are removed on any failure.
 
+- **Source switch:** `[sources.<name>].enabled = false` stops source-owned access paths as well as discovery. The EGA resolver (`stat`, `resolve`, `resolve_region`), `transfer_backend:ega` (`describe`, `open`) and `preparer:ncbi_genome_fasta` return `unsupported` before any configuration read, authentication or request. Disabling EGA does not affect other sources or storage schemes.
+- **Setup errors:** failures while building a source client keep their typed core code and `source`. For example, an incomplete EGA login (only one of username/password) is `unauthorized` with a hint. An outage of the pinned public-test configuration is `upstream_error` with the HTTP status. Submitted secret values are redacted. Unexpected exceptions are not caught here and still surface as `internal_error`.
+
 ## EGA access configuration
 
 Explicit only; read from values core `Settings` already retains:
@@ -206,9 +209,9 @@ These are observations on those dates, not guarantees. EGAF00001770107 returned 
    - Until then, `fetch_file` is `unsupported`.
 2. **E4 (readers):** call `ctx.resolve_file(file, interval=…)` and post-filter the returned bounded artifact. `file.format` in the result is the served format (BAM for a CRAM source). CRAM reference checks stay in E4.
 3. **E2 (storage):** resolves ENCODE `href` redirects. FileRefs already carry the unsigned public S3 `uri`.
-4. **Core (not owned here):**
-   - `catalog.SOURCE_SCHEMES` has no `ega` entry, so `list_sources` shows `schemes: []` for EGA although the resolver is registered.
-   - `list_sources` cannot report the configured EGA access mode (`SourceInfo` is static); the notes describe the options.
+4. **Core:**
+   - `catalog.SOURCE_SCHEMES` now maps `ega` to `("ega",)`, so `list_sources` reports the scheme only while the resolver is registered. This is a narrow core change made with coordinator approval.
+   - `list_sources` still cannot report the configured EGA access mode (`SourceInfo` is static); the notes describe the options. Reporting the mode would need a core status hook.
    - The architecture Wiring TODO rows for E6/E7 should be updated by the core owner.
 5. **Not implemented:**
    - a generic `htsget://` resolver for arbitrary servers (needs host/auth configuration);

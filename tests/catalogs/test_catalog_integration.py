@@ -273,3 +273,11 @@ async def test_preparer_deadline_cleans_up(tmp_path):
     assert ei.value.error_code == "timeout"
     root = tmp_path / "work/catalogs/ncbi-genomes"
     assert not root.exists() or not list(root.iterdir())
+
+
+async def test_disabled_ncbi_blocks_preparer_with_zero_requests(router, tmp_path):
+    svc = svc_for(router, tmp_path, sources={"ncbi_datasets": {"enabled": False}})
+    with pytest.raises(GenomicsError) as ei:
+        await svc.registry.component(PREPARER_COMPONENT).prepare(ACC, ctx_for(svc))
+    assert ei.value.error_code == "unsupported" and ei.value.info.source == "ncbi_datasets"
+    assert router.requests == [] and not (tmp_path / "work" / "catalogs").exists()

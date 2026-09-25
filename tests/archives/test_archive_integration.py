@@ -456,3 +456,127 @@ def test_settings_never_read_ambient(tmp_path, monkeypatch):
     )
     assert EgaAccessConfig.from_settings(s2).mode == "public_test_account"
     assert dataclasses.asdict(EgaAccessConfig.from_settings(s2))["password"] is None
+
+
+# -- review 2026-09-25: setup-error conversion and source switch on resolver/components --------
+
+PW = "synthetic-ega-password-value-42"
+PYEGA3 = "https://raw.githubusercontent.com/EGA-archive/ega-download-client"
+
+
+def settings_env(tmp_path: Path, env: dict[str, str], **extra):
+    return load_settings(
+        env=env, overrides={"paths": {"work_dir": str(tmp_path / "work")}, **extra}
+    )
+
+
+def service_with_reader(router: Router, settings) -> GenomicsService:
+    """Real service plus a minimal get_reads/bam consumer of ctx.resolve_file (as E4 will be)."""
+    reg = Registry()
+    archives.register(reg, http_factory=router.client)
+
+    async def reads(req, ctx):
+        resolved = await ctx.resolve_file(req.file, interval=req.interval)
+        from genomics_mcp.result import OperationOutput
+
+        return OperationOutput(data={"records": [], "region": resolved.region})
+
+    reg.register(Operation.GET_READS, "bam", reads, provider="test-reader")
+    return GenomicsService(settings, reg, load_providers=False)
+
+
+READS = {"file": {"uri": f"ega://{EGAF}", "format": "bam"}, "interval": IV}
+
+
+@pytest.mark.parametrize(
+    ("env", "leak"),
+    [
+        ({"GENOMICS_MCP_EGA_USERNAME": "someone"}, None),
+        ({"GENOMICS_MCP_EGA_PASSWORD": PW}, PW),
+    ],
+)
+async def test_incomplete_account_is_typed_error_everywhere(router, tmp_path, env, leak):
+    svc = service_with_reader(router, settings_env(tmp_path, env))
+    results = [
+        await svc.call("describe_dataset", {"source": "ega", "accession": DS}),
+        await svc.call("list_files", {"source": "ega", "accession": DS}),
+        await svc.call("get_reads", READS),
+    ]
+    for res in results:
+        assert res.status == "error" and res.error.code == "unauthorized", res.error
+        assert res.error.source == "ega" and "GENOMICS_MCP_EGA_PASSWORD" in res.error.message
+        if leak:
+            assert leak not in res.model_dump_json()
+    with pytest.raises(GenomicsError) as ei:  # stat's own configuration read
+        await svc.registry.resolver("ega").stat(FileRef(uri=f"ega://{EGAF}"), ctx_for(svc))
+    assert ei.value.error_code == "unauthorized" and ei.value.info.source == "ega"
+    assert router.requests == []
+
+
+async def test_public_test_config_outage_is_attributed_upstream_error(router, tmp_path):
+    router.add(
+        "GET",
+        f"{PYEGA3}/5ec6c4cd37cc67142285051bdbd725c824da1384/pyega3/config/default_server_file.json",
+        httpx.Response(403, text="forbidden"),
+    )
+    svc = service_with_reader(
+        router, settings_env(tmp_path, {"GENOMICS_MCP_EGA_PUBLIC_TEST_ACCOUNT": "1"})
+    )
+    for res in (
+        await svc.call("describe_dataset", {"source": "ega", "accession": DS}),
+        await svc.call("get_reads", READS),
+    ):
+        assert res.status == "error" and res.error.code == "upstream_error", res.error
+        assert res.error.source == "ega" and res.error.hint and res.error.retryable is False
+        assert res.error.details["http_status"] == 403
+    assert {r.url.host for r in router.requests} == {"raw.githubusercontent.com"}
+
+
+async def test_disabled_ega_blocks_resolver_and_transfer_with_zero_requests(router, tmp_path):
+    s = settings_env(
+        tmp_path,
+        {"GENOMICS_MCP_EGA_PUBLIC_TEST_ACCOUNT": "1", "MY_EGA_TOKEN": TOKEN},
+        sources={"ega": {"enabled": False, "api_key_env": "MY_EGA_TOKEN"}},
+    )
+    svc = service_with_reader(router, s)
+    res = await svc.call("get_reads", READS)
+    assert res.status == "error" and res.error.code == "unsupported" and res.error.source == "ega"
+    ctx = ctx_for(svc)
+    f = FileRef(uri=f"ega://{EGAF}", format="bam")
+    resolver = svc.registry.resolver("ega")
+    backend = svc.registry.component(TRANSFER_BACKEND_COMPONENT)
+    calls = [
+        lambda: ctx.resolve_file(f, interval=Interval(**IV)),
+        lambda: ctx.resolve_file(f),
+        lambda: resolver.stat(f, ctx),
+        lambda: backend.describe(f, ctx),
+    ]
+    for call in calls:
+        with pytest.raises(GenomicsError) as ei:
+            await call()
+        assert ei.value.error_code == "unsupported"
+    with pytest.raises(GenomicsError) as ei:
+        async with backend.open(f, ctx, start=0, end=10):
+            pass
+    assert ei.value.error_code == "unsupported"
+    listed = await svc.call("list_sources", {"kind": "archive"})
+    assert {r["name"]: r["state"] for r in listed.data["records"]}["ega"] == "disabled"
+    assert router.requests == []  # no config fetch, token, metadata or htsget request
+    assert not (tmp_path / "work" / "archives").exists()
+
+
+async def test_disabling_ega_does_not_block_other_sources(router, tmp_path):
+    router.add("GET", f"{BROWSER}/xml/SAMEA0000001", httpx.Response(404))
+    svc = service(router, settings_for(tmp_path, sources={"ega": {"enabled": False}}))
+    res = await svc.call("get_sample_metadata", {"source": "ena", "accession": "SAMEA0000001"})
+    assert res.error.code == "not_found" and len(router.requests) == 1
+
+
+async def test_list_sources_reports_ega_scheme_only_with_resolver(router, tmp_path):
+    svc = service(router, settings_for(tmp_path))
+    listed = await svc.call("list_sources", {"kind": "archive"})
+    by = {r["name"]: r for r in listed.data["records"]}
+    assert by["ega"]["schemes"] == ["ega"] and by["ena"]["schemes"] == []
+    bare = GenomicsService(settings_for(tmp_path), Registry(), load_providers=False)
+    by_bare = {r["name"]: r for r in (await bare.call("list_sources", {})).data["records"]}
+    assert by_bare["ega"]["schemes"] == [] and by_bare["ega"]["state"] == "not_implemented"

@@ -22,7 +22,13 @@ from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from genomics_mcp.archives._common.core import SourceRuntime, share_limiters, to_core, to_core_error
+from genomics_mcp.archives._common.core import (
+    SourceRuntime,
+    require_enabled,
+    share_limiters,
+    to_core,
+    to_core_error,
+)
 from genomics_mcp.archives._common.errors import SourceError
 from genomics_mcp.archives._common.workspace import safe_name
 from genomics_mcp.archives.ega import htsget as hg
@@ -85,11 +91,20 @@ class _EgaBase:
         self.runtime = runtime
         self.access = access
 
+    @staticmethod
+    def _config(ctx: OperationContext) -> EgaAccessConfig:
+        """Source switch first, then explicit access configuration (typed, redacted errors)."""
+        require_enabled(ctx, "ega")
+        try:
+            return EgaAccessConfig.from_settings(ctx.settings)
+        except SourceError as exc:
+            raise to_core_error(exc) from None
+
     @asynccontextmanager
     async def _client(
-        self, ctx: OperationContext, *, require_auth: bool
+        self, ctx: OperationContext, *, require_auth: bool, cfg: EgaAccessConfig | None = None
     ) -> AsyncIterator[EgaClient]:
-        cfg = EgaAccessConfig.from_settings(ctx.settings)
+        cfg = cfg or self._config(ctx)
         if require_auth and cfg.mode == "anonymous":
             raise UnauthorizedError(
                 "EGA file access needs explicitly configured credentials",
@@ -113,9 +128,9 @@ class EgaResolver(_EgaBase):
 
     async def stat(self, file: FileRef, ctx: OperationContext) -> FileRef:
         """Source metadata; with credentials, a header-only htsget ticket proves region access."""
+        cfg = self._config(ctx)
         acc = ega_accession(file)
-        cfg = EgaAccessConfig.from_settings(ctx.settings)
-        async with self._client(ctx, require_auth=False) as c:
+        async with self._client(ctx, require_auth=False, cfg=cfg) as c:
             try:
                 if cfg.mode == "anonymous":
                     ref = await c.get_file(acc, timeout_s=self.runtime.timeout(ctx))
@@ -135,6 +150,7 @@ class EgaResolver(_EgaBase):
         )
 
     async def resolve(self, file: FileRef, ctx: OperationContext) -> ResolvedFile:
+        require_enabled(ctx, "ega")
         raise PreparationRequiredError(
             "EGA files are served as bounded htsget regions (pass an interval) or downloaded "
             "explicitly through the transfer manager; they are never opened as whole remote files",
@@ -145,6 +161,7 @@ class EgaResolver(_EgaBase):
     async def resolve_region(
         self, file: FileRef, interval: Interval, ctx: OperationContext
     ) -> ResolvedFile:
+        require_enabled(ctx, "ega")
         acc = ega_accession(file)
         fmt = file.format
         if fmt in (FileFormat.BAM, FileFormat.CRAM):
@@ -295,6 +312,7 @@ class EgaTransferBackend(_EgaBase):
     scheme = "ega"
 
     async def describe(self, file: FileRef, ctx: OperationContext) -> TransferDescription:
+        require_enabled(ctx, "ega")
         acc = ega_accession(file)
         async with self._client(ctx, require_auth=True) as c:
             try:
@@ -319,6 +337,7 @@ class EgaTransferBackend(_EgaBase):
     async def open(
         self, file: FileRef, ctx: OperationContext, *, start: int = 0, end: int | None = None
     ) -> AsyncIterator[AsyncIterator[bytes]]:
+        require_enabled(ctx, "ega")
         acc = ega_accession(file)
         if end is None:
             end = (await self.describe(file, ctx)).size_bytes

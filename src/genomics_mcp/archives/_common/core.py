@@ -68,6 +68,18 @@ def to_core(obj: BaseModel) -> BaseModel:
     return cls.model_validate(redact_obj(data) if "native" in data else data)
 
 
+def require_enabled(ctx: OperationContext, source: str) -> None:
+    """Refuse a source-owned resolver/component call when `[sources.<name>].enabled = false`.
+
+    The service applies this switch to discovery dispatch; resolvers and components reached
+    through `ctx.resolve_file` / `ctx.component` must apply it themselves, before any
+    configuration read, authentication or network request."""
+    if not ctx.settings.source(source).enabled:
+        raise core_errors.UnsupportedError(
+            f"source {source} is disabled in configuration", source=source
+        )
+
+
 class SourceRuntime:
     """Per-source state kept across calls: shared rate limiters and the HTTP client factory."""
 

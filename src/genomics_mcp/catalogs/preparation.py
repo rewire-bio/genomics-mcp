@@ -12,7 +12,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from genomics_mcp.archives._common.core import SourceRuntime, share_limiters, to_core, to_core_error
+from genomics_mcp.archives._common.core import (
+    SourceRuntime,
+    require_enabled,
+    share_limiters,
+    to_core,
+    to_core_error,
+)
 from genomics_mcp.archives._common.errors import SourceError
 from genomics_mcp.archives.ega.integration import _workspace_usage
 from genomics_mcp.context import OperationContext
@@ -30,6 +36,7 @@ class NcbiGenomePreparer:
     async def prepare(
         self, accession: str, ctx: OperationContext, *, budget_bytes: int | None = None
     ) -> LocalArtifact:
+        require_enabled(ctx, "ncbi_datasets")
         limits = ctx.settings.limits
         budget = budget_bytes or limits.max_transfer_bytes
         if budget > limits.transfer_budget_ceiling_bytes:

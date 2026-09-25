@@ -61,11 +61,13 @@ class DiscoverySource:
             yield c
 
     async def _call(self, ctx: OperationContext, fn: Callable[[Any, float], Awaitable[Any]]) -> Any:
-        async with self.client(ctx) as c:
-            try:
+        # Client construction reads source configuration and may authenticate or fetch public
+        # configuration; its SourceErrors are converted like the operation's own.
+        try:
+            async with self.client(ctx) as c:
                 return await fn(c, self.runtime.timeout(ctx))
-            except SourceError as exc:
-                raise to_core_error(exc) from None
+        except SourceError as exc:
+            raise to_core_error(exc) from None
 
     def _check_supported(self, op: Operation) -> None:
         if op in self.unsupported:

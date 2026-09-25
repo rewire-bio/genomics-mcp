@@ -27,7 +27,7 @@ from typing import Any, Literal
 import httpx
 from pydantic import SecretStr
 
-from genomics_mcp.archives._common.errors import UnauthorizedError, UpstreamError
+from genomics_mcp.archives._common.errors import SourceError, UnauthorizedError, UpstreamError
 from genomics_mcp.archives._common.http import SourceHttp, SourcePolicy
 from genomics_mcp.archives._common.redact import register_secret
 from genomics_mcp.archives.ega.auth import EgaAuth, EgaPasswordGrant
@@ -102,14 +102,32 @@ async def fetch_pyega3_config(client: httpx.AsyncClient) -> dict[str, dict]:
     )
     out: dict[str, dict] = {}
     for name, digest in PYEGA3_SHA256.items():
-        res = await http.request("GET", f"{PYEGA3_RAW}/{name}")
+        try:
+            res = await http.request("GET", f"{PYEGA3_RAW}/{name}")
+        except SourceError as exc:
+            # A 401/403/404 from the public config host is an outage of a public dependency,
+            # not an EGA authorisation decision.
+            raise UpstreamError(
+                "EGA public test account configuration could not be fetched",
+                source=SOURCE,
+                retryable=exc.retryable or exc.code in ("upstream_error", "timeout"),
+                hint="Retry later, or configure a personal EGA token or login instead.",
+                details={
+                    "file": name,
+                    "cause": exc.code,
+                    "http_status": exc.details.get("http_status"),
+                },
+            ) from None
         if hashlib.sha256(res.body).hexdigest() != digest:
             raise UpstreamError(
                 "pinned pyega3 configuration did not match its recorded SHA-256",
                 source=SOURCE,
                 details={"file": name},
             )
-        data = json.loads(res.body)
+        try:
+            data = json.loads(res.body)
+        except ValueError:
+            raise UpstreamError("pinned pyega3 configuration is not JSON", source=SOURCE) from None
         for key in ("password", "client_secret"):
             if isinstance(data.get(key), str):
                 register_secret(data[key])
