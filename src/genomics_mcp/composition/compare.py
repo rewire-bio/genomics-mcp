@@ -25,14 +25,16 @@ from genomics_mcp.composition.common import (
     check_assemblies,
     configured_timeout,
     dispatch,
+    fit_metadata,
     jsonable,
+    overall_truncation,
     plan_slots,
     run_components,
     source_gate,
     with_max_records,
 )
 from genomics_mcp.context import OperationContext
-from genomics_mcp.errors import InvalidInputError
+from genomics_mcp.errors import ErrorCode, GenomicsError, InvalidInputError
 from genomics_mcp.models import EntityKind, FileFormat, Interval, SourceState, SourceStatus
 from genomics_mcp.registry import Operation
 from genomics_mcp.requests import (
@@ -41,7 +43,7 @@ from genomics_mcp.requests import (
     SignalRequest,
     VariantsRequest,
 )
-from genomics_mcp.result import OperationOutput, Truncation
+from genomics_mcp.result import OperationOutput
 
 COMPARABLE = (FileFormat.BAM, FileFormat.CRAM, FileFormat.VCF, FileFormat.BCF, FileFormat.BIGWIG)
 TARGET_BINS = 20
@@ -98,9 +100,9 @@ def _variants_runner(comp: Component, file: Any, iv: Interval, wanted: list[str]
             )
             try:
                 out = await dispatch(sub, Operation.GET_VARIANTS, request)
-            except InvalidInputError as exc:
+            except GenomicsError as exc:  # typed code, whatever process raised it
                 unknown = exc.info.details.get("unknown") if samples else None
-                if not unknown:
+                if exc.info.code is not ErrorCode.INVALID_INPUT or not unknown:
                     raise
                 absent += [s for s in samples if s in unknown]  # type: ignore[union-attr]
                 samples = [s for s in samples if s not in unknown]  # type: ignore[union-attr]
@@ -351,20 +353,7 @@ async def compare_samples(req: CompareSamplesRequest, ctx: OperationContext) -> 
     if req.samples is not None:
         absent_everywhere = [s for s in req.samples if s not in matched]
 
-    truncation = None
-    if dropped:
-        truncation = Truncation(
-            reason="max_records",
-            limit=total,
-            returned=len(records),
-            available=len(records) + dropped,
-        )
-    else:
-        for c in components:
-            t = c.truncation()
-            if t is not None:
-                truncation = Truncation(reason=t.reason, limit=t.limit, returned=len(records))
-                break
+    truncation = overall_truncation(components, len(records), total, dropped)
     data = {
         "interval": iv,
         "assembly": {"requested": iv.assembly, "policy": "exact match; no liftover"},
@@ -386,6 +375,7 @@ async def compare_samples(req: CompareSamplesRequest, ctx: OperationContext) -> 
         },
         "records": records,
     }
+    fit_metadata(data, ctx.limits.max_response_bytes, [("files",)])
     return OperationOutput(
         data=data,
         errors=errors,

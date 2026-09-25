@@ -8,6 +8,7 @@ open files themselves, so storage, reader, consent and redaction rules stay in o
 from __future__ import annotations
 
 import dataclasses
+import json
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any
@@ -360,7 +361,8 @@ def tag(component: Component, record_type: str, record: Any) -> dict[str, Any]:
 def overall_truncation(
     components: list[Component], returned: int, cap: int, dropped: int
 ) -> Truncation | None:
-    """One envelope-level truncation: the aggregate cap, else the first component's own."""
+    """Envelope truncation. `limit` is the call's aggregate record cap; a component's own
+    per-component cap stays in its entry (`components[].truncation`)."""
     if dropped:
         return Truncation(
             reason="max_records", limit=cap, returned=returned, available=returned + dropped
@@ -368,8 +370,53 @@ def overall_truncation(
     for c in components:
         t = c.truncation()
         if t is not None:
-            return Truncation(reason=t.reason, limit=t.limit, returned=returned)
+            return Truncation(reason=t.reason, limit=cap, returned=returned)
     return None
+
+
+# Kept for each component when metadata must shrink to fit a small response budget.
+_COMPACT_KEYS = (
+    "id", "component", "kind", "operation", "file", "format", "status", "records_returned",
+    "truncation", "errors", "summary", "measure", "complete", "complete_until", "samples_total",
+    "samples_omitted", "requested_samples_absent", "sample_links", "mode", "allele", "from_files",
+    "sources", "visibility", "source", "accession",
+)  # fmt: skip
+
+
+def compact_entry(entry: dict[str, Any]) -> dict[str, Any]:
+    out = {k: entry[k] for k in _COMPACT_KEYS if k in entry}
+    if isinstance(entry.get("assembly"), dict):
+        out["assembly_status"] = entry["assembly"].get("status")
+    if entry.get("provenance"):
+        out["provenance"] = [
+            {k: p[k] for k in ("source", "method", "source_version") if k in p}
+            for p in entry["provenance"]
+        ]
+    if out.get("errors"):
+        out["errors"] = [{"code": e["code"], "message": e["message"][:200]} for e in out["errors"]]
+    return out
+
+
+def fit_metadata(data: dict[str, Any], max_bytes: int, lists: Iterable[tuple[str, ...]]) -> None:
+    """If non-record metadata would use over half the response budget, compact the entry
+    lists at `lists` (key paths) in place, so records and statuses still fit. Marked in data."""
+
+    def size() -> int:
+        rest = {k: v for k, v in data.items() if k != "records"}
+        return len(json.dumps(jsonable(rest), separators=(",", ":")).encode())
+
+    if size() <= max_bytes // 2:
+        return
+    for path in lists:
+        holder: Any = data
+        for key in path[:-1]:
+            holder = holder.get(key, {})
+        if isinstance(holder.get(path[-1]), list):
+            holder[path[-1]] = [compact_entry(e) for e in holder[path[-1]]]
+    data["metadata_compacted"] = (
+        "component details were shortened to fit max_response_bytes; raise it or call the "
+        "single-file tools for applied filters, notes and full provenance"
+    )
 
 
 def share(total: int, parts: int, default_cap: int) -> int:

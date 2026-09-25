@@ -27,6 +27,7 @@ from genomics_mcp.composition.common import (
     check_assemblies,
     configured_timeout,
     dispatch,
+    fit_metadata,
     interleave,
     jsonable,
     make_slot,
@@ -306,6 +307,9 @@ async def inspect_locus(req: InspectLocusRequest, ctx: OperationContext) -> Oper
         "native record; records are interleaved across components",
         "records": records,
     }
+    fit_metadata(
+        data, ctx.limits.max_response_bytes, [("components",), ("annotation", "components")]
+    )
     return OperationOutput(
         data=data,
         errors=errors,
