@@ -13,7 +13,6 @@ import random
 import shutil
 import socket
 import struct
-import subprocess
 import threading
 import time
 from collections.abc import Iterator
@@ -33,6 +32,14 @@ from genomics_mcp.service import GenomicsService
 SAMTOOLS = shutil.which("samtools")
 BCFTOOLS = shutil.which("bcftools")
 TABIX = shutil.which("tabix")
+# CI sets GENOMICS_MCP_REQUIRE_ORACLES=1 so the samtools/bcftools/tabix oracle comparisons can
+# never be skipped silently there.
+if os.environ.get("GENOMICS_MCP_REQUIRE_ORACLES") == "1":
+    _missing = [
+        n for n, t in (("samtools", SAMTOOLS), ("bcftools", BCFTOOLS), ("tabix", TABIX)) if not t
+    ]
+    if _missing:
+        raise RuntimeError(f"oracle tools required but not installed: {', '.join(_missing)}")
 needs_samtools = pytest.mark.skipif(SAMTOOLS is None, reason="samtools not installed")
 needs_bcftools = pytest.mark.skipif(BCFTOOLS is None, reason="bcftools not installed")
 
@@ -295,17 +302,24 @@ def build_golden(root: Path) -> dict[str, Any]:
     _write_bam(noas, h2, seqs, lengths)
     pysam.index(str(noas))
     out["bam_noas"] = noas
-    if SAMTOOLS:
-        crams = {
-            "cram": ["-T", str(ref)],
-            "cram_embedded": ["-T", str(ref), "--output-fmt-option", "embed_ref=1"],
-            "cram_noref": ["--output-fmt-option", "no_ref=1"],
-        }
-        for key, opts in crams.items():
-            path = root / f"{key}.cram"
-            subprocess.run([SAMTOOLS, "view", "-C", *opts, "-o", str(path), str(bam)], check=True)
-            subprocess.run([SAMTOOLS, "index", str(path)], check=True)
-            out[key] = path
+    # CRAMs are written with pysam's HTSlib, so fixtures never depend on a samtools binary.
+    # Like `samtools view -C -T`, the writer records @SQ UR pointing at the reference.
+    crams = {
+        "cram": (str(ref), []),
+        "cram_embedded": (str(ref), ["embed_ref=1"]),
+        "cram_noref": (None, ["no_ref=1"]),
+    }
+    for key, (reference, opts) in crams.items():
+        path = root / f"{key}.cram"
+        with pysam.AlignmentFile(str(bam)) as src:
+            kwargs = {"reference_filename": reference} if reference else {}
+            with pysam.AlignmentFile(
+                str(path), "wc", template=src, format_options=[o.encode() for o in opts], **kwargs
+            ) as dst:
+                for rec in src.fetch(until_eof=True):
+                    dst.write(rec)
+        pysam.index(str(path))
+        out[key] = path
     out.update(_write_variants(root, lengths))
     out.update(_write_features(root))
     out.update(_write_signal(root))

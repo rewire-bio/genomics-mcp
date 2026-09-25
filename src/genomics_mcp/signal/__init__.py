@@ -12,7 +12,7 @@ from typing import Any
 import pyBigWig
 
 from genomics_mcp.context import OperationContext
-from genomics_mcp.errors import ErrorCode, ErrorInfo, InvalidInputError
+from genomics_mcp.errors import ErrorCode, ErrorInfo, InvalidInputError, UnsupportedError
 from genomics_mcp.registry import Operation, Registry
 from genomics_mcp.requests import FeaturesRequest, SignalRequest
 from genomics_mcp.result import OperationOutput, Truncation
@@ -44,6 +44,13 @@ async def _prepare(req: Any, ctx: OperationContext, call: Any) -> tuple[Any, Any
     storage = call.manager
     resolved = await ctx.resolve_file(req.file, interval=req.interval)
     storage.require_ready(resolved, needs_index=False)
+    if resolved.local_path is None and not REMOTE_CAPABLE:
+        raise UnsupportedError(
+            "this installation's pyBigWig was built without libcurl, so remote bigWig/bigBed "
+            "files cannot be read",
+            hint="reinstall with pyBigWig built from source against libcurl (see "
+            "docs/data-access.md, 'Installation'), or fetch the file with fetch_file",
+        )
     params = await call.reader_params(resolved)
     params.update(interval=req.interval.model_dump(), max_records=ctx.limits.max_records)
     return storage, resolved, params
