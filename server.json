@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.rewire-bio/genomics-mcp",
+  "title": "Genomics MCP",
+  "description": "Bounded genomic data from archives and indexed files, with versioned reference evidence.",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/rewire-bio/genomics-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/rewire-bio/genomics-mcp#readme",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/rewire-bio/genomics-mcp:0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

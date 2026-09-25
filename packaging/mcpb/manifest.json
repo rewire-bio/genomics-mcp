@@ -1,0 +1,60 @@
+{
+  "manifest_version": "0.3",
+  "name": "genomics-mcp",
+  "display_name": "Genomics MCP",
+  "version": "0.1.0",
+  "description": "Genomic data and reference evidence through a local Docker container",
+  "long_description": "Runs the pinned ghcr.io/rewire-bio/genomics-mcp linux/amd64 image with Docker. Only the chosen data directory (read-only) and a separate workspace are mounted. No cloud credentials are passed. Public archive and reference sources are queried over the network; see the README for sources and limits. Research use only.",
+  "author": {
+    "name": "rewire-bio",
+    "url": "https://github.com/rewire-bio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rewire-bio/genomics-mcp"
+  },
+  "homepage": "https://github.com/rewire-bio/genomics-mcp",
+  "documentation": "https://github.com/rewire-bio/genomics-mcp#readme",
+  "support": "https://github.com/rewire-bio/genomics-mcp/issues",
+  "license": "MIT",
+  "keywords": ["genomics", "bioinformatics", "bam", "vcf", "bigwig", "clinvar"],
+  "server": {
+    "type": "node",
+    "entry_point": "server/launcher.cjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/launcher.cjs",
+        "${user_config.docker_path}",
+        "${user_config.data_root}",
+        "${user_config.work_dir}"
+      ]
+    }
+  },
+  "compatibility": {
+    "platforms": ["linux"],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  },
+  "user_config": {
+    "docker_path": {
+      "type": "file",
+      "title": "Docker executable",
+      "description": "Absolute path to the Docker CLI, e.g. /usr/local/bin/docker. The Docker daemon must be running and able to run linux/amd64 images.",
+      "required": true
+    },
+    "data_root": {
+      "type": "directory",
+      "title": "Read-only data directory",
+      "description": "Mounted read-only at /data. Not your home directory.",
+      "required": true
+    },
+    "work_dir": {
+      "type": "directory",
+      "title": "Workspace directory",
+      "description": "A separate, dedicated writable directory for downloads, indexes and cache (bounded to 10 GiB).",
+      "required": true
+    }
+  }
+}

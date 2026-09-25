@@ -1,6 +1,6 @@
 # Genomics MCP: product requirements
 
-Status: approved scope, in development. Version 0.1.0 is **not released**. Approved 2026-09-24.
+Status: approved scope; E0–E9 implemented; E10–E11 release prepared. Version 0.1.0 is **not released**. Approved 2026-09-24.
 Repository: `rewire-bio/genomics-mcp`. Distribution: `rewire-genomics-mcp` (MIT, Python 3.12). Registry name: `io.github.rewire-bio/genomics-mcp`.
 
 This document replaces `docs/prd-original.md` (kept for history). Reasons for the changes are in `docs/prd-review.md`. Delivery order and epics are in `docs/implementation-plan.md`; module contracts are in `docs/architecture.md`.
@@ -88,7 +88,7 @@ Per epic (see `docs/implementation-plan.md`):
 - **E3** Transfers with budget, progress, resume, cancel, checksum verification; reference preparation; FASTA and indexed BED/GFF/GTF queries.
 - **E4** BAM/CRAM/VCF/BCF readers matching samtools/bcftools on golden fixtures (multiallelic, ploidy, deletions, skips, mates, boundaries, truncation); CRAM reference checks (correct, wrong, missing, embedded).
 - **E5** bigWig/bigBed local and remote, with remote capability tested.
-- **E6** EGA and ENA metadata, phenotype relationships as supplied, real file and bounded region retrieval (EGA public test data only: EGAD00001003338; candidate file EGAF00001775036; never the whole dataset).
+- **E6** EGA and ENA metadata, phenotype relationships as supplied, real file and bounded region retrieval (EGA public test data only: EGAD00001003338, BAM file EGAF00007243773; never the whole dataset).
 - **E7** ENCODE, GEO, NCBI Datasets discovery and retrieval of real artifacts.
 - **E8** Reference adapters with provenance, ClinVar/gnomAD semantics above, variant normalization with traces; optional Atlas.
 - **E9** `inspect_locus` and `compare_samples` with failure isolation and egress consent.
@@ -97,13 +97,15 @@ Per epic (see `docs/implementation-plan.md`):
 
 Release gates are listed in `docs/implementation-plan.md` and apply unchanged.
 
-## 10. Current factual limitations (2026-09-24)
+## 10. Current factual limitations (2026-09-25)
 
-- Only the core (E1) exists. All discovery (except `list_sources`), transfer, genomics, composition and reference tools return `unsupported` until E2–E9 land.
-- No source adapter has been implemented or verified against a live service.
-- Not published to PyPI, GHCR or any MCP registry. No release exists.
-- PulseMCP new submissions are paused; MCP.so requires payment and is outside the approved unpaid launch.
-- COSMIC is deferred. AlphaGenome Atlas field names and terms must be checked against current documentation when implemented.
+- All 23 tools are implemented. Version 0.1.0 is not yet published to PyPI, GHCR, a GitHub release or any MCP registry; release status is tracked in `docs/registry-ledger.md`.
+- Clean-install demonstrations passed on 2026-09-25 (macOS arm64) against live EGA, ENA, ENCODE, NCBI and ClinVar and a local MinIO: `demos/results/2026-09-25/`. Live sources can change or be unavailable; failures are reported as errors.
+- Tested platforms: macOS arm64 (local suite, clean install, demos) and Linux x86_64 (CI suite with `pyBigWig.remote == 1`). The linux/amd64 container and MCPB bundle are exercised by `package.yml`, which had not yet run when this was written. Linux arm64 and Intel macOS are not tested. Windows only through WSL2 or the container.
+- Remote bigWig/bigBed needs pyBigWig built with libcurl. The published Linux pyBigWig wheel lacks it, so installs build pyBigWig from source (C compiler, libcurl and zlib headers). There is no compiler-free native install.
+- A file's reference/header build label (for example `AS:GRCh38`) is reported as a label, not as proof of a precise assembly accession or patch.
+- PulseMCP new submissions are paused; MCP.so requires payment and is outside the approved unpaid launch. PyPI (trusted publisher) and Smithery (namespace) need personal account setup outside this repository.
+- COSMIC is deferred. AlphaGenome Atlas is optional, keyed, and verified only offline against the SDK.
 - EGA controlled data requires the user's own approved account; development uses the public test account and dataset only.
 - gnomAD's public API is rate limited (about 10 requests/minute), so gnomAD-backed lookups are slow by design.
 - Remote region reads depend on the server honouring HTTP range requests; files are checked, not assumed.

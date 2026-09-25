@@ -1,0 +1,112 @@
+{
+  "demo": "encode",
+  "title": "ENCODE bigWig signal",
+  "started_at": "2026-09-25T14:54:55.667554+00:00",
+  "result": {
+    "file": "ENCFF792QDS",
+    "file_size_bytes": 1413106336,
+    "source_md5": [
+      {
+        "algorithm": "md5",
+        "value": "6b5e27fcb966d26cca1398e65b590dfd"
+      }
+    ],
+    "uri": "https://encode-public.s3.amazonaws.com/2026/05/05/39e064cd-706c-42b1-a589-86680c49635e/ENCFF792QDS.bigWig",
+    "interval": {
+      "contig": "chr1",
+      "start": 1000000,
+      "end": 1001000,
+      "assembly": "GRCh38"
+    },
+    "summary": {
+      "type": "mean",
+      "value": 26.361254017233847,
+      "exact": true
+    },
+    "first_records": [
+      {
+        "start": 1000000,
+        "end": 1000001,
+        "value": 10.124589920043945
+      },
+      {
+        "start": 1000001,
+        "end": 1000002,
+        "value": 7.800464630126953
+      },
+      {
+        "start": 1000002,
+        "end": 1000003,
+        "value": 5.335175037384033
+      }
+    ],
+    "work_dir_bytes_after_query": 0,
+    "note": "range reads only; the 1.4 GB file was not downloaded"
+  },
+  "status": "passed",
+  "finished_at": "2026-09-25T14:55:01.848173+00:00",
+  "calls": [
+    {
+      "tool": "list_files",
+      "arguments": {
+        "source": "encode",
+        "accession": "ENCFF792QDS"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.59,
+      "provenance": [
+        {
+          "source": "encode",
+          "source_record_id": "ENCFF792QDS",
+          "url": "https://www.encodeproject.org/files/ENCFF792QDS/?format=json&frame=object",
+          "method": "ENCODE REST object",
+          "retrieved_at": "2026-09-25T14:54:56.905890Z",
+          "source_version": "schema_version 31",
+          "source_updated_at": null,
+          "terms_url": "https://www.encodeproject.org/help/citing-encode/",
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_signal",
+      "arguments": {
+        "file": {
+          "uri": "https://encode-public.s3.amazonaws.com/2026/05/05/39e064cd-706c-42b1-a589-86680c49635e/ENCFF792QDS.bigWig",
+          "format": "bigwig",
+          "assembly": "GRCh38",
+          "source": "encode",
+          "accession": "ENCFF792QDS"
+        },
+        "interval": {
+          "contig": "chr1",
+          "start": 1000000,
+          "end": 1001000,
+          "assembly": "GRCh38"
+        },
+        "max_records": 5
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 4.81,
+      "provenance": [
+        {
+          "source": "encode",
+          "source_record_id": "ENCFF792QDS",
+          "url": "https://encode-public.s3.amazonaws.com/2026/05/05/39e064cd-706c-42b1-a589-86680c49635e/ENCFF792QDS.bigWig",
+          "method": "pyBigWig 0.3.26 stats(exact=True) via HTTP byte ranges",
+          "retrieved_at": "2026-09-25T14:55:01.724000Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": [
+            "0-based half-open coordinates"
+          ]
+        }
+      ],
+      "source_status": []
+    }
+  ]
+}

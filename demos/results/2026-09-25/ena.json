@@ -1,0 +1,238 @@
+{
+  "demo": "ena",
+  "title": "ENA sequence artifact",
+  "started_at": "2026-09-25T14:54:11.914256+00:00",
+  "result": {
+    "accession": "DQ285577.1",
+    "kind": "INSDC sequence record as FASTA (not an alignment or region query)",
+    "source_uri": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+    "artifact_bytes": 756,
+    "artifact_checksums": [
+      {
+        "algorithm": "md5",
+        "value": "684c5df3f7dd930d2e7b12f0cf3d7a57"
+      },
+      {
+        "algorithm": "sha256",
+        "value": "92138fb2af81dc8e0ec4dc03e1063210a86a826d36ed3f84290d9ca83736f1a9"
+      }
+    ],
+    "checksum_verified": false,
+    "fasta_contig": "ENA|DQ285577|DQ285577.1",
+    "bases": 614,
+    "ena_sequence_md5": "5ee4337ee017ad99589812b402953b98",
+    "returned_sequence_md5_matches": true,
+    "first_30_bases": "TTGATCTGGTTTAATAGGAACTGCTTTTAG"
+  },
+  "status": "passed",
+  "finished_at": "2026-09-25T14:54:55.666644+00:00",
+  "calls": [
+    {
+      "tool": "list_files",
+      "arguments": {
+        "source": "ena",
+        "accession": "DQ285577"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 13.48,
+      "provenance": [
+        {
+          "source": "ena",
+          "source_record_id": "DQ285577.1",
+          "url": "https://www.ebi.ac.uk/ena/portal/api/search?result=sequence&includeAccessions=DQ285577&fields=accession%2Csequence_version%2Cbase_count%2Csequence_md5%2Cscientific_name%2Ctax_id%2Cdescription%2Cmol_type%2Clast_updated&format=json",
+          "method": "ENA Portal API /search",
+          "retrieved_at": "2026-09-25T14:54:26.060240Z",
+          "source_version": "sequence version 1",
+          "source_updated_at": null,
+          "terms_url": "https://www.ebi.ac.uk/ena/browser/about/policies",
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "fetch_file",
+      "arguments": {
+        "file": {
+          "uri": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+          "format": "fasta",
+          "source": "ena",
+          "accession": "DQ285577.1"
+        },
+        "prepare": true
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 19.17,
+      "provenance": [
+        {
+          "source": "https",
+          "source_record_id": null,
+          "url": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+          "method": "bounded transfer",
+          "retrieved_at": "2026-09-25T14:54:45.240140Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_transfer_status",
+      "arguments": {
+        "transfer_id": "2286064175f741cf8e7017cbaee6205a"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.01,
+      "provenance": [
+        {
+          "source": "https",
+          "source_record_id": null,
+          "url": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+          "method": "bounded transfer",
+          "retrieved_at": "2026-09-25T14:54:47.253134Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_transfer_status",
+      "arguments": {
+        "transfer_id": "2286064175f741cf8e7017cbaee6205a"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.0,
+      "provenance": [
+        {
+          "source": "https",
+          "source_record_id": null,
+          "url": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+          "method": "bounded transfer",
+          "retrieved_at": "2026-09-25T14:54:49.265912Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_transfer_status",
+      "arguments": {
+        "transfer_id": "2286064175f741cf8e7017cbaee6205a"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.0,
+      "provenance": [
+        {
+          "source": "https",
+          "source_record_id": null,
+          "url": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+          "method": "bounded transfer",
+          "retrieved_at": "2026-09-25T14:54:51.268735Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_transfer_status",
+      "arguments": {
+        "transfer_id": "2286064175f741cf8e7017cbaee6205a"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.0,
+      "provenance": [
+        {
+          "source": "https",
+          "source_record_id": null,
+          "url": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+          "method": "bounded transfer",
+          "retrieved_at": "2026-09-25T14:54:53.271680Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": []
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_transfer_status",
+      "arguments": {
+        "transfer_id": "2286064175f741cf8e7017cbaee6205a"
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.0,
+      "provenance": [
+        {
+          "source": "ena",
+          "source_record_id": "DQ285577.1",
+          "url": "https://www.ebi.ac.uk/ena/browser/api/fasta/DQ285577.1",
+          "method": "HTTP GET (bounded, resumable)",
+          "retrieved_at": "2026-09-25T14:54:53.599540Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": [
+            "built .fai with samtools faidx"
+          ]
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_sequence",
+      "arguments": {
+        "file": {
+          "uri": "$RUN/ena/work/artifacts/2286064175f741cf8e7017cbaee6205a/DQ285577.1",
+          "index_uri": "$RUN/ena/work/artifacts/2286064175f741cf8e7017cbaee6205a/DQ285577.1.fai",
+          "format": "fasta",
+          "source": "ena",
+          "accession": "DQ285577.1"
+        },
+        "interval": {
+          "contig": "ENA|DQ285577|DQ285577.1",
+          "start": 0,
+          "end": 614,
+          "assembly": "DQ285577.1"
+        }
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.26,
+      "provenance": [
+        {
+          "source": "ena",
+          "source_record_id": "DQ285577.1",
+          "url": "$RUN/ena/work/artifacts/2286064175f741cf8e7017cbaee6205a/DQ285577.1",
+          "method": "pysam 0.24.1 / HTSlib 1.24 faidx fetch",
+          "retrieved_at": "2026-09-25T14:54:55.521696Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": [
+            "0-based half-open"
+          ]
+        }
+      ],
+      "source_status": []
+    }
+  ]
+}

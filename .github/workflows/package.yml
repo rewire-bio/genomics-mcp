@@ -1,0 +1,113 @@
+name: package
+
+# Release-shape checks on every push/PR: clean wheel install, linux/amd64 container and MCPB
+# launcher, each exercised over real MCP stdio. Nothing is published.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AWS_EC2_METADATA_DISABLED: "true"
+  AWS_CONFIG_FILE: /dev/null
+  AWS_SHARED_CREDENTIALS_FILE: /dev/null
+  UV_PYTHON: "3.12"
+  UV_NO_CONFIG: "1"
+  # UV_NO_CONFIG also disables pyproject [tool.uv]; this reviewed file restores its policy.
+  UV_CONFIG_FILE: packaging/uv.toml
+
+jobs:
+  dist:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.2"
+      - name: Build dependencies for the pyBigWig source build (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev zlib1g-dev
+      - name: Build sdist and wheel
+        run: |
+          uv build --out-dir dist
+          uv export --frozen --no-dev --no-emit-project --format requirements.txt -o dist/requirements.lock.txt
+      - name: Check contents, metadata and clean install (pyBigWig.remote == 1)
+        run: python3 scripts/check_dist.py dist --install "$RUNNER_TEMP/clean-venv" --output dist-check.json
+      - name: MCP stdio smoke against the installed entry point
+        run: |
+          uv run --script scripts/mcp_smoke.py --expect-version "$(uv version --short)" \
+            --data-dir "$RUNNER_TEMP/smoke-data" \
+            --env GENOMICS_MCP_ALLOWED_ROOTS="$RUNNER_TEMP/smoke-data" \
+            --env GENOMICS_MCP_WORK_DIR="$RUNNER_TEMP/smoke-work" \
+            -- "$RUNNER_TEMP/clean-venv/bin/genomics-mcp"
+      - name: uvx from the wheel, both command names
+        run: |
+          for cmd in genomics-mcp rewire-genomics-mcp; do
+            uvx --isolated --python 3.12 --no-binary-package pybigwig \
+              --build-constraints packaging/build-constraints.txt -c dist/requirements.lock.txt \
+              --from dist/rewire_genomics_mcp-*-py3-none-any.whl "$cmd" --version
+          done
+      - name: uvx with the server.json PyPI runtime arguments (wheel via --find-links)
+        run: |
+          uvx --isolated --python 3.12 --no-binary-package pybigwig \
+            --build-constraints packaging/build-constraints.txt --find-links dist \
+            --from "rewire-genomics-mcp==$(uv version --short)" python -c \
+            "import pyBigWig, sys; print('pyBigWig.remote', pyBigWig.remote); sys.exit(0 if pyBigWig.remote == 1 else 1)"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: runner.os == 'Linux'
+        with:
+          name: dist
+          path: |
+            dist/
+            dist-check.json
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.2"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Build linux/amd64 image
+        run: docker build --platform linux/amd64 --build-arg VERSION="$(uv version --short)" -t genomics-mcp:ci .
+      - name: Image metadata (labels, user, entrypoint)
+        run: python3 scripts/check_image.py genomics-mcp:ci
+      - name: Native dependencies inside the image
+        run: |
+          docker run --rm --entrypoint python genomics-mcp:ci -c \
+            "import pyBigWig, pysam, sys; print('pyBigWig.remote', pyBigWig.remote, 'pysam', pysam.__version__); sys.exit(0 if pyBigWig.remote == 1 else 1)"
+      - name: Public metadata without keys
+        run: docker run --rm genomics-mcp:ci --check-config > /dev/null
+      - name: MCP stdio smoke, default non-root user, named workspace volume
+        run: |
+          mkdir -p "$RUNNER_TEMP/data"
+          uv run --script scripts/mcp_smoke.py --expect-version "$(uv version --short)" \
+            --data-dir "$RUNNER_TEMP/data" --server-data-dir /data -- \
+            docker run --rm -i --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m \
+              --cap-drop ALL --security-opt no-new-privileges \
+              --mount type=bind,source="$RUNNER_TEMP/data",target=/data,readonly \
+              --mount type=volume,source=genomics-mcp-ci-work,target=/work \
+              genomics-mcp:ci
+      - name: MCPB test bundle through the Node launcher
+        run: |
+          python3 scripts/build_mcpb.py --test-image genomics-mcp:ci --out "$RUNNER_TEMP/mcpb"
+          mkdir -p "$RUNNER_TEMP/unpacked" "$RUNNER_TEMP/bundle-data" "$RUNNER_TEMP/bundle-work"
+          npx --yes @anthropic-ai/mcpb@2.1.2 unpack "$RUNNER_TEMP"/mcpb/genomics-mcp-*.test.mcpb "$RUNNER_TEMP/unpacked"
+          uv run --script scripts/mcp_smoke.py --data-dir "$RUNNER_TEMP/bundle-data" --server-data-dir /data \
+            --env GENOMICS_MCP_LAUNCHER_TEST_IMAGE=genomics-mcp:ci -- \
+            node "$RUNNER_TEMP/unpacked/server/launcher.cjs" "$(command -v docker)" \
+              "$RUNNER_TEMP/bundle-data" "$RUNNER_TEMP/bundle-work"

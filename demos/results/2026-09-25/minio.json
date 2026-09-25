@@ -1,0 +1,127 @@
+{
+  "demo": "minio",
+  "title": "Local MinIO synthetic BAM",
+  "started_at": "2026-09-25T14:55:10.618552+00:00",
+  "result": {
+    "endpoint": "http://127.0.0.1:39000",
+    "bucket": "genomics-mcp-test",
+    "object": "synthetic.bam (+ .bai), uploaded for this run and deleted afterwards",
+    "interval": {
+      "contig": "chrDemo",
+      "start": 1000,
+      "end": 2000,
+      "assembly": "synthetic"
+    },
+    "oracle_count_pysam_fetch": 20,
+    "s3_records": 20,
+    "local_records": 20,
+    "identical_to_local": true,
+    "credentials": "explicit profile keys from GENOMICS_DEMO_MINIO_KEY/GENOMICS_DEMO_MINIO_SECRET (values not recorded)",
+    "ambient_aws": "dummy AWS_ACCESS_KEY_ID/SECRET/SESSION_TOKEN set in the server env and unused",
+    "without_profile_keys": {
+      "status": "error",
+      "error_code": "unauthorized"
+    }
+  },
+  "status": "passed",
+  "finished_at": "2026-09-25T14:55:13.034946+00:00",
+  "calls": [
+    {
+      "tool": "get_reads",
+      "arguments": {
+        "file": {
+          "uri": "s3://genomics-mcp-test/demos/1fe5e13d7d8d4d9ca9ea7af1c2590456/synthetic.bam",
+          "storage_profile": "minio"
+        },
+        "interval": {
+          "contig": "chrDemo",
+          "start": 1000,
+          "end": 2000,
+          "assembly": "synthetic"
+        }
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.39,
+      "provenance": [
+        {
+          "source": "s3",
+          "source_record_id": null,
+          "url": "s3://genomics-mcp-test/demos/1fe5e13d7d8d4d9ca9ea7af1c2590456/synthetic.bam",
+          "method": "pysam 0.24.1 / HTSlib 1.24 fetch",
+          "retrieved_at": "2026-09-25T14:55:11.833862Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": [
+            "0-based half-open coordinates"
+          ]
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_reads",
+      "arguments": {
+        "file": {
+          "uri": "$RUN/minio/data/synthetic.bam"
+        },
+        "interval": {
+          "contig": "chrDemo",
+          "start": 1000,
+          "end": 2000,
+          "assembly": "synthetic"
+        }
+      },
+      "status": "ok",
+      "error": null,
+      "seconds": 0.27,
+      "provenance": [
+        {
+          "source": "local",
+          "source_record_id": null,
+          "url": "$RUN/minio/data/synthetic.bam",
+          "method": "pysam 0.24.1 / HTSlib 1.24 fetch",
+          "retrieved_at": "2026-09-25T14:55:12.126758Z",
+          "source_version": null,
+          "source_updated_at": null,
+          "terms_url": null,
+          "transformations": [
+            "0-based half-open coordinates"
+          ]
+        }
+      ],
+      "source_status": []
+    },
+    {
+      "tool": "get_reads",
+      "arguments": {
+        "file": {
+          "uri": "s3://genomics-mcp-test/demos/1fe5e13d7d8d4d9ca9ea7af1c2590456/synthetic.bam",
+          "storage_profile": "minio"
+        },
+        "interval": {
+          "contig": "chrDemo",
+          "start": 1000,
+          "end": 2000,
+          "assembly": "synthetic"
+        }
+      },
+      "status": "error",
+      "error": {
+        "code": "unauthorized",
+        "message": "storage profile 'minio': credential environment variables are not set",
+        "source": null,
+        "retryable": false,
+        "hint": null,
+        "details": {
+          "access_key_id_env": "[REDACTED]",
+          "secret_access_key_env": "[REDACTED]"
+        }
+      },
+      "seconds": 0.02,
+      "provenance": [],
+      "source_status": []
+    }
+  ]
+}

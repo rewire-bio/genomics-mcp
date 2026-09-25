@@ -1,0 +1,176 @@
+name: release
+
+# Manual. Builds and tests the wheel/sdist, the linux/amd64 image and the MCPB bundle, pushes the
+# image to GHCR, then creates GitHub release v<version> with the artifacts.
+# PyPI and the official MCP Registry are separate manual workflows (publish-pypi.yml,
+# publish-mcp-registry.yml) so a missing PyPI account never blocks this release.
+# A new GHCR package is private: make it public (package settings) before publish-mcp-registry.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release; must equal pyproject.toml (e.g. 0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  AWS_EC2_METADATA_DISABLED: "true"
+  AWS_CONFIG_FILE: /dev/null
+  AWS_SHARED_CREDENTIALS_FILE: /dev/null
+  UV_PYTHON: "3.12"
+  UV_NO_CONFIG: "1"
+  # UV_NO_CONFIG also disables pyproject [tool.uv]; this reviewed file restores its policy.
+  UV_CONFIG_FILE: packaging/uv.toml
+  IMAGE: ghcr.io/rewire-bio/genomics-mcp
+
+jobs:
+  dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.2"
+      - name: Version and tag checks
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(uv version --short)" = "$VERSION"
+          test "$(jq -r .version server.json)" = "$VERSION"
+          test "$(jq -r .version packaging/mcpb/manifest.json)" = "$VERSION"
+          test -f "docs/release-notes/$VERSION.md"
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "release v$VERSION already exists" >&2; exit 1
+          fi
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev zlib1g-dev samtools bcftools tabix
+      - run: uv sync --locked
+      - run: uv run ruff check . && uv run ruff format --check .
+      - run: uv run pytest -q
+        env:
+          GENOMICS_MCP_REQUIRE_ORACLES: "1"
+      - name: Build and check distributions
+        run: |
+          uv build --out-dir dist
+          uv export --frozen --no-dev --no-emit-project --format requirements.txt -o dist/requirements.lock.txt
+          python3 scripts/check_dist.py dist --install "$RUNNER_TEMP/clean-venv" --output "$RUNNER_TEMP/dist-check.json"
+          uv run --script scripts/mcp_smoke.py --expect-version "${{ inputs.version }}" \
+            --data-dir "$RUNNER_TEMP/smoke-data" \
+            --env GENOMICS_MCP_ALLOWED_ROOTS="$RUNNER_TEMP/smoke-data" \
+            --env GENOMICS_MCP_WORK_DIR="$RUNNER_TEMP/smoke-work" \
+            -- "$RUNNER_TEMP/clean-venv/bin/genomics-mcp"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+
+  image:
+    needs: dist
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.push.outputs.ref }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.2"
+      - name: Build
+        run: docker build --platform linux/amd64 --build-arg VERSION="${{ inputs.version }}" -t "$IMAGE:${{ inputs.version }}" .
+      - run: python3 scripts/check_image.py "$IMAGE:${{ inputs.version }}"
+      - name: MCP stdio smoke
+        run: |
+          mkdir -p "$RUNNER_TEMP/data"
+          uv run --script scripts/mcp_smoke.py --expect-version "${{ inputs.version }}" \
+            --data-dir "$RUNNER_TEMP/data" --server-data-dir /data -- \
+            docker run --rm -i --read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m \
+              --cap-drop ALL --security-opt no-new-privileges \
+              --mount type=bind,source="$RUNNER_TEMP/data",target=/data,readonly \
+              --mount type=volume,source=genomics-mcp-release-work,target=/work \
+              "$IMAGE:${{ inputs.version }}"
+      - name: Push to GHCR
+        id: push
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker push "$IMAGE:${{ inputs.version }}"
+          ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$IMAGE:${{ inputs.version }}")"
+          echo "$ref" | grep -Eq "^$IMAGE@sha256:[0-9a-f]{64}$"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          docker logout ghcr.io
+
+  mcpb:
+    needs: image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.2"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Build bundle pinned to the pushed digest
+        run: python3 scripts/build_mcpb.py --image "${{ needs.image.outputs.ref }}" --out dist
+      - name: Run the unpacked bundle against the pushed image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The package may still be private here, so pull with the job token first.
+          echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull --platform linux/amd64 "${{ needs.image.outputs.ref }}"
+          docker logout ghcr.io
+          mkdir -p "$RUNNER_TEMP/unpacked" "$RUNNER_TEMP/data" "$RUNNER_TEMP/work"
+          npx --yes @anthropic-ai/mcpb@2.1.2 unpack dist/genomics-mcp-${{ inputs.version }}.mcpb "$RUNNER_TEMP/unpacked"
+          uv run --script scripts/mcp_smoke.py --expect-version "${{ inputs.version }}" \
+            --data-dir "$RUNNER_TEMP/data" --server-data-dir /data -- \
+            node "$RUNNER_TEMP/unpacked/server/launcher.cjs" "$(command -v docker)" "$RUNNER_TEMP/data" "$RUNNER_TEMP/work"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mcpb
+          path: dist/genomics-mcp-${{ inputs.version }}.mcpb*
+
+  github-release:
+    needs: [dist, image, mcpb]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create release v${{ inputs.version }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          IMAGE_REF: ${{ needs.image.outputs.ref }}
+        run: |
+          cd artifacts
+          cp ../packaging/build-constraints.txt .
+          jq -n --arg ref "$IMAGE_REF" --arg commit "$GITHUB_SHA" --arg version "$VERSION" \
+            '{image: $ref, commit: $commit, version: $version, platform: "linux/amd64"}' > image.json
+          files=(rewire_genomics_mcp-"$VERSION"-py3-none-any.whl rewire_genomics_mcp-"$VERSION".tar.gz \
+                 requirements.lock.txt build-constraints.txt genomics-mcp-"$VERSION".mcpb image.json)
+          sha256sum "${files[@]}" > SHA256SUMS
+          cat SHA256SUMS
+          gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "genomics-mcp $VERSION" --notes-file "../docs/release-notes/$VERSION.md" \
+            "${files[@]}" SHA256SUMS

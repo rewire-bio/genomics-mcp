@@ -1,0 +1,11 @@
+# Default configuration inside the container. Mount data read-only at /data and a dedicated
+# writable workspace at /work. Override with --config or GENOMICS_MCP_* variables.
+
+[paths]
+allowed_roots = ["/data"]
+work_dir = "/work"
+
+[limits]
+# Bounded workspace: downloads, prepared indexes and caches may not exceed 10 GiB.
+workspace_max_bytes = 10737418240
+transfer_budget_ceiling_bytes = 5368709120

@@ -19,16 +19,15 @@ Package: `genomics_mcp.composition`. Tools: `inspect_locus`, `compare_samples` (
 
 ## Result layout
 
-- `data.records` holds every returned record as `{component, type, record}`. `record` is the handler's native record, unchanged.
-  - `inspect_locus` interleaves records round-robin across components, so response-byte trimming cuts evenly instead of dropping whole files.
-  - `compare_samples` returns bin rows, then variant-site rows.
+- `inspect_locus`: `data.records` holds each returned record as `{component, type, record}`, where `record` is the handler's native record, unchanged. Records are interleaved round-robin across components, so response-byte trimming cuts evenly instead of dropping whole files.
+- `compare_samples`: `data.records` holds its own comparison rows, not that wrapper: bin rows, then variant-site rows.
 - The caller's `max_records` is the aggregate cap. Each component gets a share: at most 200 reads, 500 variants, 200 features and 20 bins. The envelope `truncation.limit` is the aggregate cap; each component's own truncation is in its entry.
 - `data.components` (`inspect_locus`) and `data.files` (`compare_samples`) hold one small entry per component:
   - status and `records_returned`;
   - per-component truncation and errors;
   - the handler's `assembly` identity: `caller_asserted`, `file_metadata_asserted` or `file_header_declared`;
   - applied filters, summaries and provenance.
-- If this metadata would use more than half of `max_response_bytes`, entries are shortened to essentials: status, counts, truncation, error codes, assembly status, summaries and compact provenance. `data.metadata_compacted` says so. A 4 KiB cap still returns data.
+- If this metadata would use more than half of `max_response_bytes`, entries are shortened to essentials: status, counts, truncation, error codes, assembly status, summaries and compact provenance. `data.metadata_compacted` says so. In the tested cases a 4 KiB response cap still returned data; with many files or large metadata, compaction alone may not fit and the result is truncated as reported.
 - `errors` and `source_status` are per component (`source` = component ID; any original source is kept in `details.origin_source`). If no component produced data, the call is an error, never an empty success.
 
 ## inspect_locus
@@ -67,7 +66,7 @@ For CRAM, the file's own `reference_uri` is used. Otherwise the call's `referenc
 
 ## compare_samples
 
-- Accepts bam, cram, vcf, bcf and bigwig. Any other format is rejected before work. No external source is ever contacted, since this tool has no consent input.
+- Accepts bam, cram, vcf, bcf and bigwig. Any other format is rejected before work. It makes no external annotation or reference API queries (it has no consent input). Reading remote inputs (HTTPS, S3, archive files) still uses the network for those files.
 - BAM/CRAM: read depth summary and bins from `get_coverage`, with its default filters reported. bigWig: signal mean from `get_signal`. The bin count divides the interval (at most 20), so bins align exactly across files. A `null` signal value means no data.
 - VCF/BCF: genotypes merged into sites keyed by (contig, POS, REF). Per-file records keep their own ALT lists; allele indexes refer to that file's ALTs, and `allele_bases` are included.
   - Each call keeps the reader's GT text, allele indexes, ploidy, phasing, missingness and FORMAT fields.
