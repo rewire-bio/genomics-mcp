@@ -429,6 +429,7 @@ async def main_async(args: argparse.Namespace) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     summary: dict[str, Any] = {
         "generated_at": datetime.now(UTC).isoformat(),
+        "source_commit": args.source_commit,
         "server": server_identity(args.command),
         "host": {"platform": platform.platform(), "machine": platform.machine()},
         "install": json.loads(args.install_report.read_text()) if args.install_report else None,
@@ -457,6 +458,7 @@ def main() -> int:
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--only", action="append", choices=list(DEMOS))
     p.add_argument("--install-report", type=Path, help="check_dist.py --output JSON")
+    p.add_argument("--source-commit", help="commit the installed wheel was built from")
     p.add_argument("command", nargs=argparse.REMAINDER)
     args = p.parse_args()
     if args.command[:1] == ["--"]:
