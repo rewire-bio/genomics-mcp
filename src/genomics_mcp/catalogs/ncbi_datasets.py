@@ -19,6 +19,7 @@ accession so a separate Ensembl adapter can match exactly; no Ensembl call is ma
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import hashlib
 import os
 import re
@@ -439,7 +440,15 @@ class NcbiDatasetsClient:
                     hint="Pass an explicit larger budget.",
                     details={"budget_bytes": budget_bytes, "fai_upper_bound": fai_bound},
                 )
-            await asyncio.to_thread(_faidx_bounded, dest, fai_bound)
+            # Join the indexing thread even if this call is cancelled, so cleanup below never
+            # races a late .fai write.
+            indexing = asyncio.ensure_future(asyncio.to_thread(_faidx_bounded, dest, fai_bound))
+            try:
+                await asyncio.shield(indexing)
+            except asyncio.CancelledError:
+                with contextlib.suppress(BaseException):
+                    await indexing
+                raise
         except BaseException:
             stop.set()  # an interrupted extraction thread stops at its next chunk and removes its temp
             remove_quietly(dest, f"{dest}.fai")

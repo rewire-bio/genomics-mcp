@@ -699,7 +699,12 @@ async def _prepare_ncbi(
     bctx = dataclasses.replace(ctx, deadline=Deadline(PREPARE_TIMEOUT_S))
 
     async def runner(job: Job, cancel: asyncio.Event) -> None:
-        art = await preparer.prepare(req.file.accession, bctx, budget_bytes=job.budget_bytes)
+        # Job-owned output directory: failure/cancel cleanup removes only this job's files,
+        # never an earlier completed artifact or a concurrent request's outputs.
+        owned = tm.art_root / job.transfer_id
+        art = await preparer.prepare(
+            req.file.accession, bctx, budget_bytes=job.budget_bytes, workspace=owned
+        )
         outputs = [Path(f) for f in (art.path, art.index_path) if f]
         if cancel.is_set():
             for f in outputs:

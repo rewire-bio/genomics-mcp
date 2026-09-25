@@ -229,7 +229,7 @@ GENOMICS_MCP_NETWORK_TESTS=1 GENOMICS_MCP_TEST_S3_KEY=... GENOMICS_MCP_TEST_S3_S
 GENOMICS_MCP_TEST_FIXTURES=<local copy of the MinIO fixtures> uv run pytest -q
 ```
 
-Result on the E2–E5 stage: 238 passed, 0 skipped. After merging main and wiring EGA/ENA/NCBI: 554 passed, 6 skipped (other workers' opt-ins), 1 failed — E6's live test still asserts `fetch_file` is `unsupported` because E3 was absent; that assertion is obsolete. Without the opt-in variables the
+Result on the E2–E5 stage: 238 passed, 0 skipped. After merging main and wiring EGA/ENA/NCBI: 555 passed, 6 skipped (other workers' opt-ins), 1 failed — E6's live test still asserts `fetch_file` is `unsupported` because E3 was absent; that assertion is obsolete. Without the opt-in variables the
 MinIO and live tests are skipped.
 
 - samtools 1.24 / bcftools 1.24 oracles on synthetic golden data: `samtools view` (6 flag/MAPQ

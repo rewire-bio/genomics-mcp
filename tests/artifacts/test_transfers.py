@@ -537,7 +537,7 @@ class SlowPreparer:
         self.path = path
         self.started = asyncio.Event()
 
-    async def prepare(self, accession, ctx, *, budget_bytes=None):
+    async def prepare(self, accession, ctx, *, budget_bytes=None, workspace=None):
         self.started.set()
         await asyncio.sleep(30)
         raise AssertionError("should have been cancelled")
@@ -565,3 +565,59 @@ async def test_ncbi_preparation_is_a_managed_cancellable_job(svc, tmp_path, monk
     assert out["data"]["transfer"]["state"] == "cancelled"
     await asyncio.sleep(0.2)
     assert (await status(svc, tid))["data"]["transfer"]["state"] == "cancelled"
+
+
+class RecordingPreparer:
+    """First call succeeds, second fails after writing into its workspace."""
+
+    def __init__(self) -> None:
+        self.workspaces: list[Path] = []
+
+    async def prepare(self, accession, ctx, *, budget_bytes=None, workspace=None):
+        from genomics_mcp.models import FileRef, LocalArtifact, Provenance
+
+        self.workspaces.append(workspace)
+        workspace.mkdir(parents=True, exist_ok=True)
+        fa = workspace / f"{accession}.fna"
+        fa.write_text(">NC_1\nACGT\n")
+        if len(self.workspaces) > 1:
+            from genomics_mcp.errors import UpstreamError
+
+            raise UpstreamError("member MD5 mismatch", retryable=False)
+        import pysam
+
+        pysam.faidx(str(fa))
+        return LocalArtifact(
+            path=str(fa),
+            size_bytes=fa.stat().st_size,
+            index_path=str(fa) + ".fai",
+            checksum_verified=True,
+            origin=FileRef(uri="https://x.example/p"),
+            provenance=Provenance(source="ncbi_datasets"),
+        )
+
+
+async def test_failed_ncbi_repeat_keeps_earlier_artifact(svc):
+    prep = RecordingPreparer()
+    svc.registry._components["preparer:ncbi_genome_fasta"] = prep
+    pkg = {
+        "uri": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_1.1/download"
+        "?include_annotation_type=GENOME_FASTA",
+        "source": "ncbi_datasets",
+        "accession": "GCF_1.1",
+        "format": "other",
+        "native": {"annotation_type": "GENOME_FASTA"},
+    }
+    first = await wait_done(
+        svc, (await fetch(svc, file=pkg, prepare=True))["data"]["transfer"]["transfer_id"]
+    )
+    assert first["data"]["transfer"]["state"] == "completed"
+    second = await wait_done(
+        svc, (await fetch(svc, file=pkg, prepare=True))["data"]["transfer"]["transfer_id"]
+    )
+    assert second["data"]["transfer"]["state"] == "failed"
+    assert second["data"]["transfer"]["error"]["message"] == "member MD5 mismatch"
+    assert prep.workspaces[0] != prep.workspaces[1]
+    art = first["data"]["transfer"]["artifact"]
+    assert Path(art["path"]).exists() and Path(art["index_path"]).exists()
+    assert not prep.workspaces[1].exists()
