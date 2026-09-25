@@ -5,6 +5,28 @@ Status 2026-09-25: implemented in this branch, not released. Evidence and limits
 All structured coordinates are 0-based half-open with an explicit assembly. Nothing is lifted
 over, renamed (`chr1` vs `1`) or inferred.
 
+## Installation (pyBigWig remote support)
+
+Remote bigWig/bigBed reads need pyBigWig built with libcurl. The Linux wheel on PyPI
+(0.3.26) is built without it (`pyBigWig.remote == 0`), so pyBigWig is always built from
+source. That needs a C compiler and libcurl development files (`curl-config`):
+Debian/Ubuntu `build-essential libcurl4-openssl-dev zlib1g-dev`; macOS provides `curl-config`.
+Without `curl-config` the source build silently omits remote support.
+
+- From a checkout: `uv sync --locked` applies `[tool.uv] no-binary-package = ["pybigwig"]`
+  and pinned build constraints from `pyproject.toml`.
+- From PyPI, uv settings of this project do not apply to consumers. Use
+  `uvx --no-binary-package pybigwig rewire-genomics-mcp` or
+  `pip install --no-binary pybigwig rewire-genomics-mcp`.
+- Containers (E10): install the packages above before `uv sync`; the runtime image needs
+  `libcurl4`.
+- Check: `python -c "import pyBigWig; print(pyBigWig.remote)"` must print 1. A build without
+  it returns `unsupported` for remote bigWig/bigBed with this hint; local files still work.
+
+CI installs these system packages, samtools/bcftools/tabix (Ubuntu's distribution packages,
+Homebrew on macOS) and sets `GENOMICS_MCP_REQUIRE_ORACLES=1`, so oracle tests cannot be
+skipped there.
+
 ## Providers and components
 
 | Package | Epic | Registers |
@@ -229,7 +251,7 @@ GENOMICS_MCP_NETWORK_TESTS=1 GENOMICS_MCP_TEST_S3_KEY=... GENOMICS_MCP_TEST_S3_S
 GENOMICS_MCP_TEST_FIXTURES=<local copy of the MinIO fixtures> uv run pytest -q
 ```
 
-Result on the E2–E5 stage: 238 passed, 0 skipped. After merging main and wiring EGA/ENA/NCBI: 555 passed, 6 skipped (other workers' opt-ins), 1 failed — E6's live test still asserts `fetch_file` is `unsupported` because E3 was absent; that assertion is obsolete. Without the opt-in variables the
+Result on the E2–E5 stage: 238 passed, 0 skipped. After merging main and wiring EGA/ENA/NCBI (with `GENOMICS_MCP_REQUIRE_ORACLES=1`): 557 passed, 6 skipped (E8's own opt-in live tests and the optional Atlas extra), 0 failed. Without the opt-in variables the
 MinIO and live tests are skipped.
 
 - samtools 1.24 / bcftools 1.24 oracles on synthetic golden data: `samtools view` (6 flag/MAPQ

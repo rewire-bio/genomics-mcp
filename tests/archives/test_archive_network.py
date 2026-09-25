@@ -6,10 +6,13 @@ is fetched and hash-checked in memory. No other credentials are used."""
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import json
 import logging
 from pathlib import Path
 
+import pysam
 import pytest
 
 from genomics_mcp.archives.ega.integration import TRANSFER_BACKEND_COMPONENT
@@ -127,14 +130,53 @@ async def test_ena_sequence_record_list_files_and_native_fetch(tmp_path):
     (f,) = res.data["records"]
     assert f["accession"] == "DQ285577.1" and f["uri"].endswith("/fasta/DQ285577.1")
     assert f["native"]["base_count"] == "614" and f["readiness"]["state"] == "download_required"
-    fetch = await s.call("fetch_file", {"file": f, "budget_bytes": 8192})
-    assert fetch.error.code == "unsupported"  # transfer manager (E3) not in this build
-    async with make_client() as c:  # the provider's explicit sequence-record path
+    # E3 retrieval through the service: bounded transfer, then an explicit .fai on the copy.
+    started = json.loads(
+        (
+            await s.call("fetch_file", {"file": f, "budget_bytes": 8192, "prepare": True})
+        ).model_dump_json()
+    )
+    assert started["status"] == "ok", started["error"]
+    tid = started["data"]["transfer"]["transfer_id"]
+    for _ in range(300):
+        done = json.loads(
+            (await s.call("get_transfer_status", {"transfer_id": tid})).model_dump_json()
+        )
+        if done["data"]["transfer"]["state"] in ("completed", "failed", "cancelled"):
+            break
+        await asyncio.sleep(0.1)
+    t = done["data"]["transfer"]
+    assert t["state"] == "completed", t["error"]
+    assert t["bytes_done"] == t["bytes_total"] == 756 <= t["budget_bytes"] == 8192
+    af = done["data"]["artifact_file"]
+    assert af["format"] == "fasta" and af["readiness"]["state"] == "ready"
+    fai = Path(af["index_uri"]).read_text().split("\t")  # noqa: ASYNC240 - small local test file
+    assert fai[:2] == ["ENA|DQ285577|DQ285577.1", "614"]
+    seq = await s.call(
+        "get_sequence",
+        {
+            "file": af,
+            "interval": {
+                "contig": "ENA|DQ285577|DQ285577.1",
+                "start": 0,
+                "end": 614,
+                "assembly": "DQ285577.1",
+            },
+        },
+    )
+    assert seq.status == "ok", seq.error
+    service_seq = seq.data["records"][0]["sequence"]
+    assert len(service_seq) == 614
+    async with make_client() as c:  # the provider's explicit sequence-record path agrees
         art = await EnaClient(c).fetch_sequence_fasta(
             "DQ285577", workspace=tmp_path / "ena", budget_bytes=8192
         )
     assert art.size_bytes == 756 and art.checksum_verified and art.origin.accession == "DQ285577.1"
     assert Path(art.index_path).read_text().split("\t")[:2] == ["ENA|DQ285577|DQ285577.1", "614"]  # noqa: ASYNC240 - small local test file
+    provider_md5 = hashlib.md5(Path(art.path).read_bytes()).hexdigest()  # noqa: ASYNC240
+    assert done["data"]["source_verification"]["checksums"]["md5"] == provider_md5
+    with pysam.FastaFile(art.path) as fa:
+        assert fa.fetch("ENA|DQ285577|DQ285577.1") == service_seq
 
 
 async def test_ena_study_samples_and_sra_resolution(tmp_path):

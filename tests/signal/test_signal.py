@@ -254,3 +254,16 @@ async def test_live_encode_bigbed(tmp_path):
     assert len(res["data"]["records"]) == 3 and res["truncation"]["reason"] == "max_records"
     assert [f["name"] for f in res["data"]["schema"]][:3] == ["chrom", "chromStart", "chromEnd"]
     assert res["data"]["assembly"]["status"] == "caller_asserted"
+
+
+async def test_build_without_remote_support_is_explicit(service, fixture_server, monkeypatch):
+    import genomics_mcp.signal as sig
+
+    monkeypatch.setattr(sig, "REMOTE_CAPABLE", False)
+    res = envelope(
+        await service.call(
+            "get_signal",
+            {"file": {"uri": fixture_server.url("signal.bw")}, "interval": iv("chrG", 0, 10)},
+        )
+    )
+    assert res["error"]["code"] == "unsupported" and "libcurl" in res["error"]["message"]

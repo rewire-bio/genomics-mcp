@@ -535,6 +535,8 @@ async def _download(
                             "call fetch_file again to resume",
                             retryable=True,
                         )
+                    if part.expected_size is None:
+                        part.expected_size = part.done  # size undeclared by the server
                     return
         job.restarts += 1
         path.write_bytes(b"")
