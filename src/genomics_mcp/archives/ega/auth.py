@@ -24,7 +24,7 @@ from genomics_mcp.archives._common.redact import register_secret
 SOURCE = "ega"
 PYEGA3_CLIENT_ID = "f20cd2d3-682a-4568-a53e-4262ef54c8f4"
 """Public OpenID client id of the official pyega3 client (pyega3/libs/auth_client.py)."""
-DEFAULT_TOKEN_URL = "https://ega.ebi.ac.uk:8443/ega-openid-connect-server/token"
+DEFAULT_TOKEN_URL = "https://ega.ebi.ac.uk:8443/ega-openid-connect-server/token"  # noqa: S105 - URL
 AUTH_HOSTS = frozenset({"ega.ebi.ac.uk"})
 
 
@@ -70,7 +70,9 @@ class EgaAuth:
 
     def __post_init__(self) -> None:
         if self.token is None and self.grant is None:
-            raise InvalidInputError("EgaAuth needs an explicit token or password grant", source=SOURCE)
+            raise InvalidInputError(
+                "EgaAuth needs an explicit token or password grant", source=SOURCE
+            )
         if self.token is not None:
             register_secret(self.token.get_secret_value())
             self._expires_at = float("inf")
@@ -85,14 +87,25 @@ class EgaAuth:
         if self.grant is None:
             raise UnauthorizedError("EGA token expired; supply a new token", source=SOURCE)
         g = self.grant
-        auth_http = SourceHttp(http.client, SourcePolicy(
-            name=SOURCE, allowed_hosts=AUTH_HOSTS, min_interval_s=0.2, max_retries=1,
-            max_body_bytes=256 * 1024,
-        ))
+        auth_http = SourceHttp(
+            http.client,
+            SourcePolicy(
+                name=SOURCE,
+                allowed_hosts=AUTH_HOSTS,
+                min_interval_s=0.2,
+                max_retries=1,
+                max_body_bytes=256 * 1024,
+            ),
+        )
         try:
             res = await auth_http.request(
-                "POST", g.token_url, ok=(200, 400, 401, 403),
-                headers={"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"},
+                "POST",
+                g.token_url,
+                ok=(200, 400, 401, 403),
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Accept": "application/json",
+                },
                 data={
                     "grant_type": "password",
                     "client_id": g.client_id,
@@ -111,15 +124,22 @@ class EgaAuth:
             try:
                 body = res.json()
                 raw = body.get("error") if isinstance(body, dict) else None
-                code = raw if isinstance(raw, str) and raw.replace("_", "").isalpha() and len(raw) < 40 \
+                code = (
+                    raw
+                    if isinstance(raw, str) and raw.replace("_", "").isalpha() and len(raw) < 40
                     else None
+                )
             except Exception:  # noqa: BLE001 - body is never surfaced
                 code = None
             details = {"http_status": res.status}
             if code:
                 details["source_error"] = code
-            raise UnauthorizedError("EGA authentication failed", source=SOURCE, details=details,
-                                    hint="Check the explicitly configured EGA credentials.")
+            raise UnauthorizedError(
+                "EGA authentication failed",
+                source=SOURCE,
+                details=details,
+                hint="Check the explicitly configured EGA credentials.",
+            )
         data = res.json() or {}
         token = data.get("access_token")
         if not isinstance(token, str) or not token:

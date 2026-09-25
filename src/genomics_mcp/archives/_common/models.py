@@ -312,8 +312,10 @@ def infer_format(name: str) -> FileFormat | None:
 
 
 def is_index_name(name: str) -> bool:
-    return PurePosixPath(urlsplit(name).path if "://" in name else name).name.lower().endswith(
-        INDEX_SUFFIXES
+    return (
+        PurePosixPath(urlsplit(name).path if "://" in name else name)
+        .name.lower()
+        .endswith(INDEX_SUFFIXES)
     )
 
 

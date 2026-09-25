@@ -30,7 +30,11 @@ def safe_name(name: str, *, fallback: str = "artifact") -> str:
     if clean != raw or len(clean) > MAX_NAME:
         digest = hashlib.sha256(raw.encode()).hexdigest()[:10]
         stem, dot, ext = clean[:MAX_NAME].rpartition(".")
-        clean = f"{stem}-{digest}.{ext}" if dot and stem and len(ext) <= 10 else f"{clean[:MAX_NAME]}-{digest}"
+        clean = (
+            f"{stem}-{digest}.{ext}"
+            if dot and stem and len(ext) <= 10
+            else f"{clean[:MAX_NAME]}-{digest}"
+        )
     return clean
 
 
@@ -48,8 +52,9 @@ def artifact_path(workspace: Path, name: str) -> Path:
     if dest.parent != root or component in (".", ".."):
         raise InvalidInputError("artifact path escapes the workspace", details={"name": component})
     if dest.is_symlink():
-        raise InvalidInputError("refusing to write through a symlink in the workspace",
-                                details={"name": component})
+        raise InvalidInputError(
+            "refusing to write through a symlink in the workspace", details={"name": component}
+        )
     return dest
 
 
@@ -69,3 +74,12 @@ def write_atomic(dest: Path, data: bytes) -> None:
     except BaseException:
         tmp.unlink(missing_ok=True)
         raise
+
+
+def remove_quietly(*paths: str | Path) -> None:
+    """Best-effort cleanup of partial artifacts (sync; safe to call from failure paths)."""
+    for p in paths:
+        try:
+            os.unlink(p)
+        except FileNotFoundError:
+            pass

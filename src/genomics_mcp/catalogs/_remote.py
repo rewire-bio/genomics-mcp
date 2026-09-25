@@ -46,6 +46,8 @@ async def verify_remote(http: SourceHttp, file: FileRef) -> FileRef:
         out.compression = sniff_compression(probe.head)
         reasons.append(f"compression observed: {out.compression.value}")
         if out.compression == Compression.GZIP:
-            reasons.append("ordinary gzip is not BGZF; recompress and index locally for region queries")
+            reasons.append(
+                "ordinary gzip is not BGZF; recompress and index locally for region queries"
+            )
     out.readiness = Readiness(state=state, reasons=reasons, checked_at=utcnow())
     return out

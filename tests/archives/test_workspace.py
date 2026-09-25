@@ -11,11 +11,30 @@ from genomics_mcp.archives._common.redact import redact, redact_url
 from genomics_mcp.archives._common.workspace import artifact_path, safe_name, write_atomic
 
 
-@pytest.mark.parametrize("name", ["..", ".", "../x", "a/../../b", "/etc/passwd", "..\\..\\win", "", ".hidden",
-                                  "x" * 400, "ok\x00name"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "..",
+        ".",
+        "../x",
+        "a/../../b",
+        "/etc/passwd",
+        "..\\..\\win",
+        "",
+        ".hidden",
+        "x" * 400,
+        "ok\x00name",
+    ],
+)
 def test_safe_name_is_one_plain_component(name):
     out = safe_name(name)
-    assert out and "/" not in out and "\\" not in out and out not in (".", "..") and not out.startswith(".")
+    assert (
+        out
+        and "/" not in out
+        and "\\" not in out
+        and out not in (".", "..")
+        and not out.startswith(".")
+    )
     assert len(out) <= 140
 
 
@@ -43,8 +62,12 @@ def test_symlink_target_refused(tmp_path: Path):
 
 
 def test_signed_url_and_token_redaction():
-    signed = redact_url("https://h/x?AWSAccessKeyId=AKID&Signature=abcsig&x-amz-security-token=tok&Expires=1")
+    signed = redact_url(
+        "https://h/x?AWSAccessKeyId=AKID&Signature=abcsig&x-amz-security-token=tok&Expires=1"
+    )
     assert "abcsig" not in signed and "tok" not in signed and "AKID" not in signed
     assert "sig=secretvalue" not in redact_url("https://h/x?sv=1&sig=secretvalue")
     assert redact_url("data:base64,QUJD") == "data:[inline]"
-    assert "eyJhbGciOiJIUzI1NiJ9" not in redact("Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJlLXZhbA")
+    assert "eyJhbGciOiJIUzI1NiJ9" not in redact(
+        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJlLXZhbA"
+    )

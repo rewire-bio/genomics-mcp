@@ -41,7 +41,8 @@ class Router:
 
 
 def json_response(data, status: int = 200, headers: dict | None = None) -> httpx.Response:
-    return httpx.Response(status, content=json.dumps(data).encode(), headers={
-        "content-type": "application/json", **(headers or {})})
-
-
+    return httpx.Response(
+        status,
+        content=json.dumps(data).encode(),
+        headers={"content-type": "application/json", **(headers or {})},
+    )

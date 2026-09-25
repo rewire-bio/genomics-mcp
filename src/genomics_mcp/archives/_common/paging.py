@@ -49,8 +49,9 @@ def offset_from(cursor: str | None, source: str, scope: str) -> int:
     return off
 
 
-def next_offset_cursor(source: str, scope: str, offset: int, returned: int, total: int | None,
-                       more: bool | None = None) -> str | None:
+def next_offset_cursor(
+    source: str, scope: str, offset: int, returned: int, total: int | None, more: bool | None = None
+) -> str | None:
     nxt = offset + returned
     has_more = more if more is not None else (total is not None and nxt < total)
     return encode_cursor(source, scope=scope, o=nxt) if has_more and returned else None

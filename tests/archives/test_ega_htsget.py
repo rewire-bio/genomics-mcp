@@ -50,8 +50,10 @@ def ticket(*urls: dict, md5: str | None = None) -> dict:
 
 def split_blocks(bam: bytes) -> list[dict]:
     """EGA-style: nonstandard `data:base64,` and `urlClass`, header then body."""
-    return [{"url": f"data:base64,{b64(bam[:40])}", "urlClass": "header"},
-            {"url": f"data:base64,{b64(bam[40:])}", "urlClass": "body"}]
+    return [
+        {"url": f"data:base64,{b64(bam[:40])}", "urlClass": "header"},
+        {"url": f"data:base64,{b64(bam[40:])}", "urlClass": "body"},
+    ]
 
 
 # -- data URLs ---------------------------------------------------------------------
@@ -60,7 +62,9 @@ def split_blocks(bam: bytes) -> list[dict]:
 def test_data_url_variants_decode_once() -> None:
     raw = b"\x1f\x8bBGZF-ish"
     assert hg.decode_data_url(f"data:base64,{b64(raw)}", max_bytes=100) == raw  # EGA form
-    assert hg.decode_data_url(f"data:application/octet-stream;base64,{b64(raw)}", max_bytes=100) == raw
+    assert (
+        hg.decode_data_url(f"data:application/octet-stream;base64,{b64(raw)}", max_bytes=100) == raw
+    )
     assert hg.decode_data_url("data:,a%20b", max_bytes=100) == b"a b"  # percent-encoded, not base64
     inner = b64(b"payload").encode()  # a block whose bytes happen to be base64 text
     assert hg.decode_data_url(f"data:base64,{b64(inner)}", max_bytes=100) == inner
@@ -74,8 +78,12 @@ def test_data_url_invalid_and_oversized() -> None:
 
 
 def test_ticket_accepts_class_and_urlclass() -> None:
-    t = hg.parse_ticket(ticket({"url": "data:base64,QQ==", "class": "header"},
-                               {"url": "https://ega.ebi.ac.uk:8443/b", "urlClass": "body"}))
+    t = hg.parse_ticket(
+        ticket(
+            {"url": "data:base64,QQ==", "class": "header"},
+            {"url": "https://ega.ebi.ac.uk:8443/b", "urlClass": "body"},
+        )
+    )
     assert [b.url_class for b in t.blocks] == ["header", "body"]
     assert [b.kind for b in t.blocks] == ["data", "remote"]
 
@@ -89,32 +97,58 @@ def block_http(router: Router, hosts: set[str]) -> SourceHttp:
 
 async def test_exhausted_budget_stops_before_remote_block(router: Router) -> None:
     router.add("GET", "https://ega.ebi.ac.uk:8443/blk", httpx.Response(200, content=b"z" * 1024))
-    t = hg.parse_ticket(ticket({"url": "data:base64,QQ=="}, {"url": "https://ega.ebi.ac.uk:8443/blk"}))
+    t = hg.parse_ticket(
+        ticket({"url": "data:base64,QQ=="}, {"url": "https://ega.ebi.ac.uk:8443/blk"})
+    )
     with pytest.raises(BudgetExceededError):
-        await hg.fetch_blocks(block_http(router, {"ega.ebi.ac.uk"}), t, ticket_url=TICKET, bearer="tok",
-                              budget_bytes=1, allowed_hosts=frozenset({"ega.ebi.ac.uk"}))
+        await hg.fetch_blocks(
+            block_http(router, {"ega.ebi.ac.uk"}),
+            t,
+            ticket_url=TICKET,
+            bearer="tok",
+            budget_bytes=1,
+            allowed_hosts=frozenset({"ega.ebi.ac.uk"}),
+        )
     assert router.requests == []  # the remote block was never requested
 
 
 async def test_remote_block_body_bounded_by_remaining_budget(router: Router) -> None:
     router.add("GET", "https://ega.ebi.ac.uk:8443/blk", httpx.Response(200, content=b"z" * 1024))
-    t = hg.parse_ticket(ticket({"url": "data:base64,QQ=="}, {"url": "https://ega.ebi.ac.uk:8443/blk"}))
+    t = hg.parse_ticket(
+        ticket({"url": "data:base64,QQ=="}, {"url": "https://ega.ebi.ac.uk:8443/blk"})
+    )
     with pytest.raises(BudgetExceededError):
-        await hg.fetch_blocks(block_http(router, {"ega.ebi.ac.uk"}), t, ticket_url=TICKET, bearer="tok",
-                              budget_bytes=100, allowed_hosts=frozenset({"ega.ebi.ac.uk"}))
+        await hg.fetch_blocks(
+            block_http(router, {"ega.ebi.ac.uk"}),
+            t,
+            ticket_url=TICKET,
+            bearer="tok",
+            budget_bytes=100,
+            allowed_hosts=frozenset({"ega.ebi.ac.uk"}),
+        )
 
 
 async def test_bearer_only_to_ticket_origin_and_ticket_headers_filtered(router: Router) -> None:
     router.add("GET", "https://ega.ebi.ac.uk:8443/blk", httpx.Response(206, content=b"AA"))
     router.add("GET", "https://blocks.example.org/blk", httpx.Response(200, content=b"BB"))
-    t = hg.parse_ticket(ticket(
-        {"url": "https://ega.ebi.ac.uk:8443/blk", "headers": {"Range": "bytes=0-1"}},
-        {"url": "https://blocks.example.org/blk", "headers": {"Range": "bytes=2-3", "Cookie": "c=1",
-                                                              "X-Other": "no"}},
-    ))
+    t = hg.parse_ticket(
+        ticket(
+            {"url": "https://ega.ebi.ac.uk:8443/blk", "headers": {"Range": "bytes=0-1"}},
+            {
+                "url": "https://blocks.example.org/blk",
+                "headers": {"Range": "bytes=2-3", "Cookie": "c=1", "X-Other": "no"},
+            },
+        )
+    )
     hosts = frozenset({"ega.ebi.ac.uk", "blocks.example.org"})
-    data, infos = await hg.fetch_blocks(block_http(router, set(hosts)), t, ticket_url=TICKET, bearer="tok",
-                                        budget_bytes=100, allowed_hosts=hosts)
+    data, infos = await hg.fetch_blocks(
+        block_http(router, set(hosts)),
+        t,
+        ticket_url=TICKET,
+        bearer="tok",
+        budget_bytes=100,
+        allowed_hosts=hosts,
+    )
     same, other = router.requests
     assert data == b"AABB" and [i.bytes for i in infos] == [2, 2]
     assert same.headers["authorization"] == "Bearer tok" and same.headers["range"] == "bytes=0-1"
@@ -125,8 +159,14 @@ async def test_bearer_only_to_ticket_origin_and_ticket_headers_filtered(router: 
 async def test_remote_block_on_unapproved_host_rejected(router: Router) -> None:
     t = hg.parse_ticket(ticket({"url": "https://evil.example.org/blk"}))
     with pytest.raises(InvalidInputError):
-        await hg.fetch_blocks(block_http(router, {"ega.ebi.ac.uk"}), t, ticket_url=TICKET, bearer="tok",
-                              budget_bytes=100, allowed_hosts=frozenset({"ega.ebi.ac.uk"}))
+        await hg.fetch_blocks(
+            block_http(router, {"ega.ebi.ac.uk"}),
+            t,
+            ticket_url=TICKET,
+            bearer="tok",
+            budget_bytes=100,
+            allowed_hosts=frozenset({"ega.ebi.ac.uk"}),
+        )
     assert router.requests == []
 
 
@@ -137,7 +177,9 @@ def route_ticket(router: Router, body: dict | httpx.Response) -> None:
     router.add("GET", TICKET, body if isinstance(body, httpx.Response) else json_response(body))
 
 
-async def test_region_postfilters_by_cigar_overlap_and_passes_coordinates(router, tmp_path, synthetic_bam):
+async def test_region_postfilters_by_cigar_overlap_and_passes_coordinates(
+    router, tmp_path, synthetic_bam
+):
     route_ticket(router, ticket(*split_blocks(synthetic_bam)))
     res = await ega(router).get_region("EGAF00000000001", IV, workspace=tmp_path)
     q = router.requests[0].url.params
@@ -149,7 +191,7 @@ async def test_region_postfilters_by_cigar_overlap_and_passes_coordinates(router
     assert res.artifact.size_bytes == len(synthetic_bam)
     assert res.artifact.checksums[0].value == hashlib.sha256(synthetic_bam).hexdigest()
     assert res.artifact.checksum_verified is False  # no ticket MD5 supplied
-    assert Path(res.artifact.path).stat().st_mode & 0o777 == 0o600
+    assert Path(res.artifact.path).stat().st_mode & 0o777 == 0o600  # noqa: ASYNC240 - small local test file
     assert res.header.sq_assembly_tags == ["GRCh38"] and res.header.contig_present
 
 
@@ -164,8 +206,13 @@ async def test_ticket_md5_checked(router, tmp_path, synthetic_bam):
     with pytest.raises(UpstreamError):
         await ega(router).get_region("EGAF00000000001", IV, workspace=tmp_path)
     assert list(tmp_path.iterdir()) == []
-    router.add("GET", TICKET, json_response(ticket(*split_blocks(synthetic_bam),
-                                                   md5=hashlib.md5(synthetic_bam).hexdigest())))
+    router.add(
+        "GET",
+        TICKET,
+        json_response(
+            ticket(*split_blocks(synthetic_bam), md5=hashlib.md5(synthetic_bam).hexdigest())
+        ),
+    )
     res = await ega(router).get_region("EGAF00000000001", IV, workspace=tmp_path)
     assert res.artifact.checksum_verified
 
@@ -179,7 +226,7 @@ async def test_contig_never_becomes_a_path(router, tmp_path, contig):
     iv = Interval(contig=contig, start=10, end=12, assembly="GRCh38")
     res = await ega(router).get_region("EGAF00000000001", iv, workspace=ws, assembly_policy="warn")
     p = Path(res.artifact.path)
-    assert p.parent == ws.resolve() and p.exists()
+    assert p.parent == ws.resolve() and p.exists()  # noqa: ASYNC240 - small local test file
     assert {x.name for x in (tmp_path / "ws").iterdir()} == {"allowed"}
     assert sorted(x.name for x in tmp_path.iterdir()) == ["src", "ws"]
     assert any("not in the file header" in w for w in res.warnings)
@@ -203,15 +250,30 @@ async def test_assembly_mismatch_rejected_by_default(router, tmp_path, synthetic
     with pytest.raises(InvalidInputError) as ei:
         await ega(router).get_region("EGAF00000000001", iv37, workspace=tmp_path)
     assert "no liftover" in ei.value.message and list(tmp_path.iterdir()) == []
-    res = await ega(router).get_region("EGAF00000000001", iv37, workspace=tmp_path, assembly_policy="warn")
+    res = await ega(router).get_region(
+        "EGAF00000000001", iv37, workspace=tmp_path, assembly_policy="warn"
+    )
     assert res.warnings and res.records_overlapping == 3
 
 
-@pytest.mark.parametrize(("status", "body", "exc", "http_status"), [
-    (401, {"htsget": {"error": "InvalidAuthentication", "message": "x"}}, UnauthorizedError, 401),
-    (403, {"htsget": {"error": "PermissionDenied", "message": "x"}}, UnauthorizedError, 403),
-    (404, {"htsget": {"error": "NotFound", "message": "No such accession"}}, NotFoundError, 404),
-])
+@pytest.mark.parametrize(
+    ("status", "body", "exc", "http_status"),
+    [
+        (
+            401,
+            {"htsget": {"error": "InvalidAuthentication", "message": "x"}},
+            UnauthorizedError,
+            401,
+        ),
+        (403, {"htsget": {"error": "PermissionDenied", "message": "x"}}, UnauthorizedError, 403),
+        (
+            404,
+            {"htsget": {"error": "NotFound", "message": "No such accession"}},
+            NotFoundError,
+            404,
+        ),
+    ],
+)
 async def test_ticket_errors_are_source_native(router, tmp_path, status, body, exc, http_status):
     route_ticket(router, json_response(body, status))
     with pytest.raises(exc) as ei:
@@ -223,7 +285,9 @@ async def test_ticket_errors_are_source_native(router, tmp_path, status, body, e
 async def test_ticket_500_is_upstream(router, tmp_path):
     route_ticket(router, json_response({"status": 500, "error": "Internal Server Error"}, 500))
     c = ega(router)
-    c.data.policy = SourcePolicy("ega", c.data.policy.allowed_hosts, min_interval_s=0, max_retries=0)
+    c.data.policy = SourcePolicy(
+        "ega", c.data.policy.allowed_hosts, min_interval_s=0, max_retries=0
+    )
     with pytest.raises(UpstreamError):
         await c.get_region("EGAF00000000001", IV, workspace=tmp_path)
 
@@ -249,9 +313,14 @@ async def test_operation_deadline_covers_all_blocks(router, tmp_path):
         await asyncio.sleep(0.04)
         return httpx.Response(200, content=b"AA")
 
-    route_ticket(router, ticket({"url": "https://ega.ebi.ac.uk:8443/b1"}, {"url": "https://ega.ebi.ac.uk:8443/b2"}))
-    client = EgaClient(httpx.AsyncClient(transport=httpx.MockTransport(_async_router(router, slow))),
-                       auth=EgaAuth(token=SecretStr("synthetic-bearer-token-1")))
+    route_ticket(
+        router,
+        ticket({"url": "https://ega.ebi.ac.uk:8443/b1"}, {"url": "https://ega.ebi.ac.uk:8443/b2"}),
+    )
+    client = EgaClient(
+        httpx.AsyncClient(transport=httpx.MockTransport(_async_router(router, slow))),
+        auth=EgaAuth(token=SecretStr("synthetic-bearer-token-1")),
+    )
     client.data.limiter.min_interval_s = 0
     with pytest.raises(DeadlineExceededError):
         await client.get_region("EGAF00000000001", IV, workspace=tmp_path, timeout_s=0.06)

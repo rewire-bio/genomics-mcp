@@ -1,7 +1,7 @@
 """Redaction for URLs, tokens and registered secrets.
 
-Mirrors core `genomics_mcp.errors.redact`; kept local so these clients run before
-core is merged. Integration should also call core `register_secret` for EGA tokens.
+Mirrors core `genomics_mcp.errors.redact` with extra signed-URL/JWT patterns; secrets
+registered here are also registered with core.
 """
 
 from __future__ import annotations
@@ -10,6 +10,8 @@ import re
 import threading
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+from genomics_mcp.errors import register_secret as _core_register
 
 REDACTED = "[REDACTED]"
 
@@ -32,9 +34,11 @@ _secrets: set[str] = set()
 
 
 def register_secret(value: str | None) -> None:
+    """Register with this module and with core `genomics_mcp.errors` (both redactors mask it)."""
     if value and len(value) >= 6:
         with _lock:
             _secrets.add(value)
+        _core_register(value)
 
 
 def redact_url(url: str) -> str:

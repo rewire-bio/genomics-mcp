@@ -1,6 +1,6 @@
 # Archive and catalog sources (E6/E7)
 
-Status: standalone source clients, tests and live checks are done. MCP provider registration and transfer-manager wiring are **not done yet**; see [Remaining integration](#remaining-integration). Do not merge this branch into a registry that loads `genomics_mcp.archives`/`genomics_mcp.catalogs` until `register(registry)` exists. The core loader raises `TypeError` for a provider package without it.
+Status (2026-09-25): wired into core. The `genomics_mcp.archives` and `genomics_mcp.catalogs` providers register the five discovery tools for `ega`, `ena`, `encode`, `geo` and `ncbi_datasets`. They also register the region-only `ega://` resolver, the `transfer_backend:ega` component and the `preparer:ncbi_genome_fasta` component. Discovery works end to end over MCP. Retrieval tools (`fetch_file`, `get_reads`, …) belong to E3/E4, which are not in this build, so EGA regions, EGA whole files and genome preparation are reachable today only through the resolver and components below, not through an MCP tool. See [Remaining integration](#remaining-integration).
 
 Code: `src/genomics_mcp/archives/` (EGA, ENA, shared `_common`) and `src/genomics_mcp/catalogs/` (ENCODE, GEO, NCBI Datasets). Every client takes an injected `httpx.AsyncClient`. `_common.http.make_client()` builds one with `trust_env=False`: no proxy variables, no `.netrc`, no ambient credentials, no automatic redirects.
 
@@ -15,6 +15,69 @@ Code: `src/genomics_mcp/archives/` (EGA, ENA, shared `_common`) and `src/genomic
 | NCBI Datasets | taxon or assembly accession | GCF/GCA (versioned) | genome package contents (ZIP) | the assembly's BioSample, if named | SAMN/SAMEA/SAMD | `prepare_genome_fasta` |
 
 Results use models whose field names and enum values match core `genomics_mcp.models`. Integration converts them with `Core.model_validate(x.model_dump())`, checked against `main` (9209995) for FileRef, Sample, Dataset, Study, Reference, Interval and LocalArtifact. Errors use core error codes: `not_found`, `unauthorized`, `unsupported`, `invalid_input`, `preparation_required`, `upstream_error`, `timeout`, `budget_exceeded`.
+
+## Core integration
+
+- **Handlers** (`archives/_common/handlers.py`):
+  - One `DiscoverySource` per source.
+  - Records go under `data.records`, converted to core models (`FileRef`, `Dataset`, `Study`, `Sample`, `Reference`). `describe_dataset` returns `{dataset, studies, related}`, and `get_sample_metadata` returns one `Sample`.
+  - Source paging is explicit: `data.next_cursor`/`data.total` plus `truncation{reason: "source_page", next_cursor}`.
+  - Page size is the lowest of the caller's `max_records`, the configured `max_records` and the source's own maximum. The service then applies `max_response_bytes`.
+  - The `formats` filter is applied per page, with a warning when it removes records.
+  - The `assembly`/`organism` search filters work only where the source supports them: ENCODE takes both, GEO takes `organism`. Elsewhere they return `unsupported` instead of silently unfiltered results.
+- **Errors:** source errors map one-to-one to core codes (`not_found`, `unauthorized`, `unsupported`, `invalid_input`, `preparation_required`, `upstream_error`, `timeout`, `budget_exceeded`). `native` fields are passed through core `redact_obj`.
+- **Limits:**
+  - Each call's HTTP work is bounded by the call deadline, lowered by `[sources.<name>].timeout_s`.
+  - `requests_per_minute` can only lower the built-in spacing; limiters are shared across calls.
+  - Disabled sources are refused by the service before any request.
+  - Every hop also passes core `check_network_destination`.
+  - Clients use `trust_env=False`.
+- **`ega://` resolver** (`archives/ega/integration.py`):
+  - `resolve_region(file, interval, ctx)` needs `file.format` (bam/cram → htsget reads returned as BAM; vcf/bcf → htsget variants returned as VCF). It checks `ctx.check_region`, the workspace quota (`limits.workspace_max_bytes`) and a region budget of `min(16 MiB, limits.max_transfer_bytes)`.
+  - It sends the exact 0-based half-open coordinates and writes a private artifact under `<work_dir>/archives/ega-regions/`.
+  - It returns `ResolvedFile(region=<request interval>, local_path, open_uri, readiness=ready)`. The returned `file` gets the slice's own SHA-256/MD5, and the source whole-file checksums move to `native.source_checksums`.
+  - `native.region_artifact` records:
+    - the provider and endpoint;
+    - bytes, checksums and blocks;
+    - records received versus overlapping;
+    - header evidence, noting that `AS:GRCh38` is a name, not an assembly accession or patch;
+    - provenance.
+  - Payloads are identified by magic bytes before pysam opens them. A CRAM or anything other than BAM/VCF is refused, so no archive-side htslib ever follows a CRAM header `UR`.
+  - A definite assembly or contig mismatch with the header is `invalid_input`, and the artifact is removed.
+  - `resolve()` without an interval raises `preparation_required`; it never downloads a whole file.
+  - `stat()` uses metadata, plus a header-only htsget ticket when credentials exist.
+- **`transfer_backend:ega`** — the minimal stream interface for the E3 transfer manager, in lieu of E3 contracts:
+
+  ```python
+  # TransferDescription: plain size_bytes, plain MD5, resumable, safe name, notes; no download
+  desc = await backend.describe(file, ctx)
+  async with backend.open(file, ctx, start=offset, end=desc.size_bytes) as body:
+      async for chunk in body:
+          ...  # authorised plain bytes [start, end), 206-checked
+  ```
+
+  - EGA v2 metadata `fileSize` is the stored size. The plain size is `fileSize - 16`, as the official pyega3 plain download computes it (`libs/data_file.py`); both values are reported.
+  - The bearer token is sent only to the EGA origin.
+  - The manager keeps ownership of budget checks (`describe().size_bytes` before any byte), workspace quota, resume (`start`), cancellation (leaving the context closes the stream) and MD5 verification.
+  - `EgaClient.fetch_file` and `EnaClient.fetch_file` remain standalone helpers; no MCP path calls them.
+- **`preparer:ncbi_genome_fasta`**: `await preparer.prepare(accession, ctx, budget_bytes=None)` returns a core `LocalArtifact` (FASTA + `.fai`).
+  - Budget: defaults to `max_transfer_bytes`, is capped by `transfer_budget_ceiling_bytes`, and is shared by the ZIP and the extracted FASTA.
+  - The workspace quota is checked before starting, and the whole step runs under the call deadline.
+  - `md5sum.txt` is read with a 1 MiB decompressed cap.
+  - Cancellation stops the extraction thread, and partial files are removed on any failure.
+
+## EGA access configuration
+
+Explicit only; read from values core `Settings` already retains:
+
+| Mode | Configuration |
+|---|---|
+| anonymous (default) | public metadata only |
+| bearer token | `[sources.ega] api_key_env = "MY_EGA_TOKEN"` (personal token) |
+| personal account | `GENOMICS_MCP_EGA_USERNAME` + `GENOMICS_MCP_EGA_PASSWORD` (pyega3-style password grant) |
+| public test account | `GENOMICS_MCP_EGA_PUBLIC_TEST_ACCOUNT=1` (default off) |
+
+The pyega3 public client secret, and in public-test mode the documented test account, are fetched in memory from the official repository at the pinned commit `5ec6c4cd37cc67142285051bdbd725c824da1384` and checked against recorded SHA-256 hashes. That makes the public demo reproducible from a clean install. `GENOMICS_MCP_EGA_CLIENT_SECRET` overrides the client secret. Nothing is written to disk. Every secret is registered with core redaction, and tokens are cached in memory only. Controlled files keep `visibility: private` even when their metadata is public.
 
 ## Source behaviour relied on (checked 2026-09-24/25)
 
@@ -101,47 +164,52 @@ Results use models whose field names and enum values match core `genomics_mcp.mo
 
 ## Tests
 
-Offline (mocked HTTP and synthetic BAM/ZIP fixtures): `tests/archives`, `tests/catalogs`. Run:
-
 ```sh
-env -u AWS_PROFILE -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN \
-  AWS_EC2_METADATA_DISABLED=true AWS_CONFIG_FILE=/dev/null AWS_SHARED_CREDENTIALS_FILE=/dev/null \
-  PYTHONPATH=src .work/venv/bin/python -m pytest -q tests/archives tests/catalogs
+uv run ruff check . && uv run ruff format --check . && uv run pytest              # offline, mocked sources
+GENOMICS_MCP_NETWORK_TESTS=1 uv run pytest -m network tests/archives tests/catalogs  # live public sources
 ```
 
-The conftests also remove cloud variables and disable instance metadata for every test. Live tests are opt-in: `GENOMICS_MCP_LIVE=1`. EGA tests also need `GENOMICS_MCP_EGA_PYEGA3_CONFIG`, a directory holding pyega3's public `default_server_file.json` and `default_credential_file.json`.
+- `test_archive_integration.py` and `test_catalog_integration.py` run the real `GenomicsService`: dispatch, envelopes, paging and truncation, response-byte trimming, error-code mapping, disabled sources, call deadlines, per-source outages, token redaction in outputs and logs, and in-process MCP round-trips. They also exercise the `ega://` resolver via `OperationContext.resolve_file`, the EGA transfer backend (describe, ranged resume, MD5), and the NCBI preparer (manifest bomb, quota/ceiling, deadline cleanup).
+- The `network` tests use the real providers through the service, plus one stdio MCP subprocess round-trip with dummy ambient AWS values present.
+- The root `tests/conftest.py` scrubs cloud variables and points AWS config at empty files.
 
-## Live evidence (run 2026-09-24T23:47Z, `-m live`, 13 passed)
+## Live evidence (2026-09-25, `-m network`, 10 passed)
 
-- **EGA `get_region`:**
-  - Input: EGAF00007243773, chr10:[10000,10050), GRCh38, via the public test account.
-  - Output: a 121,225-byte BAM, sha256 `3305e420…c686211`.
+- **EGA region:** `ctx.resolve_file(ega://EGAF00007243773, chr10:[10000,10050) GRCh38)` in public-test-account mode, from pinned config, clean settings.
+  - Artifact: a 121,225-byte BAM, sha256 `3305e420…c686211`.
+  - Records: 91 received, 42 overlapping.
   - Header: 3,366 references, `AS:GRCh38`.
-  - Records: 91 decoded and 42 overlapping.
-- **EGA `fetch_file`:** the same file, 194,821 bytes, MD5 `ed365c71461eac21a64d2c29e7216e50` verified, 1,097 alignments.
-- **EGA `check_file`:** ready, with index `ega://EGAF00007243782`.
-- **EGA denial:** an htsget request for EGAF00000077618 returned `unauthorized` (HTTP 403) and wrote no artifact.
-- **ENA `fetch_file`:**
-  - Input: ERR10043599 submitted `I17622.MT.bam` (10,287 bytes) plus `.bai`.
-  - Both MD5s were verified, the range check reported ready, and pysam counted 198 reads on MT.
-  - The FASTQ is `not_locus_ready`.
-- **ENA `fetch_sequence_fasta`:** DQ285577 resolved to DQ285577.1, 614 bases, with a `.fai`.
-- **ENA SRA resolution:** SRP000001 resolved to PRJNA33627.
-- **ENCODE ENCFF001JBR:** mm9, 16,438,476 bytes, in ENCSR000BZH; range + bigBed magic gave ready.
-- **ENCODE ENCFF792QDS:** GRCh38, 1,413,106,336 bytes, in dataset (annotation) ENCSR901HTN; ready without downloading.
-- **ENCODE ENCSR000BZH:** two biosamples.
-- **GEO GSM9343150:** the characteristics include antibody H3K4me3; its supplementary bigWig is ready over HTTPS range.
-- **NCBI Datasets:**
-  - GCF_000001405.40 is GRCh38.p14, with paired accession GCA_000001405.29.
-  - phiX GCF_000819615.1 was prepared: the ZIP was MD5-verified against md5sum.txt, NC_001422.1 (5,386 bp) extracted, and a `.fai` built.
+  - The same interval labelled GRCh37 was refused with `invalid_input`.
+- **EGA whole file:** through `transfer_backend:ega`, `describe` reported 194,821 plain bytes and MD5 `ed365c71…`. The file was streamed in two ranged requests (resume at 100,000); the MD5 matched and pysam counted 1,097 alignments.
+- **EGA access denial:** EGAF00000077618 returned `unauthorized` (HTTP 403).
+- **EGA discovery:** `describe_dataset EGAD00001003338` shows it as controlled with policy EGAP00001000598. `list_files` returned 5 private records with `source_page` truncation.
+- **ENA sequence:**
+  - `list_files ena DQ285577` returns a FileRef for `…/fasta/DQ285577.1` (614 bases per ENA, `download_required`).
+  - `fetch_file` currently returns `unsupported`, because E3 is not in this build.
+  - The provider's explicit sequence path downloaded 756 bytes; the sequence MD5 was verified against ENA's `sequence_md5`, and the `.fai` shows `DQ285577.1`, 614 bases. This is a sequence record, not an alignment region.
+- **ENA SRA resolution:** SRP000001 resolved to PRJNA33627. ERR10043599's submitted BAM is listed with its `.bai`, 10,287 bytes and MD5.
+- **ENCODE:**
+  - ENCFF792QDS: GRCh38, 1,413,106,336 bytes, bigWig, with its `href`, in annotation ENCSR901HTN.
+  - ENCSR000BZH: files are linked to the experiment; two biosamples.
+- **GEO:** GSM9343150 characteristics include antibody H3K4me3, and its supplementary file is an HTTPS NCBI URL.
+- **NCBI Datasets:** GCF_000001405.40 is GRCh38.p14, INSDC GCA_000001405.29. The phiX packages are `download_required`, and the preparer produced a verified NC_001422.1 (5,386 bp) with `.fai`.
+- **stdio MCP:** `list_files` (ENCODE), `describe_dataset` (EGA), `list_files` (ENA DQ285577) and `list_sources` all returned ok. The dummy AWS values never appeared.
 
-These are live observations, not guarantees. EGAF00001770107 (the BAM paired with the suggested index EGAF00001775036) returned HTTP 500 from htsget. Not every EGA test file is operational.
+These are observations on those dates, not guarantees. EGAF00001770107 returned HTTP 500 from htsget earlier.
 
 ## Remaining integration
 
-1. Add `register(registry)` to `genomics_mcp.archives` and `genomics_mcp.catalogs`: source handlers for the six discovery operations, `SourceInfo` entries (terms and auth mode), and an `ega://` resolver whose region path calls `EgaClient.get_region` with the caller's explicit interval.
-2. Map `SourceError` to core `GenomicsError` by code. Convert models to core models. Put records under `OperationOutput.data.records`, and call core `register_secret` for EGA and API-key secrets.
-3. Wire `fetch_file` / `prepare_genome_fasta` / `fetch_sequence_fasta` into the E3 transfer manager (budgets, progress, resume, workspace quotas) and core response-size limits.
-4. Load EGA credentials from explicit core configuration only.
-5. Verify real MCP round-trips (stdio and Streamable HTTP) for EGA region, ENA download and ENCODE metadata before calling E6/E7 complete.
-6. Not yet populated: `Sample.phenotype_files`. No source client discovers phenotype files, and none are invented.
+1. **E3 (transfers):**
+   - `fetch_file` for `ega://` must use `registry.component("transfer_backend:ega")` (describe → budget/quota → `open(start, end)` with resume → MD5), never `resolve()`.
+   - ENA/ENCODE/GEO HTTPS files and the versioned ENA FASTA record go through E2/E3's HTTPS path.
+   - Genome preparation should call `preparer:ncbi_genome_fasta` under E3 workspace accounting.
+   - Until then, `fetch_file` is `unsupported`.
+2. **E4 (readers):** call `ctx.resolve_file(file, interval=…)` and post-filter the returned bounded artifact. `file.format` in the result is the served format (BAM for a CRAM source). CRAM reference checks stay in E4.
+3. **E2 (storage):** resolves ENCODE `href` redirects. FileRefs already carry the unsigned public S3 `uri`.
+4. **Core (not owned here):**
+   - `catalog.SOURCE_SCHEMES` has no `ega` entry, so `list_sources` shows `schemes: []` for EGA although the resolver is registered.
+   - `list_sources` cannot report the configured EGA access mode (`SourceInfo` is static); the notes describe the options.
+   - The architecture Wiring TODO rows for E6/E7 should be updated by the core owner.
+5. **Not implemented:**
+   - a generic `htsget://` resolver for arbitrary servers (needs host/auth configuration);
+   - `Sample.phenotype_files`: no source client discovers phenotype files, and none are invented.

@@ -42,8 +42,11 @@ class Router:
 
 
 def json_response(data, status: int = 200, headers: dict | None = None) -> httpx.Response:
-    return httpx.Response(status, content=json.dumps(data).encode(), headers={
-        "content-type": "application/json", **(headers or {})})
+    return httpx.Response(
+        status,
+        content=json.dumps(data).encode(),
+        headers={"content-type": "application/json", **(headers or {})},
+    )
 
 
 def make_bam(path: Path, *, assembly: str = "GRCh38") -> bytes:
@@ -58,10 +61,21 @@ def make_bam(path: Path, *, assembly: str = "GRCh38") -> bytes:
     """
     import pysam
 
-    header = {"HD": {"VN": "1.6", "SO": "coordinate"},
-              "SQ": [{"SN": "chr1", "LN": 10000, "AS": assembly}, {"SN": "chr2", "LN": 5000, "AS": assembly}]}
-    reads = [("r_before", 90, "10M", 10), ("r_span", 95, "3M50D3M", 6), ("r_unmapped", 120, None, 10),
-             ("r_in", 150, "10M", 10), ("r_end", 199, "10M", 10), ("r_after", 200, "10M", 10)]
+    header = {
+        "HD": {"VN": "1.6", "SO": "coordinate"},
+        "SQ": [
+            {"SN": "chr1", "LN": 10000, "AS": assembly},
+            {"SN": "chr2", "LN": 5000, "AS": assembly},
+        ],
+    }
+    reads = [
+        ("r_before", 90, "10M", 10),
+        ("r_span", 95, "3M50D3M", 6),
+        ("r_unmapped", 120, None, 10),
+        ("r_in", 150, "10M", 10),
+        ("r_end", 199, "10M", 10),
+        ("r_after", 200, "10M", 10),
+    ]
     with pysam.AlignmentFile(str(path), "wb", header=header) as out:
         for name, pos, cigar, qlen in reads:
             a = pysam.AlignedSegment(out.header)

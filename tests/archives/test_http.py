@@ -41,13 +41,20 @@ async def test_persistent_500_is_retryable_upstream_error(router: Router) -> Non
     assert len(router.requests) == 2
 
 
-@pytest.mark.parametrize(("status", "exc", "source_error"), [
-    (401, UnauthorizedError, "InvalidAuthentication"),
-    (403, UnauthorizedError, "PermissionDenied"),
-    (404, NotFoundError, "NotFound"),
-])
-async def test_status_mapping_keeps_source_distinction(router: Router, status, exc, source_error) -> None:
-    router.add("GET", f"{A}/x", json_response({"htsget": {"error": source_error, "message": "m"}}, status))
+@pytest.mark.parametrize(
+    ("status", "exc", "source_error"),
+    [
+        (401, UnauthorizedError, "InvalidAuthentication"),
+        (403, UnauthorizedError, "PermissionDenied"),
+        (404, NotFoundError, "NotFound"),
+    ],
+)
+async def test_status_mapping_keeps_source_distinction(
+    router: Router, status, exc, source_error
+) -> None:
+    router.add(
+        "GET", f"{A}/x", json_response({"htsget": {"error": source_error, "message": "m"}}, status)
+    )
     with pytest.raises(exc) as ei:
         await http(router).get_json(f"{A}/x")
     assert ei.value.details["http_status"] == status
@@ -56,7 +63,9 @@ async def test_status_mapping_keeps_source_distinction(router: Router, status, e
 
 
 async def test_redirect_following_injected_client_cannot_bypass_allowlist(router: Router) -> None:
-    router.add("GET", f"{A}/x", httpx.Response(302, headers={"location": "https://unapproved.invalid/p"}))
+    router.add(
+        "GET", f"{A}/x", httpx.Response(302, headers={"location": "https://unapproved.invalid/p"})
+    )
     router.add("GET", "https://unapproved.invalid/p", json_response({"leak": True}))
     policy = SourcePolicy("test", frozenset({"a.example.org"}), min_interval_s=0)
     client = httpx.AsyncClient(transport=httpx.MockTransport(router), follow_redirects=True)
@@ -66,17 +75,20 @@ async def test_redirect_following_injected_client_cannot_bypass_allowlist(router
 
 
 async def test_redirect_forbidden_on_download_path(router: Router, tmp_path: Path) -> None:
-    router.add("GET", f"{A}/f", httpx.Response(307, headers={"location": "https://unapproved.invalid/f"}))
+    router.add(
+        "GET", f"{A}/f", httpx.Response(307, headers={"location": "https://unapproved.invalid/f"})
+    )
     with pytest.raises(InvalidInputError):
         await http(router).download(f"{A}/f", tmp_path / "f", budget_bytes=100)
-    assert not router.hits("https://unapproved.invalid") and not list(tmp_path.iterdir())
+    assert not router.hits("https://unapproved.invalid") and not list(tmp_path.iterdir())  # noqa: ASYNC240 - small local test file
 
 
 async def test_allowed_cross_host_redirect_drops_authorization(router: Router) -> None:
     router.add("GET", f"{A}/x", httpx.Response(302, headers={"location": f"{B}/y"}))
     router.add("GET", f"{B}/y", json_response({"ok": 1}))
     await http(router, hosts=("a.example.org", "b.example.org")).get_json(
-        f"{A}/x", headers={"Authorization": "Bearer synthetic-token-value"})
+        f"{A}/x", headers={"Authorization": "Bearer synthetic-token-value"}
+    )
     assert "authorization" in router.requests[0].headers
     assert "authorization" not in router.requests[1].headers
 
@@ -106,7 +118,7 @@ async def test_download_budget_enforced_and_partial_removed(router: Router, tmp_
     router.add("GET", f"{A}/f", httpx.Response(200, content=b"y" * 5000))
     with pytest.raises(BudgetExceededError):
         await http(router).download(f"{A}/f", tmp_path / "f", budget_bytes=1000)
-    assert list(tmp_path.iterdir()) == []
+    assert list(tmp_path.iterdir()) == []  # noqa: ASYNC240 - small local test file
 
 
 async def test_make_client_ignores_proxy_environment(monkeypatch: pytest.MonkeyPatch) -> None:

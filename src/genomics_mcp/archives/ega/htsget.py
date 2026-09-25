@@ -22,6 +22,7 @@ import base64
 import binascii
 import hashlib
 import re
+import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
@@ -84,7 +85,8 @@ def parse_ticket(payload: Any) -> Ticket:
         raise UpstreamError("htsget ticket contains no URLs", source="ega")
     if len(urls) > MAX_BLOCKS:
         raise BudgetExceededError(
-            f"htsget ticket has {len(urls)} blocks (limit {MAX_BLOCKS})", source="ega",
+            f"htsget ticket has {len(urls)} blocks (limit {MAX_BLOCKS})",
+            source="ega",
             hint="Request a smaller interval.",
         )
     blocks = []
@@ -97,8 +99,14 @@ def parse_ticket(payload: Any) -> Ticket:
         if not isinstance(headers, dict):
             raise UpstreamError("htsget ticket headers are malformed", source="ega")
         kind: Literal["data", "remote"] = "data" if url.startswith("data:") else "remote"
-        blocks.append(Block(kind, klass if isinstance(klass, str) else None, url,
-                            {str(k): str(v) for k, v in headers.items()}))
+        blocks.append(
+            Block(
+                kind,
+                klass if isinstance(klass, str) else None,
+                url,
+                {str(k): str(v) for k, v in headers.items()},
+            )
+        )
     fmt = body.get("format")
     return Ticket(fmt if isinstance(fmt, str) else None, blocks, body.get("md5"))
 
@@ -114,7 +122,8 @@ def decode_data_url(url: str, *, max_bytes: int) -> bytes:
     if estimate > max_bytes + 3:
         raise BudgetExceededError(
             f"htsget data block (~{estimate} bytes) exceeds the remaining budget ({max_bytes} bytes)",
-            source="ega", hint="Pass a larger explicit budget or a smaller interval.",
+            source="ega",
+            hint="Pass a larger explicit budget or a smaller interval.",
         )
     if is_b64:
         try:
@@ -125,7 +134,8 @@ def decode_data_url(url: str, *, max_bytes: int) -> bytes:
         data = unquote_to_bytes(payload)
     if len(data) > max_bytes:
         raise BudgetExceededError(
-            f"htsget data exceeds the remaining budget ({max_bytes} bytes)", source="ega",
+            f"htsget data exceeds the remaining budget ({max_bytes} bytes)",
+            source="ega",
             hint="Pass a larger explicit budget or a smaller interval.",
         )
     return data
@@ -144,7 +154,9 @@ class HeaderSummary(_Model):
     contig_present: bool
     contig_length: int | None = None
     sq_assembly_tags: list[str] = Field(default_factory=list, description="Distinct @SQ AS values.")
-    sq_md5: str | None = Field(default=None, description="@SQ M5 of the queried contig, if present.")
+    sq_md5: str | None = Field(
+        default=None, description="@SQ M5 of the queried contig, if present."
+    )
 
 
 class RegionResult(_Model):
@@ -159,7 +171,9 @@ class RegionResult(_Model):
     header: HeaderSummary
     records: list[dict[str, Any]]
     records_in_blocks: int = Field(description="All records decoded from the returned blocks.")
-    records_overlapping: int = Field(description="Records overlapping the interval after post-filtering.")
+    records_overlapping: int = Field(
+        description="Records overlapping the interval after post-filtering."
+    )
     records_skipped_unplaced: int = 0
     truncated: bool = False
     filters: list[str] = Field(default_factory=list)
@@ -188,7 +202,8 @@ async def fetch_blocks(
         if remaining <= 0:
             raise BudgetExceededError(
                 f"htsget ticket needs more than the {budget_bytes}-byte budget "
-                f"({len(ticket.blocks) - i} block(s) not fetched)", source="ega",
+                f"({len(ticket.blocks) - i} block(s) not fetched)",
+                source="ega",
                 hint="Pass a larger explicit budget or a smaller interval.",
             )
         if block.kind == "data":
@@ -197,22 +212,35 @@ async def fetch_blocks(
         else:
             scheme = urlsplit(block.url).scheme
             if scheme != "https":
-                raise UpstreamError("htsget block URL is not https", source="ega",
-                                    details={"url": redact_url(block.url)})
+                raise UpstreamError(
+                    "htsget block URL is not https",
+                    source="ega",
+                    details={"url": redact_url(block.url)},
+                )
             headers = {k: v for k, v in block.headers.items() if k.lower() in _FORWARDABLE_HEADERS}
             has_auth = any(k.lower() == "authorization" for k in headers)
             if bearer and not has_auth and _origin(block.url) == ticket_origin:
                 headers["Authorization"] = f"Bearer {bearer}"
-            res = await http.request("GET", block.url, headers=headers, ok=(200, 206),
-                                     max_body=remaining, allowed_hosts=allowed_hosts)
+            res = await http.request(
+                "GET",
+                block.url,
+                headers=headers,
+                ok=(200, 206),
+                max_body=remaining,
+                allowed_hosts=allowed_hosts,
+            )
             data, host = res.body, urlsplit(block.url).hostname
         used += len(data)
         if used > budget_bytes:
-            raise BudgetExceededError(f"htsget blocks exceed the {budget_bytes}-byte budget",
-                                      source="ega")
+            raise BudgetExceededError(
+                f"htsget blocks exceed the {budget_bytes}-byte budget", source="ega"
+            )
         parts.append(data)
-        infos.append(BlockInfo(index=i, kind=block.kind, url_class=block.url_class, bytes=len(data),
-                               host=host))
+        infos.append(
+            BlockInfo(
+                index=i, kind=block.kind, url_class=block.url_class, bytes=len(data), host=host
+            )
+        )
     return b"".join(parts), infos
 
 
@@ -222,8 +250,11 @@ def verify_ticket_md5(ticket: Ticket, payload: bytes) -> str | None:
         return None
     observed = hashlib.md5(payload, usedforsecurity=False).hexdigest()
     if observed != str(ticket.md5).lower():
-        raise UpstreamError("htsget payload does not match the ticket MD5", source="ega",
-                            details={"ticket_md5": str(ticket.md5), "observed_md5": observed})
+        raise UpstreamError(
+            "htsget payload does not match the ticket MD5",
+            source="ega",
+            details={"ticket_md5": str(ticket.md5), "observed_md5": observed},
+        )
     return observed
 
 
@@ -268,7 +299,8 @@ def filter_reads(path: Path, interval: Interval, max_records: int) -> dict[str, 
         sq = header.get("SQ", [])
         match = next((s for s in sq if s.get("SN") == interval.contig), None)
         out["header"] = HeaderSummary(
-            n_references=len(sq), contig_present=match is not None,
+            n_references=len(sq),
+            contig_present=match is not None,
             contig_length=match.get("LN") if match else None,
             sq_assembly_tags=sorted({s["AS"] for s in sq if s.get("AS")}),
             sq_md5=match.get("M5") if match else None,
@@ -278,8 +310,11 @@ def filter_reads(path: Path, interval: Interval, max_records: int) -> dict[str, 
             if r.is_unmapped or r.reference_end is None:
                 out["unplaced"] += 1
                 continue
-            if (r.reference_name == interval.contig and r.reference_start < interval.end
-                    and r.reference_end > interval.start):
+            if (
+                r.reference_name == interval.contig
+                and r.reference_start < interval.end
+                and r.reference_end > interval.start
+            ):
                 out["overlapping"] += 1
                 if len(out["records"]) < max_records:
                     out["records"].append(_read_record(r))
@@ -298,32 +333,77 @@ def filter_variants(path: Path, interval: Interval, max_records: int) -> dict[st
         c = contigs.get(interval.contig)
         assemblies = set(re.findall(r"^##contig=<[^\n]*?assembly=([^,>]+)", str(fh.header), re.M))
         out["header"] = HeaderSummary(
-            n_references=len(contigs), contig_present=c is not None,
+            n_references=len(contigs),
+            contig_present=c is not None,
             contig_length=c.length if c is not None else None,
             sq_assembly_tags=sorted(assemblies),
         )
         out["n_samples"] = len(fh.header.samples)
         for rec in fh:
             out["total"] += 1
-            if rec.contig == interval.contig and rec.start < interval.end and rec.stop > interval.start:
+            if (
+                rec.contig == interval.contig
+                and rec.start < interval.end
+                and rec.stop > interval.start
+            ):
                 out["overlapping"] += 1
                 if len(out["records"]) < max_records:
-                    out["records"].append({
-                        "contig": rec.contig, "pos": rec.pos, "start": rec.start, "end": rec.stop,
-                        "id": rec.id, "ref": rec.ref, "alts": list(rec.alts or ()),
-                        "qual": rec.qual, "filter": list(rec.filter.keys()),
-                    })
+                    out["records"].append(
+                        {
+                            "contig": rec.contig,
+                            "pos": rec.pos,
+                            "start": rec.start,
+                            "end": rec.stop,
+                            "id": rec.id,
+                            "ref": rec.ref,
+                            "alts": list(rec.alts or ()),
+                            "qual": rec.qual,
+                            "filter": list(rec.filter.keys()),
+                        }
+                    )
     return out
 
 
-async def postfilter(path: Path, endpoint: str, interval: Interval, max_records: int) -> dict[str, Any]:
+def payload_kind(data: bytes) -> str:
+    """Identify an htsget payload from its first BGZF block: 'bam', 'vcf', 'cram' or 'unknown'.
+
+    Checked before any pysam open, so a CRAM (whose header could name a reference URL) or other
+    content is never handed to htslib here; CRAM decoding belongs to the E4 reader's checks."""
+    if data[:4] == b"CRAM":
+        return "cram"
+    if data[:2] != b"\x1f\x8b":
+        return "unknown"
+    try:
+        head = zlib.decompressobj(31).decompress(data[:70000], 64)
+    except zlib.error:
+        return "unknown"
+    if head.startswith(b"BAM\x01"):
+        return "bam"
+    if head.startswith(b"##fileformat=VCF"):
+        return "vcf"
+    return "unknown"
+
+
+async def postfilter(
+    path: Path, endpoint: str, interval: Interval, max_records: int
+) -> dict[str, Any]:
     fn = filter_reads if endpoint == "reads" else filter_variants
+    with path.open("rb") as fh:
+        kind = payload_kind(fh.read(70000))
+    expected = "bam" if endpoint == "reads" else "vcf"
+    if kind != expected:
+        raise UpstreamError(
+            f"htsget payload is {kind}, expected {expected.upper()}; not opened",
+            source="ega",
+            details={"payload": kind},
+        )
     try:
         return await asyncio.to_thread(fn, path, interval, max_records)
     except (OSError, ValueError) as exc:
         raise UpstreamError(
             f"htsget payload could not be decoded as {'BAM' if endpoint == 'reads' else 'VCF'}",
-            source="ega", details={"error": type(exc).__name__},
+            source="ega",
+            details={"error": type(exc).__name__},
         ) from exc
 
 
@@ -332,28 +412,53 @@ def validate_region(interval: Interval, fmt: str, endpoint: str, max_region_bp: 
     if endpoint == "reads" and fmt_u != "BAM":
         raise UnsupportedError(
             "EGA htsget reads are retrieved as BAM; CRAM output needs an explicit, checksum-matched "
-            "reference and is not requested here", source="ega", hint="Use format='BAM'.",
+            "reference and is not requested here",
+            source="ega",
+            hint="Use format='BAM'.",
         )
     if endpoint == "variants" and fmt_u != "VCF":
         raise UnsupportedError("EGA htsget variants are retrieved as VCF", source="ega")
     if interval.length > max_region_bp:
         raise InvalidInputError(
             f"interval is {interval.length} bp, over the {max_region_bp} bp region limit",
-            source="ega", hint="Narrow the interval or pass an explicit max_region_bp.",
+            source="ega",
+            hint="Narrow the interval or pass an explicit max_region_bp.",
             details={"length": interval.length, "max_region_bp": max_region_bp},
         )
     return fmt_u
 
 
 def origin_file(accession: str, fmt: str) -> FileRef:
-    return FileRef(uri=f"ega://{accession}", source="ega", accession=accession,
-                   access_status="authorized", visibility="private", format=fmt.lower())
+    return FileRef(
+        uri=f"ega://{accession}",
+        source="ega",
+        accession=accession,
+        access_status="authorized",
+        visibility="private",
+        format=fmt.lower(),
+    )
 
 
-def artifact_for(path: Path, size: int, sha256: str, md5: str, fmt: str, origin: FileRef,
-                 prov: Provenance, *, verified: bool = False) -> Artifact:
+def artifact_for(
+    path: Path,
+    size: int,
+    sha256: str,
+    md5: str,
+    fmt: str,
+    origin: FileRef,
+    prov: Provenance,
+    *,
+    verified: bool = False,
+) -> Artifact:
     return Artifact(
-        path=str(path), size_bytes=size,
-        checksums=[Checksum(algorithm="sha256", value=sha256), Checksum(algorithm="md5", value=md5)],
-        checksum_verified=verified, format=fmt.lower(), origin=origin, provenance=prov,
+        path=str(path),
+        size_bytes=size,
+        checksums=[
+            Checksum(algorithm="sha256", value=sha256),
+            Checksum(algorithm="md5", value=md5),
+        ],
+        checksum_verified=verified,
+        format=fmt.lower(),
+        origin=origin,
+        provenance=prov,
     )
