@@ -1,0 +1,11 @@
+# Build context allowlist: only what the image needs.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSE
+!src/
+!packaging/container-config.toml
+**/__pycache__
+**/*.pyc
+**/.DS_Store

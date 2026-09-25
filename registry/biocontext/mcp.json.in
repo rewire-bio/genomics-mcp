@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "rewire-bio/genomics-mcp": {
+      "command": "uvx",
+      "args": [
+        "--python",
+        "3.12",
+        "--no-binary-package",
+        "pybigwig",
+        "--build-constraints",
+        "https://raw.githubusercontent.com/rewire-bio/genomics-mcp/@COMMIT@/packaging/build-constraints.txt",
+        "--from",
+        "git+https://github.com/rewire-bio/genomics-mcp@@COMMIT@",
+        "genomics-mcp"
+      ]
+    }
+  }
+}

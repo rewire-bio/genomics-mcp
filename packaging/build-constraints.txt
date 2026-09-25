@@ -1,0 +1,7 @@
+# Build-time pins for the pyBigWig source build (see pyproject [tool.uv]).
+# uv applies [tool.uv] only inside this project. Pass this file to uvx/uv pip/pip explicitly:
+#   --no-binary-package pybigwig --build-constraints packaging/build-constraints.txt
+# Keep equal to build-constraint-dependencies in pyproject.toml (tests/release checks this).
+numpy==2.5.3
+setuptools==84.0.0
+setuptools-scm==10.3.4

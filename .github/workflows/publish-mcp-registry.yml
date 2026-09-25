@@ -1,0 +1,107 @@
+name: publish-mcp-registry
+
+# Manual. Publishes server.json for v<version> to the official MCP Registry with GitHub OIDC.
+# Every listed package is first checked anonymously: the GHCR image (pullable without
+# credentials, ownership label in the image config, digest equal to the release's image.json),
+# the MCPB release asset (SHA-256 equal to SHA256SUMS) and, only if requested, the PyPI release
+# (exists, README ownership marker present). Anything not verified is not listed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Released version (GitHub release v<version> must exist)"
+        required: true
+        type: string
+      include_mcpb:
+        description: "List the MCPB release asset"
+        type: boolean
+        default: true
+      include_pypi:
+        description: "List the PyPI package (only after publish-pypi succeeded)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  MCP_PUBLISHER_VERSION: "1.8.1"
+  REPO_URL: https://github.com/rewire-bio/genomics-mcp
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: v${{ inputs.version }}
+      - name: Release files, anonymously
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          cd "$RUNNER_TEMP/release"
+          for f in SHA256SUMS image.json; do
+            curl -fsSL -o "$f" "$REPO_URL/releases/download/v$VERSION/$f"
+          done
+          sha256sum --check --ignore-missing SHA256SUMS
+      - name: GHCR image, anonymously
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          empty="$(mktemp -d)"
+          image="ghcr.io/rewire-bio/genomics-mcp:$VERSION"
+          python3 scripts/check_image.py "$image" --docker-config "$empty" --pull > image-check.json
+          cat image-check.json
+          expected="$(jq -r .image "$RUNNER_TEMP/release/image.json")"
+          jq -e --arg ref "$expected" '.repo_digests | index($ref) != null' image-check.json
+      - name: MCPB asset, anonymously
+        id: mcpb
+        if: inputs.include_mcpb
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          cd "$RUNNER_TEMP/release"
+          curl -fsSL -o "genomics-mcp-$VERSION.mcpb" "$REPO_URL/releases/download/v$VERSION/genomics-mcp-$VERSION.mcpb"
+          sha256sum --check --ignore-missing SHA256SUMS | grep -q "genomics-mcp-$VERSION.mcpb: OK"
+          echo "sha256=$(sha256sum "genomics-mcp-$VERSION.mcpb" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: PyPI release
+        if: inputs.include_pypi
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -fsSL "https://pypi.org/pypi/rewire-genomics-mcp/$VERSION/json" > pypi.json
+          jq -e --arg v "$VERSION" '.info.version == $v' pypi.json
+          jq -e '.info.description | contains("<!-- mcp-name: io.github.rewire-bio/genomics-mcp -->")' pypi.json
+      - name: Render server.json
+        env:
+          MCPB_SHA256: ${{ steps.mcpb.outputs.sha256 }}
+        run: |
+          args=(--out server.publish.json)
+          if [ -n "$MCPB_SHA256" ]; then args+=(--mcpb-sha256 "$MCPB_SHA256"); fi
+          if [ "${{ inputs.include_pypi }}" = true ]; then args+=(--pypi); fi
+          python3 scripts/render_server_json.py "${args[@]}"
+      - name: Install mcp-publisher (checksum verified)
+        run: |
+          cd "$RUNNER_TEMP"
+          base="https://github.com/modelcontextprotocol/registry/releases/download/v$MCP_PUBLISHER_VERSION"
+          curl -fsSLO "$base/mcp-publisher_linux_amd64.tar.gz"
+          curl -fsSLO "$base/registry_${MCP_PUBLISHER_VERSION}_checksums.txt"
+          sha256sum --check --ignore-missing "registry_${MCP_PUBLISHER_VERSION}_checksums.txt" | grep -q "mcp-publisher_linux_amd64.tar.gz: OK"
+          tar -xzf mcp-publisher_linux_amd64.tar.gz mcp-publisher
+      - name: Validate, log in with GitHub OIDC, publish
+        run: |
+          "$RUNNER_TEMP/mcp-publisher" validate server.publish.json
+          "$RUNNER_TEMP/mcp-publisher" login github-oidc
+          "$RUNNER_TEMP/mcp-publisher" publish server.publish.json
+      - name: Confirm the published record
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -fsSL "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/$VERSION" > record.json
+          jq -e --arg v "$VERSION" '.server.name == "io.github.rewire-bio/genomics-mcp" and .server.version == $v' record.json
+          jq . record.json

@@ -1,0 +1,52 @@
+name: registry-checks
+
+# Manual. Runs the Docker MCP Catalog submission checks (`task validate -- --name` and
+# `task build -- --tools`) for a pushed commit of this repository, in a pinned checkout of
+# docker/mcp-registry. It builds and introspects the server; it submits nothing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "40-character commit of rewire-bio/genomics-mcp to check (the release commit)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  AWS_EC2_METADATA_DISABLED: "true"
+  AWS_CONFIG_FILE: /dev/null
+  AWS_SHARED_CREDENTIALS_FILE: /dev/null
+
+jobs:
+  docker-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.commit }}
+          path: genomics-mcp
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: docker/mcp-registry
+          ref: 49b643ce3fc73e6ee80bb962719b6e2990e3d397
+          path: mcp-registry
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: mcp-registry/go.mod
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - run: go install github.com/go-task/task/v3/cmd/task@v3.53.1
+      - name: Render server.yaml for the commit
+        run: |
+          python3 genomics-mcp/scripts/render_registry.py --commit "${{ inputs.commit }}" --out "$RUNNER_TEMP/registry"
+          cp -R "$RUNNER_TEMP/registry/docker/servers/genomics-mcp" mcp-registry/servers/
+      - name: task validate -- --name genomics-mcp
+        working-directory: mcp-registry
+        run: task validate -- --name genomics-mcp
+      - name: task build -- --tools genomics-mcp
+        working-directory: mcp-registry
+        run: task build -- --tools genomics-mcp

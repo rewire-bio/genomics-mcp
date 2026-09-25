@@ -35,9 +35,13 @@ atlas = ["alphagenome==0.9.0"]
 
 [project.urls]
 Repository = "https://github.com/rewire-bio/genomics-mcp"
+Documentation = "https://github.com/rewire-bio/genomics-mcp#readme"
+Issues = "https://github.com/rewire-bio/genomics-mcp/issues"
 
 [project.scripts]
 genomics-mcp = "genomics_mcp.cli:main"
+# Same entry point under the distribution name, so `uvx rewire-genomics-mcp` works.
+rewire-genomics-mcp = "genomics_mcp.cli:main"
 
 [dependency-groups]
 dev = [
@@ -52,6 +56,22 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/genomics_mcp"]
+
+# Explicit allowlist: never .work, logs, credentials, caches or downloaded data.
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "src/genomics_mcp",
+    "tests",
+    "docs",
+    "packaging/build-constraints.txt",
+    "README.md",
+    "LICENSE",
+    "PRD.md",
+    "config.example.toml",
+    "pyproject.toml",
+    "uv.lock",
+]
+exclude = ["__pycache__", "*.pyc", ".DS_Store"]
 
 [tool.uv]
 required-version = ">=0.8"
@@ -83,3 +103,5 @@ ignore = ["S101", "E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S", "BLE"]
+# Release scripts run operator-supplied commands and do simple file I/O between MCP calls.
+"scripts/*" = ["S603", "S607", "ASYNC109", "ASYNC230", "ASYNC240"]
