@@ -22,7 +22,11 @@ from genomics_mcp.config import Settings
 from genomics_mcp.context import OperationContext
 from genomics_mcp.errors import ErrorCode, ErrorInfo, InvalidInputError
 from genomics_mcp.evidence.local_fasta import SOURCE as LOCAL_FASTA
-from genomics_mcp.evidence.local_fasta import LocalFastaProvider, fasta_assembly
+from genomics_mcp.evidence.local_fasta import (
+    LocalFastaProvider,
+    fasta_assembly,
+    require_local_reference,
+)
 from genomics_mcp.evidence.mapping import to_output
 from genomics_mcp.models import FileRef, SourceState, SourceStatus, VariantSpec
 from genomics_mcp.public import EgressContext
@@ -265,6 +269,8 @@ async def normalize(
     sources: list[str] | None = None,
     egress: EgressContext,
 ) -> OperationOutput:
+    if reference is not None:
+        require_local_reference(reference)  # before any resolver, source or network use
     selection, errors, statuses = _select(Operation.NORMALIZE_VARIANT, sources)
     value = _variant_value(variant, hgvs, rsid)
     asm = _assembly(
@@ -309,6 +315,8 @@ async def lookup_variant(
     egress: EgressContext,
     reference: FileRef | None = None,
 ) -> OperationOutput:
+    if reference is not None:
+        require_local_reference(reference)  # before any resolver, source or network use
     selection, errors, statuses = _select(Operation.LOOKUP_VARIANT, sources)
     chosen = list(selection) if selection is not None else list(DEFAULT_VARIANT_SOURCES)
     if include is not None:
