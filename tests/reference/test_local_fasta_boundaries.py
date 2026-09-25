@@ -218,3 +218,26 @@ async def test_facade_rejects_remote_reference_for_private_input_without_consent
         with pytest.raises(PreparationRequiredError):
             await call(ctx, VariantSpec(**SNV), egress=egress, reference=remote)
     assert resolver.calls == [] and router.calls == []
+
+
+async def test_explicitly_requested_disabled_support_source_is_reported(settings, router):
+    from genomics_mcp.config import SourceSettings
+
+    for name in ("ensembl", "ncbi_nuccore", "ncbi_variation"):
+        settings.sources[name] = SourceSettings(enabled=False)
+    svc = service(settings, router)
+    res = await svc.call(
+        Operation.NORMALIZE_VARIANT,
+        {"variant": {**SNV, "pos": 140753336, "ref": "A", "alt": "T"}, "sources": ["ensembl"]},
+    )
+    assert router.calls == []
+    states = {s.source: s.state.value for s in res.source_status}
+    assert states == {"ensembl": "disabled"}
+    assert res.data["canonical_variant"]["reference_check"]["status"] == "not_checked"
+    rsid = await svc.call(
+        Operation.NORMALIZE_VARIANT,
+        {"rsid": "rs113488022", "assembly": "GRCh38", "sources": ["ncbi_variation", "ensembl"]},
+    )
+    assert router.calls == []
+    states = {s.source: s.state.value for s in rsid.source_status}
+    assert states["ncbi_variation"] == "disabled" and states["ensembl"] == "disabled"

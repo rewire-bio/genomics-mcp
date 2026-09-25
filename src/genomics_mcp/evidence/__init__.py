@@ -189,9 +189,10 @@ def _budget(ctx: OperationContext) -> float:
 
 
 def _select(
-    op: Operation, requested: list[str] | None
+    op: Operation, requested: list[str] | None, settings: Settings
 ) -> tuple[list[str] | None, list[ErrorInfo], list[SourceStatus]]:
-    """Validate `sources`. Unknown names are reported per source, never silently dropped."""
+    """Validate `sources`. Unknown names are reported per source, never silently dropped;
+    explicitly requested sources that are disabled in configuration are reported `disabled`."""
     if requested is None:
         return None, [], []
     allowed = OP_SOURCES[op]
@@ -201,6 +202,11 @@ def _select(
     for raw in dict.fromkeys(s.strip().lower() for s in requested):
         if raw in allowed:
             chosen.append(raw)
+            if raw != LOCAL_FASTA and not settings.source(raw).enabled:
+                statuses.append(
+                    SourceStatus(source=raw, state=SourceState.DISABLED,
+                                 message=f"{raw} is disabled in configuration")
+                )  # fmt: skip
             continue
         msg = f"{op.value} has no {raw!r} source in this build; available: {', '.join(allowed)}"
         errors.append(ErrorInfo(code=ErrorCode.UNSUPPORTED, message=msg, source=raw))
@@ -271,7 +277,7 @@ async def normalize(
 ) -> OperationOutput:
     if reference is not None:
         require_local_reference(reference)  # before any resolver, source or network use
-    selection, errors, statuses = _select(Operation.NORMALIZE_VARIANT, sources)
+    selection, errors, statuses = _select(Operation.NORMALIZE_VARIANT, sources, ctx.settings)
     value = _variant_value(variant, hgvs, rsid)
     asm = _assembly(
         assembly or (value.assembly if isinstance(value, ref.GenomicAlleleInput) else None)
@@ -317,7 +323,7 @@ async def lookup_variant(
 ) -> OperationOutput:
     if reference is not None:
         require_local_reference(reference)  # before any resolver, source or network use
-    selection, errors, statuses = _select(Operation.LOOKUP_VARIANT, sources)
+    selection, errors, statuses = _select(Operation.LOOKUP_VARIANT, sources, ctx.settings)
     chosen = list(selection) if selection is not None else list(DEFAULT_VARIANT_SOURCES)
     if include is not None:
         unknown = [i for i in include if i not in INCLUDE_TO_SOURCE]
@@ -362,7 +368,7 @@ async def lookup_variant(
 
 
 async def _gene(req: LookupGeneRequest, ctx: OperationContext) -> OperationOutput:
-    selection, errors, statuses = _select(Operation.LOOKUP_GENE, req.sources)
+    selection, errors, statuses = _select(Operation.LOOKUP_GENE, req.sources, ctx.settings)
     include = req.include if req.include is not None else sorted(GENE_INCLUDES)
     bad = [i for i in include if i not in GENE_INCLUDES]
     if bad:
@@ -383,7 +389,7 @@ async def _gene(req: LookupGeneRequest, ctx: OperationContext) -> OperationOutpu
 
 
 async def _protein(req: LookupProteinRequest, ctx: OperationContext) -> OperationOutput:
-    selection, errors, statuses = _select(Operation.LOOKUP_PROTEIN, req.sources)
+    selection, errors, statuses = _select(Operation.LOOKUP_PROTEIN, req.sources, ctx.settings)
     request = ref.LookupProteinRequest(protein=req.protein)
     with selected_sources(selection):
         result = (
@@ -397,7 +403,7 @@ async def _protein(req: LookupProteinRequest, ctx: OperationContext) -> Operatio
 
 
 async def _resolve(req: ResolveIdentifierRequest, ctx: OperationContext) -> OperationOutput:
-    selection, errors, statuses = _select(Operation.RESOLVE_IDENTIFIER, req.sources)
+    selection, errors, statuses = _select(Operation.RESOLVE_IDENTIFIER, req.sources, ctx.settings)
     request = ref.ResolveIdentifierRequest(identifier=req.identifier, assembly=req.assembly)
     with selected_sources(selection):
         result = (

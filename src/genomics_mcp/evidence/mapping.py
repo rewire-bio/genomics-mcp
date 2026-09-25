@@ -191,7 +191,10 @@ def to_output(
     extra_statuses: list[SourceStatus] | None = None,
 ) -> OperationOutput:
     errors = [*(extra_errors or []), *(error_info(e) for e in result.errors)]
-    statuses = [*(extra_statuses or []), *source_statuses(result, evidence)]
+    statuses: list[SourceStatus] = []
+    for status in [*(extra_statuses or []), *source_statuses(result, evidence)]:
+        if all(s.source != status.source for s in statuses):  # one status per source
+            statuses.append(status)
     warnings = [redact(w) for w in result.warnings]
     if result.status == "error":
         if not errors:
