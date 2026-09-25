@@ -107,9 +107,10 @@ PLANNED_SOURCES: list[SourceInfo] = [
     ),
 ]
 
-# Storage sources map to URI schemes rather than handler keys.
+# URI schemes served by a source's resolver (reported only when that resolver is registered).
 SOURCE_SCHEMES: dict[str, tuple[str, ...]] = {
     "local": ("file",),
     "https": ("https", "http"),
     "s3": ("s3",),
+    "ega": ("ega",),
 }
