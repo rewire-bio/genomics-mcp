@@ -94,7 +94,7 @@ class Session:
         self.calls.append(
             {
                 "tool": tool,
-                "arguments": args,
+                "arguments": compact_args(args),
                 "status": body.get("status"),
                 "error": body.get("error"),
                 "seconds": round(time.monotonic() - started, 2),
@@ -107,6 +107,17 @@ class Session:
     def log_has_secrets(self, secrets: list[str]) -> bool:
         text = self.errlog.read_text() if self.errlog.exists() else ""
         return any(s and s in text for s in secrets)
+
+
+_FILE_KEYS = ("uri", "index_uri", "format", "assembly", "source", "accession", "storage_profile")
+
+
+def compact_args(args: dict[str, Any]) -> dict[str, Any]:
+    """Record file arguments by identity only; drop source-native metadata blobs."""
+    out = dict(args)
+    if isinstance(out.get("file"), dict):
+        out["file"] = {k: out["file"][k] for k in _FILE_KEYS if out["file"].get(k) is not None}
+    return out
 
 
 def workdir_bytes(path: Path) -> int:
