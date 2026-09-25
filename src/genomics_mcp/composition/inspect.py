@@ -221,20 +221,19 @@ async def inspect_locus(req: InspectLocusRequest, ctx: OperationContext) -> Oper
     if req.reference is not None:
         ref_slot = make_slot("reference", -1, req.reference)
     for slot in ([ref_slot] if ref_slot else []) + slots:
+        planned = [_sequence(slot, iv)] if slot is ref_slot else _plan_file(slot, iv, req)
         gate = source_gate(ctx, slot)
         if gate is not None:
-            comp = Component(slot.id, "file", None, slot)
-            comp.skip(gate, SourceState.DISABLED)
-            components.append(comp)
-            continue
-        if slot is ref_slot:
-            components.append(_sequence(slot, iv))
-        else:
-            components.extend(_plan_file(slot, iv, req))
+            # keep planned roles and ids, mark disabled, never read
+            for comp in planned:
+                comp.run = None
+                if comp.error is None:
+                    comp.skip(gate, SourceState.DISABLED)
+        components.extend(planned)
 
     seq_cap = _sequence_cap(ctx)
     for c in components:
-        if c.kind == "sequence" and iv.length > seq_cap:
+        if c.kind == "sequence" and c.error is None and iv.length > seq_cap:
             c.run = None
             c.state = SourceState.SKIPPED
             c.notes.append(

@@ -152,6 +152,7 @@ def _collect(
     sites: _Sites,
     sample_keys: list[dict[str, str]],
     vcf_state: dict[str, tuple[list[str], int | None, bool]],
+    matched: set[str],
 ) -> None:
     data = comp.output.data  # type: ignore[union-attr]
     recs = list(data.get("records") or [])
@@ -177,6 +178,7 @@ def _collect(
             }
         return
     names = list(data.get("samples") or [])
+    matched.update(names)  # every sample present, including ones capped from the display
     kept = names[:MAX_SAMPLES_PER_FILE]
     comp.meta["samples_total"] = len(names)
     if len(names) > len(kept):
@@ -251,13 +253,14 @@ async def compare_samples(req: CompareSamplesRequest, ctx: OperationContext) -> 
 
     components: list[Component] = []
     for slot in slots:
+        comp = _plan(slot, iv, req, nbins)
         gate = source_gate(ctx, slot)
         if gate is not None:
-            comp = Component(slot.id, "file", None, slot)
+            # keep the planned role so the file is listed as unavailable for it; never read
+            comp.run = None
             comp.skip(gate, SourceState.DISABLED)
             components.append(comp)
             continue
-        comp = _plan(slot, iv, req, nbins)
         if comp.kind == "variants":
             comp.record_cap = site_cap
         comp.timeout_s = configured_timeout(ctx, slot)
@@ -267,13 +270,14 @@ async def compare_samples(req: CompareSamplesRequest, ctx: OperationContext) -> 
     bins: dict[tuple[int, int], dict[str, Any]] = {}
     sites = _Sites()
     sample_keys: list[dict[str, str]] = []
+    matched: set[str] = set()
     files_out: list[dict[str, Any]] = []
     vcf_state: dict[str, tuple[list[str], int | None, bool]] = {}
     for comp in components:
         slot = comp.slot
         assert slot is not None
         if comp.ok:
-            _collect(comp, slot, bins, sites, sample_keys, vcf_state)
+            _collect(comp, slot, bins, sites, sample_keys, vcf_state, matched)
         entry = comp.entry()
         entry["component"] = entry.pop("id")
         entry.pop("file", None)
@@ -345,8 +349,7 @@ async def compare_samples(req: CompareSamplesRequest, ctx: OperationContext) -> 
     duplicates = {k: v for k, v in duplicates.items() if len(v) > 1}
     absent_everywhere = None
     if req.samples is not None:
-        found = {s["sample"] for s in sample_keys}
-        absent_everywhere = [s for s in req.samples if s not in found]
+        absent_everywhere = [s for s in req.samples if s not in matched]
 
     truncation = None
     if dropped:
