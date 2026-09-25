@@ -214,6 +214,7 @@ def build_server(service: GenomicsService) -> MCPServer:
         formats: list[FileFormat] | None = None,
         max_records: MaxRecords = None,
         cursor: str | None = None,
+        storage_profile: str | None = None,
     ) -> Result:
         return await run(
             Operation.LIST_FILES,
@@ -222,6 +223,7 @@ def build_server(service: GenomicsService) -> MCPServer:
             formats=formats,
             max_records=max_records,
             cursor=cursor,
+            storage_profile=storage_profile,
         )
 
     @tool(Operation.LIST_SAMPLES)
@@ -247,6 +249,7 @@ def build_server(service: GenomicsService) -> MCPServer:
         include_index: bool = True,
         budget_bytes: Annotated[int | None, Field(ge=1)] = None,
         verify_checksum: bool = True,
+        prepare: bool = False,
     ) -> Result:
         return await run(
             Operation.FETCH_FILE,
@@ -254,6 +257,7 @@ def build_server(service: GenomicsService) -> MCPServer:
             include_index=include_index,
             budget_bytes=budget_bytes,
             verify_checksum=verify_checksum,
+            prepare=prepare,
         )
 
     @tool(Operation.GET_TRANSFER_STATUS)

@@ -55,6 +55,12 @@ packages = ["src/genomics_mcp"]
 
 [tool.uv]
 required-version = ">=0.8"
+# The published Linux pyBigWig wheel is built without libcurl (pyBigWig.remote == 0), which
+# breaks remote bigWig/bigBed. Always build it from source; this needs a C compiler and
+# libcurl development files (curl-config), e.g. libcurl4-openssl-dev on Debian/Ubuntu.
+no-binary-package = ["pybigwig"]
+# Pin the source build's own requirements for reproducible installs.
+build-constraint-dependencies = ["numpy==2.5.3", "setuptools==84.0.0", "setuptools-scm==10.3.4"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -172,6 +172,12 @@ class StorageSettings(_Model):
     allow_public_s3: bool = True
     public_s3_endpoint: str = "https://s3.amazonaws.com"
     public_s3_region: str = "us-east-1"
+    local_network_hosts: list[str] = Field(
+        default_factory=list,
+        description="Hosts (name or IP literal) that storage resolvers may reach although they "
+        "are loopback/private, and over plain http, e.g. a local fixture server or LAN mirror. "
+        "S3 profile endpoints are allowed implicitly. Cloud metadata addresses are always refused.",
+    )
 
 
 class PathSettings(_Model):

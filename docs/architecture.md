@@ -142,10 +142,10 @@ Tracked until each epic lands; update the capability test when an item is done.
 
 | Item | Epic | State |
 | --- | --- | --- |
-| Storage resolvers file/http(s)/s3/ftp; readiness; dummy ambient AWS proof | E2 | not started |
-| Transfers, budgets, resume, checksum; reference prep; FASTA; BED/GFF/GTF | E3 | not started |
-| BAM/CRAM/VCF/BCF readers and CRAM reference checks | E4 | not started |
-| bigWig/bigBed | E5 | not started |
+| Storage resolvers file/http(s)/s3 (no ftp: use HTTPS URLs); readiness; dummy ambient AWS proof | E2 | implemented; see docs/data-access.md |
+| Transfers, budgets, resume, checksum; reference prep; FASTA; BED/GFF/GTF | E3 | implemented; see docs/data-access.md |
+| BAM/CRAM/VCF/BCF readers and CRAM reference checks | E4 | implemented; see docs/data-access.md |
+| bigWig/bigBed | E5 | implemented; see docs/data-access.md |
 | EGA/ENA discovery, EGA htsget/ega resolvers | E6 | not started |
 | ENCODE/GEO/NCBI Datasets | E7 | not started |
 | Reference adapters and normalization; source `terms_url` confirmation | E8 | not started |

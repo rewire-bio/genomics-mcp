@@ -27,6 +27,12 @@ allow_non_loopback = false
 level = "INFO"
 log_query_content = false
 
+# Storage. Loopback/private hosts and plain http are refused unless listed here
+# (e.g. a local fixture server). S3 profile endpoints are allowed implicitly.
+# [storage]
+# local_network_hosts = ["127.0.0.1"]
+# allow_public_s3 = true
+
 # Personal S3-compatible storage. AWS_* variable names are refused on purpose.
 # [storage.profiles.minio]
 # endpoint_url = "http://127.0.0.1:9000"
