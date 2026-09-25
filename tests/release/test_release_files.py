@@ -28,6 +28,20 @@ def test_build_constraints_match_project_policy():
     pins = sorted(line for line in lines if line and not line.startswith("#"))
     assert pins == sorted(PROJECT["tool"]["uv"]["build-constraint-dependencies"])
     assert PROJECT["tool"]["uv"]["no-binary-package"] == ["pybigwig"]
+    # UV_NO_CONFIG=1 ignores [tool.uv]; isolated builds use this reviewed copy instead.
+    reviewed = tomllib.loads((ROOT / "packaging/uv.toml").read_text())
+    assert reviewed == {
+        k: PROJECT["tool"]["uv"][k] for k in ("no-binary-package", "build-constraint-dependencies")
+    }
+
+
+def test_isolated_uv_steps_use_the_reviewed_config():
+    docker = (ROOT / "Dockerfile").read_text()
+    assert "UV_NO_CONFIG=1" in docker and "UV_CONFIG_FILE=/src/packaging/uv.toml" in docker
+    assert "COPY packaging/uv.toml ./packaging/uv.toml" in docker
+    for name in ("package.yml", "release.yml", "publish-pypi.yml"):
+        text = (ROOT / ".github/workflows" / name).read_text()
+        assert 'UV_NO_CONFIG: "1"' in text and "UV_CONFIG_FILE: packaging/uv.toml" in text, name
 
 
 def test_console_scripts_include_distribution_name_alias():
@@ -68,8 +82,18 @@ def test_rendered_server_json_variants():
     mcpb = full["packages"][1]
     assert mcpb["identifier"].endswith(f"/releases/download/v{VERSION}/genomics-mcp-{VERSION}.mcpb")
     assert "registryBaseUrl" not in mcpb
-    assert full["packages"][2]["identifier"] == "rewire-genomics-mcp"
-    assert full["packages"][2]["version"] == VERSION
+    pypi = full["packages"][2]
+    assert pypi["identifier"] == "rewire-genomics-mcp" and pypi["version"] == VERSION
+    args = [a["value"] for a in pypi["runtimeArguments"]]
+    assert all(a["type"] == "positional" for a in pypi["runtimeArguments"])
+    assert args[:5] == [
+        "--python",
+        "3.12",
+        "--no-binary-package",
+        "pybigwig",
+        "--build-constraints",
+    ]
+    assert args[5].endswith(f"/releases/download/v{VERSION}/build-constraints.txt")
     assert render(VERSION, None, pypi=False) == load("server.json")
     with pytest.raises(SystemExit):
         render(VERSION, "REPLACE_WITH_SHA", pypi=False)
@@ -121,6 +145,8 @@ def test_mcpb_manifest_and_launcher():
     manifest = load("packaging/mcpb/manifest.json")
     assert manifest["version"] == VERSION and manifest["manifest_version"] == "0.3"
     assert manifest["server"]["type"] == "node"
+    # Only Linux has a real container run; macOS Docker bundle runs are untested.
+    assert manifest["compatibility"]["platforms"] == ["linux"]
     assert set(manifest["user_config"]) == {"docker_path", "data_root", "work_dir"}
     launcher = (ROOT / "packaging/mcpb/server/launcher.cjs").read_text()
     assert launcher.count('"@IMAGE@"') == 1 and "shell: false" in launcher
@@ -185,3 +211,49 @@ def test_release_notes_and_ledger_are_consistent():
             assert route.get("published"), route["route"]
         if route.get("published") and route["route"] not in {"github_release", "ghcr_oci", "pypi"}:
             assert route.get("submitted"), route["route"]
+
+
+def test_check_image_pull_keeps_stdout_json(tmp_path):
+    docker = tmp_path / "docker"
+    info = {
+        "Id": "sha256:" + "1" * 64,
+        "RepoDigests": ["ghcr.io/rewire-bio/genomics-mcp@sha256:" + "2" * 64],
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Config": {
+            "User": "genomics:genomics",
+            "Entrypoint": ["genomics-mcp"],
+            "Cmd": ["--transport", "stdio"],
+            "Env": ["PATH=/opt/venv/bin"],
+            "Labels": {
+                "io.modelcontextprotocol.server.name": NAME,
+                "org.opencontainers.image.source": "https://github.com/rewire-bio/genomics-mcp",
+                "org.opencontainers.image.licenses": "MIT",
+                "org.opencontainers.image.version": VERSION,
+            },
+        },
+    }
+    docker.write_text(
+        "#!/bin/sh\n"
+        'for a in "$@"; do if [ "$a" = pull ]; then echo "0.1.0: Pulling from x"; echo "Status: ok"; exit 0; fi; done\n'
+        f"cat <<'EOF'\n{json.dumps([info])}\nEOF\n"
+    )
+    docker.chmod(0o755)
+    env = {"PATH": f"{tmp_path}:/usr/bin:/bin"}
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/check_image.py"),
+            "img",
+            "--pull",
+            "--docker-config",
+            str(tmp_path),
+        ],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    report = json.loads(proc.stdout)  # stdout is the JSON report only
+    assert proc.returncode == 0 and report["problems"] == [], report
+    assert "Pulling" in proc.stderr

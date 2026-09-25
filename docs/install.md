@@ -25,7 +25,7 @@ Check an install with:
 python -c "import pyBigWig; print(pyBigWig.remote)"   # must print 1
 ```
 
-Inside this repository uv applies the policy automatically (`[tool.uv]` in pyproject.toml). `pip`, `uvx` and `uv pip` do not read it from a dependency, so pass it explicitly as shown below.
+Inside this repository uv applies the policy automatically (`[tool.uv]` in pyproject.toml). `pip`, `uvx` and `uv pip` do not read it from a dependency, so pass it explicitly as shown below. `UV_NO_CONFIG=1` also disables `[tool.uv]`; isolated builds (the container, CI) therefore set `UV_CONFIG_FILE=packaging/uv.toml`, a reviewed copy of the same settings.
 
 ## From source (uv)
 
@@ -46,11 +46,12 @@ uvx --python 3.12 --no-binary-package pybigwig \
   --from git+https://github.com/rewire-bio/genomics-mcp@<commit> genomics-mcp
 ```
 
-From PyPI, once `rewire-genomics-mcp` is published there (not yet):
+From PyPI, once `rewire-genomics-mcp` is published there (not yet). These are the arguments the registry entry gives clients:
 
 ```sh
-uvx --python 3.12 --no-binary-package pybigwig --build-constraints build-constraints.txt \
-  --from rewire-genomics-mcp==0.1.0 genomics-mcp
+uvx --python 3.12 --no-binary-package pybigwig \
+  --build-constraints https://github.com/rewire-bio/genomics-mcp/releases/download/v0.1.0/build-constraints.txt \
+  rewire-genomics-mcp==0.1.0
 ```
 
 For fully pinned transitive dependencies, add `-c requirements.lock.txt` (a GitHub release asset exported from `uv.lock`).
@@ -86,7 +87,7 @@ docker run --rm -i \
 
 ## MCPB bundle
 
-`genomics-mcp-0.1.0.mcpb` (GitHub release asset) is a Node launcher for the digest-pinned container. It needs Node.js 20+ and a running Docker daemon. At install time you choose the Docker executable, a read-only data directory and a separate workspace directory. The launcher refuses your home directory (or any parent of it), nested directories and relative paths, and passes no cloud credentials. Host application install flows have not been tested yet.
+`genomics-mcp-0.1.0.mcpb` (GitHub release asset) is a Node launcher for the digest-pinned container. It needs Node.js 20+ and a running Docker daemon. The manifest declares Linux only: the bundle runs against the real image only in Linux CI. macOS with Docker Desktop is untested and not claimed. At install time you choose the Docker executable, a read-only data directory and a separate workspace directory. The launcher refuses your home directory (or any parent of it), nested directories and relative paths, and passes no cloud credentials. Host application install flows have not been tested yet.
 
 ## Windows
 

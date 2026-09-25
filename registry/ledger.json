@@ -3,7 +3,14 @@
   "registry_name": "io.github.rewire-bio/genomics-mcp",
   "version": "0.1.0",
   "updated": "2026-09-25",
-  "states": ["prepared", "needs_account_setup", "submitted", "published", "approved", "deferred"],
+  "states": [
+    "prepared",
+    "needs_account_setup",
+    "submitted",
+    "published",
+    "approved",
+    "deferred"
+  ],
   "note": "Each route records its own dates. null means not happened. Nothing below has been submitted or published yet.",
   "routes": [
     {
@@ -41,7 +48,7 @@
       "route": "official_mcp_registry",
       "artifact": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/0.1.0",
       "how": ".github/workflows/publish-mcp-registry.yml (manual, GitHub OIDC); server.json + scripts/render_server_json.py",
-      "validated": "2026-09-25: server.json (OCI) and the rendered OCI+MCPB+PyPI variant pass the 2025-12-11 JSON schema and mcp-publisher 1.8.1 validate. validate does not check package existence; the workflow checks each package anonymously first.",
+      "validated": "2026-09-25: server.json (OCI) and the rendered OCI+MCPB+PyPI variant pass the 2025-12-11 JSON schema and mcp-publisher 1.8.1 validate. validate does not check package existence; the workflow checks each package anonymously first. The PyPI entry uses positional uvx runtimeArguments (python 3.12, forced pyBigWig source build, release-asset build constraints); publish-mcp-registry.yml runs that exact launch on Linux and requires pyBigWig.remote == 1 before listing it.",
       "prepared": "2026-09-25",
       "submitted": null,
       "published": null,
@@ -78,7 +85,7 @@
       "submitted": null,
       "published": null,
       "approved": null,
-      "gate": "Release commit pushed; registry-checks.yml green; SECURITY.md contact route: enable GitHub private vulnerability reporting (currently disabled). Docker team review."
+      "gate": "Release commit pushed; registry-checks.yml green (task build --tools); Docker team review. GitHub private vulnerability reporting was enabled by the coordinator on 2026-09-25 (SECURITY.md contact)."
     },
     {
       "route": "glama",
@@ -116,7 +123,7 @@
       "route": "smithery_local_mcpb",
       "artifact": "genomics-mcp-0.1.0.mcpb (GitHub release asset; Node launcher for the digest-pinned GHCR image)",
       "how": "smithery mcp publish ./genomics-mcp-0.1.0.mcpb -n <owned namespace>/genomics-mcp; payload {\"type\":\"stdio\",\"runtime\":\"node\"}",
-      "validated": "2026-09-25: bundle validated, packed, unpacked and re-validated with @anthropic-ai/mcpb 2.1.2; launcher MCP round trip and path refusals tested with a recording docker stand-in. Real-container bundle runs are in package.yml/release.yml (not yet run). Host application install flows not tested.",
+      "validated": "2026-09-25: bundle validated, packed, unpacked and re-validated with @anthropic-ai/mcpb 2.1.2; launcher MCP round trip and path refusals tested with a recording docker stand-in. Real-container bundle runs are in package.yml/release.yml (not yet run). Host application install flows not tested. Manifest platforms: linux only (no real macOS Docker bundle run).",
       "prepared": "2026-09-25",
       "submitted": null,
       "published": null,

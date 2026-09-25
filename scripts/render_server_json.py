@@ -4,8 +4,11 @@
         [--mcpb-sha256 <64 hex>] [--pypi]
 
 The committed server.json lists only the GHCR OCI package. `--mcpb-sha256` adds the GitHub
-release MCPB asset; `--pypi` adds the PyPI package. Pass them only after the publish workflow
-has checked that the artifact is publicly downloadable and matches. No placeholders are written.
+release MCPB asset; `--pypi` adds the PyPI package, launched as `uvx <runtimeArguments> rewire-genomics-mcp==<version>`
+with a forced pyBigWig source build. Pass them only after the publish workflow has checked that
+the artifact is publicly downloadable and, for PyPI, that this exact launch works with
+`pyBigWig.remote == 1`. No placeholders are written.
+`--print-uvx-args` prints the PyPI runtime arguments, one per line.
 """
 
 from __future__ import annotations
@@ -19,6 +22,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REPO = "https://github.com/rewire-bio/genomics-mcp"
+
+
+def uvx_runtime_arguments(version: str) -> list[str]:
+    constraints = f"{REPO}/releases/download/v{version}/build-constraints.txt"
+    return [
+        "--python",
+        "3.12",
+        "--no-binary-package",
+        "pybigwig",
+        "--build-constraints",
+        constraints,
+    ]
 
 
 def render(version: str, mcpb_sha256: str | None, pypi: bool) -> dict:
@@ -47,6 +62,11 @@ def render(version: str, mcpb_sha256: str | None, pypi: bool) -> dict:
                 "identifier": "rewire-genomics-mcp",
                 "version": version,
                 "runtimeHint": "uvx",
+                # uvx does not read the package's [tool.uv]: force the pyBigWig source build
+                # (the Linux wheel has no remote support) with the release's pinned build pins.
+                "runtimeArguments": [
+                    {"type": "positional", "value": v} for v in uvx_runtime_arguments(version)
+                ],
                 "transport": {"type": "stdio"},
             }
         )
@@ -55,11 +75,17 @@ def render(version: str, mcpb_sha256: str | None, pypi: bool) -> dict:
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--out", type=Path)
     p.add_argument("--mcpb-sha256")
     p.add_argument("--pypi", action="store_true")
+    p.add_argument("--print-uvx-args", action="store_true")
     args = p.parse_args()
     version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+    if args.print_uvx_args:
+        print("\n".join(uvx_runtime_arguments(version)))
+        return 0
+    if args.out is None:
+        p.error("--out is required")
     server = render(version, args.mcpb_sha256, args.pypi)
     args.out.write_text(json.dumps(server, indent=2) + "\n")
     print(json.dumps(server, indent=2))

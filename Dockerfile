@@ -12,8 +12,9 @@ ARG UV_IMAGE=ghcr.io/astral-sh/uv:0.8.2@sha256:a7999d42cba0e5af47ef3c06ac310229c
 FROM ${UV_IMAGE} AS uv
 
 FROM ${PYTHON_IMAGE} AS build
-# pyBigWig is built from source (pyproject [tool.uv] no-binary-package) so it links libcurl and
-# can read remote bigWig/bigBed. The published Linux wheel has pyBigWig.remote == 0.
+# pyBigWig is built from source so it links libcurl and can read remote bigWig/bigBed; the
+# published Linux wheel has pyBigWig.remote == 0. UV_NO_CONFIG=1 also disables pyproject
+# [tool.uv], so the policy comes from the reviewed packaging/uv.toml via UV_CONFIG_FILE.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends build-essential libcurl4-openssl-dev zlib1g-dev \
  && rm -rf /var/lib/apt/lists/*
@@ -22,9 +23,11 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_PYTHON_DOWNLOADS=never \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
-    UV_NO_CONFIG=1
+    UV_NO_CONFIG=1 \
+    UV_CONFIG_FILE=/src/packaging/uv.toml
 WORKDIR /src
 COPY pyproject.toml uv.lock README.md LICENSE ./
+COPY packaging/uv.toml ./packaging/uv.toml
 COPY src ./src
 RUN uv sync --locked --no-dev --no-editable \
  && /opt/venv/bin/python -c "import pyBigWig, sys; sys.exit(0 if pyBigWig.remote == 1 else 'pyBigWig built without remote support')"

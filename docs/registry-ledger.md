@@ -12,7 +12,7 @@ Machine-readable copy: [registry/ledger.json](../registry/ledger.json). Updated 
 | Official MCP Registry | 2026-09-25 | — | — | — | `publish-mcp-registry.yml` after the release and public GHCR. |
 | GitHub MCP Registry (github.com/mcp) | 2026-09-25 | — | — | — | Populated from the official registry; check the listing after publication. |
 | BioContextAI | 2026-09-25 | — | — | — | Render with the release commit; open the PR. |
-| Docker MCP Catalog | 2026-09-25 | — | — | — | Run `registry-checks.yml` (`task build --tools`); enable private vulnerability reporting; open the PR. |
+| Docker MCP Catalog | 2026-09-25 | — | — | — | Run `registry-checks.yml` (`task build --tools`); open the PR. |
 | Glama | 2026-09-25 | — | — | — | **Needs account setup:** Glama GitHub sign-in (timini). Search for an existing entry first, then add or claim it. |
 | punkpeye/awesome-mcp-servers | 2026-09-25 | — | — | — | Only after a real Glama listing exists. |
 | mcpservers.org | 2026-09-25 | — | — | — | Free form after the GitHub release (not the $39 option). |
@@ -22,14 +22,14 @@ Machine-readable copy: [registry/ledger.json](../registry/ledger.json). Updated 
 
 ## Validation done (2026-09-25)
 
-- `server.json` (OCI only) and the rendered OCI + MCPB + PyPI variant: the 2025-12-11 JSON schema (check-jsonschema 0.34.1) and `mcp-publisher` 1.8.1 `validate` (checksum-verified binary) both pass. `validate` posts the file to the registry's validation endpoint and does not check that packages exist.
+- `server.json` (OCI only) and the rendered OCI + MCPB + PyPI variant (the PyPI entry carries positional `uvx` runtime arguments that force the pyBigWig source build with the release's `build-constraints.txt`): the 2025-12-11 JSON schema (check-jsonschema 0.34.1) and `mcp-publisher` 1.8.1 `validate` (checksum-verified binary) both pass. `validate` posts the file to the registry's validation endpoint and does not check that packages exist.
 - `glama.json`: passes the live schema at `https://glama.ai/mcp/schemas/server.json`.
 - BioContextAI, against `biocontext-ai/registry` `ed5eb26`:
   - `meta.yaml` passes `schema.json`, and `mcp.json` passes `mcp_schema.json` (check-jsonschema 0.33.0);
   - the repository's `validate_mcp_json_schema.py` passes: the single server key `rewire-bio/genomics-mcp` equals the identifier;
   - the folder name matches, and prettier `--check` passes.
 - Docker MCP Catalog, against `docker/mcp-registry` `49b643c`: `go run ./cmd/validate --name genomics-mcp` (what `task validate` runs) passes every check, on a temporary copy of the repository. `task build --tools` needs Docker and is wired in `registry-checks.yml`; it has not run yet.
-- MCPB: `@anthropic-ai/mcpb` 2.1.2 `validate`, `pack`, `unpack` and `validate` all pass. The launcher is tested over real MCP with a recording `docker` stand-in (`tests/release/test_mcpb_launcher.py`). A real container run is in CI (not yet run). Host application install flows are untested. Only linux/amd64 is claimed.
+- MCPB: `@anthropic-ai/mcpb` 2.1.2 `validate`, `pack`, `unpack` and `validate` all pass. The launcher is tested over real MCP with a recording `docker` stand-in (`tests/release/test_mcpb_launcher.py`). A real container run is in CI (not yet passed). Host application install flows are untested. The manifest declares Linux only; the recording-`docker` launcher tests are not macOS bundle acceptance.
 
 ## Submission files
 
@@ -41,7 +41,6 @@ Machine-readable copy: [registry/ledger.json](../registry/ledger.json). Updated 
 ## External actions only the maintainer or coordinator can take
 
 1. Run the release workflows and make the GHCR package public in the GitHub UI.
-2. Enable GitHub private vulnerability reporting (the public API showed it disabled on 2026-09-25). SECURITY.md points to it.
-3. Set up a personal PyPI account and pending publisher, then run `publish-pypi.yml`.
-4. Sign in to Glama and Smithery. Use free tiers only.
-5. Open the BioContextAI, Docker and punkpeye PRs and the mcpservers.org form, then record the dates and URLs here.
+2. Set up a personal PyPI account and pending publisher, then run `publish-pypi.yml`.
+3. Sign in to Glama and Smithery. Use free tiers only.
+4. Open the BioContextAI, Docker and punkpeye PRs and the mcpservers.org form, then record the dates and URLs here.

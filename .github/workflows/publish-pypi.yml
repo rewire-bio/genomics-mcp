@@ -19,6 +19,8 @@ permissions:
 env:
   UV_PYTHON: "3.12"
   UV_NO_CONFIG: "1"
+  # UV_NO_CONFIG also disables pyproject [tool.uv]; this reviewed file restores its policy.
+  UV_CONFIG_FILE: packaging/uv.toml
 
 jobs:
   check:

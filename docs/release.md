@@ -2,6 +2,10 @@
 
 Maintainer steps for version `X.Y.Z` (0.1.0 first). Everything runs from GitHub Actions in `rewire-bio/genomics-mcp`; no local credentials, cloud accounts or hosted services. Status of each route: [registry-ledger.md](registry-ledger.md).
 
+## Isolated uv builds
+
+`UV_NO_CONFIG=1` (used by the container and workflows to ignore ambient uv configuration) also disables `[tool.uv]` in pyproject.toml. The container and workflows set `UV_CONFIG_FILE=packaging/uv.toml`, a reviewed copy of the pyBigWig source-build policy; a test keeps it equal to pyproject. `pip`/`uvx` routes pass `--no-binary(-package) pybigwig` and `packaging/build-constraints.txt` explicitly.
+
 ## Before releasing
 
 1. `pyproject.toml`, `server.json` and `packaging/mcpb/manifest.json` carry the same version, and `docs/release-notes/X.Y.Z.md` exists (the release workflow checks this).
@@ -52,6 +56,8 @@ Before publishing it checks, without credentials:
 - if requested, the PyPI release exists and its description has the `mcp-name` marker.
 
 Then it renders `server.publish.json` (`scripts/render_server_json.py`), validates it with `mcp-publisher` 1.8.1 (checksum-verified), logs in with GitHub OIDC (`id-token: write`; the repository owner grants the `io.github.rewire-bio/*` namespace), publishes, and reads the exact version back from `registry.modelcontextprotocol.io`.
+
+With `include_pypi`, it also runs the exact `uvx` launch the entry advertises (`python3 scripts/render_server_json.py --print-uvx-args`: forced pyBigWig source build, release-asset build constraints) on Linux against PyPI, and requires `pyBigWig.remote == 1`.
 
 `mcp-publisher validate` checks the schema only. It does not check that packages exist; that is why the workflow checks them first. The committed `server.json` lists only the OCI image; the MCPB and PyPI entries are added only at publication.
 

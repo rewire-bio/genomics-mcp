@@ -1,0 +1,4 @@
+# Reviewed uv settings for isolated builds (UV_NO_CONFIG=1 also disables pyproject [tool.uv]).
+# Use with UV_CONFIG_FILE=packaging/uv.toml. Keep equal to [tool.uv] in pyproject.toml.
+no-binary-package = ["pybigwig"]
+build-constraint-dependencies = ["numpy==2.5.3", "setuptools==84.0.0", "setuptools-scm==10.3.4"]

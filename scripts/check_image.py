@@ -34,7 +34,12 @@ def main() -> int:
     args = p.parse_args()
     docker = ["docker"] + (["--config", args.docker_config] if args.docker_config else [])
     if args.pull:
-        subprocess.run([*docker, "pull", "--platform", "linux/amd64", args.image], check=True)
+        # Pull progress goes to stderr: stdout must be the JSON report only.
+        subprocess.run(
+            [*docker, "pull", "--platform", "linux/amd64", args.image],
+            check=True,
+            stdout=sys.stderr,
+        )
     out = subprocess.run(
         [*docker, "image", "inspect", args.image], check=True, capture_output=True, text=True
     ).stdout

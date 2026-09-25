@@ -77,6 +77,22 @@ jobs:
           curl -fsSL "https://pypi.org/pypi/rewire-genomics-mcp/$VERSION/json" > pypi.json
           jq -e --arg v "$VERSION" '.info.version == $v' pypi.json
           jq -e '.info.description | contains("<!-- mcp-name: io.github.rewire-bio/genomics-mcp -->")' pypi.json
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        if: inputs.include_pypi
+        with:
+          version: "0.8.2"
+      - name: The listed uvx launch works on Linux with remote pyBigWig
+        if: inputs.include_pypi
+        env:
+          VERSION: ${{ inputs.version }}
+          UV_NO_CONFIG: "1"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev zlib1g-dev
+          mapfile -t uvx_args < <(python3 scripts/render_server_json.py --print-uvx-args)
+          uvx --isolated "${uvx_args[@]}" "rewire-genomics-mcp==$VERSION" --version
+          uvx --isolated "${uvx_args[@]}" --from "rewire-genomics-mcp==$VERSION" python -c \
+            "import pyBigWig, sys; print('pyBigWig.remote', pyBigWig.remote); sys.exit(0 if pyBigWig.remote == 1 else 1)"
       - name: Render server.json
         env:
           MCPB_SHA256: ${{ steps.mcpb.outputs.sha256 }}

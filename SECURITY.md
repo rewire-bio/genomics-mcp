@@ -1,6 +1,6 @@
 # Security
 
-Report vulnerabilities privately through GitHub: **Security → Report a vulnerability** on https://github.com/rewire-bio/genomics-mcp. If that button is not available, open an issue asking for a private contact. Do not include details, credentials, signed URLs or private data in the issue.
+Report vulnerabilities privately through GitHub private vulnerability reporting: **Security → Report a vulnerability** on https://github.com/rewire-bio/genomics-mcp. Do not put details, credentials, signed URLs or private data in public issues.
 
 Supported version: the latest release.
 
