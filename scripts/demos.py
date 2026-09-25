@@ -23,6 +23,7 @@ The harness never imports genomics_mcp.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -201,6 +202,10 @@ async def demo_ena(s: Session) -> dict[str, Any]:
     bases = seq["records"][0]["sequence"]
     check(size == 756, f"artifact {size} bytes != 756")
     check(len(bases) == 614, f"{len(bases)} bases != 614")
+    # ENA publishes an MD5 of the sequence (not of the FASTA file); check the returned bases.
+    ena_md5 = (fasta.get("native") or {}).get("sequence_md5")
+    got_md5 = hashlib.md5(bases.upper().encode(), usedforsecurity=False).hexdigest()
+    check(ena_md5 == got_md5, f"sequence MD5 {got_md5} != ENA {ena_md5}")
     return {
         "accession": "DQ285577.1",
         "kind": "INSDC sequence record as FASTA (not an alignment or region query)",
@@ -210,6 +215,8 @@ async def demo_ena(s: Session) -> dict[str, Any]:
         "checksum_verified": artifact.get("checksum_verified"),
         "fasta_contig": contig,
         "bases": len(bases),
+        "ena_sequence_md5": ena_md5,
+        "returned_sequence_md5_matches": True,
         "first_30_bases": bases[:30],
     }
 
