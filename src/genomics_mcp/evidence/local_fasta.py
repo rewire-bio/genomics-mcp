@@ -1,8 +1,11 @@
 """Reference bases from a caller-named FASTA, read locally for REF checks and indel shifting.
 
-The FASTA must have an explicit assembly matching the variant and an existing `.fai`
-index (preparation is never implicit). Local paths must sit under an allowed root.
-Reading it sends nothing to any external service.
+The FASTA must be a local file with an explicit assembly matching the variant and an
+existing `.fai` index (plus `.gzi` for BGZF). Preparation is never implicit: the native
+reader is always given explicit index paths, so htslib cannot create a missing index.
+The FASTA and every auxiliary file it may open are checked against the allowed roots
+after resolving symlinks. Remote references are refused before any resolver or network
+use: fetch/prepare them locally first. Reading sends nothing to any external service.
 """
 
 from __future__ import annotations
@@ -10,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from genomics_mcp.errors import GenomicsError, InvalidInputError
+from genomics_mcp.errors import GenomicsError, InvalidInputError, PreparationRequiredError
 from genomics_mcp.models import FileRef
 from genomics_mcp.references.assemblies import AssemblyError, normalize_assembly
 from genomics_mcp.references.http import failure
@@ -43,6 +46,20 @@ def fasta_assembly(file: FileRef, expected: str | None) -> Assembly:
     return declared
 
 
+def require_local_reference(file: FileRef) -> None:
+    """Refuse non-local references up front: no resolver call, no network, no remote reads."""
+    if not file.is_local:
+        raise PreparationRequiredError(
+            f"reference FASTA must be a local file; {file.scheme!r} references are not read here",
+            source=SOURCE,
+            hint="fetch the FASTA with its .fai (and .gzi if BGZF) using fetch_file, then pass "
+            "the local path; or omit `reference` to use Ensembl/NCBI reference sources",
+        )
+
+
+_GZIP_MAGIC = b"\x1f\x8b"
+
+
 def _contig_candidates(assembly: Assembly, contig: str) -> list[str]:
     names = [contig, f"chr{contig}"]
     if contig == "MT":
@@ -56,33 +73,40 @@ class LocalFastaProvider:
     """`ReferenceProvider` over an indexed FASTA opened with pysam."""
 
     def __init__(self, ctx: OperationContext, file: FileRef, assembly: Assembly):
+        require_local_reference(file)
         self.ctx = ctx
         self.file = file
         self.assembly = assembly
         self.transformations: list[Transformation] = []
 
-    async def _paths(self) -> tuple[str, str]:
-        if self.file.is_local:
-            path = self.ctx.resolve_local_path(self.file.uri)
-            index = (
-                self.ctx.resolve_local_path(self.file.index_uri, must_exist=False)
-                if self.file.index_uri
-                else Path(f"{path}.fai")
-            )
-            if not index.exists():
-                raise failure(
-                    SOURCE,
-                    "faidx",
-                    "unsupported",
-                    "FASTA index (.fai) is missing; run `samtools faidx` or fetch_file with its index first",
-                )
-            return str(path), str(index)
-        resolved = await self.ctx.resolve_file(self.file)
-        target = str(resolved.local_path) if resolved.local_path else resolved.open_uri
-        if resolved.index_open_uri is None and resolved.local_path is None:
-            raise failure(SOURCE, "faidx", "unsupported", "remote FASTA has no resolved index")
-        index = resolved.index_open_uri or f"{target}.fai"
-        return target, index
+    def _aux(self, candidates: list[str], what: str) -> Path:
+        """First existing auxiliary file, each candidate checked (symlinks resolved) against the
+        allowed roots before any existence test or read."""
+        for raw in candidates:
+            resolved = self.ctx.resolve_local_path(raw, must_exist=False)
+            if resolved.exists():
+                return resolved
+        raise failure(
+            SOURCE,
+            "faidx",
+            "unsupported",
+            f"FASTA {what} is missing; run `samtools faidx` or fetch_file with its index first "
+            "(indexes are never created implicitly)",
+        )
+
+    def _paths(self) -> tuple[str, str, str | None]:
+        require_local_reference(self.file)
+        given = self.file.uri.removeprefix("file://")
+        path = self.ctx.resolve_local_path(given)
+        names = list(dict.fromkeys([given, str(path)]))
+        if self.file.index_uri:
+            fai = self._aux([self.file.index_uri], "index (.fai)")
+        else:
+            fai = self._aux([f"{n}.fai" for n in names], "index (.fai)")
+        with path.open("rb") as fh:
+            compressed = fh.read(2) == _GZIP_MAGIC
+        gzi = self._aux([f"{n}.gzi" for n in names], "BGZF index (.gzi)") if compressed else None
+        return str(path), str(fai), str(gzi) if gzi else None
 
     async def sequence(
         self,
@@ -101,17 +125,22 @@ class LocalFastaProvider:
                 f"local FASTA is {self.assembly}; {assembly} was requested and no other build is substituted",
             )
         try:
-            path, index = await self._paths()
+            path, index, gzi = self._paths()
         except GenomicsError as exc:
-            kind = "unauthorized" if exc.info.code == "unauthorized" else "invalid_input"
-            if exc.info.code == "not_found":
-                kind = "not_found"
-            raise failure(SOURCE, "open", kind, exc.info.message) from None
+            kinds = {"unauthorized": "unauthorized", "not_found": "not_found",
+                     "preparation_required": "unsupported"}  # fmt: skip
+            raise failure(SOURCE, "open", kinds.get(exc.info.code, "invalid_input"),
+                          exc.info.message) from None  # fmt: skip
+        except OSError as exc:
+            raise failure(SOURCE, "open", "invalid_response",
+                          f"cannot read local FASTA: {type(exc).__name__}") from None  # fmt: skip
 
         def read() -> tuple[str, str, int]:
             import pysam
 
-            with pysam.FastaFile(path, filepath_index=index) as fasta:
+            # Explicit index paths only: htslib would otherwise build a missing .fai itself.
+            extra = {"filepath_index_compressed": gzi} if gzi else {}
+            with pysam.FastaFile(path, filepath_index=index, **extra) as fasta:
                 lengths = dict(zip(fasta.references, fasta.lengths, strict=True))
                 for name in _contig_candidates(assembly, contig):
                     if name in lengths:
