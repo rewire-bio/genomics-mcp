@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import dataclasses
 from pathlib import Path
 from typing import Any
 
@@ -29,11 +30,16 @@ from genomics_mcp.context import OperationContext
 from genomics_mcp.contracts import ResolvedFile
 from genomics_mcp.errors import (
     BudgetExceededError,
+    GenomicsError,
+    InvalidInputError,
+    UnsupportedError,
     UpstreamError,
 )
-from genomics_mcp.models import Compression, FileRef, Provenance, ReadinessState
+from genomics_mcp.models import Compression, FileFormat, FileRef, Provenance, ReadinessState
+from genomics_mcp.public import Deadline
 from genomics_mcp.requests import CancelTransferRequest, FetchFileRequest, TransferStatusRequest
 from genomics_mcp.result import OperationOutput
+from genomics_mcp.storage.resolved import StorageResolvedFile
 
 COMPONENT = "transfers"
 PREPARE_TASK = "genomics_mcp.artifacts.native_tasks:prepare"
@@ -107,16 +113,44 @@ async def fetch_file(req: FetchFileRequest, ctx: OperationContext) -> OperationO
     key = transfer_key(req.file, req.include_index, req.prepare)
     existing = tm.find(key)
     if existing is not None and existing.state in ("running", "queued"):
-        await tm.wait(existing, min(WAIT_FOR_COMPLETION_S, ctx.deadline.remaining() - 1.0))
-        return _output(existing, ["a transfer for this file is already in progress"])
+        if _verification_compatible(existing, req):
+            await tm.wait(existing, min(WAIT_FOR_COMPLETION_S, ctx.deadline.remaining() - 1.0))
+            return _output(existing, ["a transfer for this file is already in progress"])
+        # The running job was started without this request's checksum requirements: run a
+        # separate job so this call is verified. The other job and its artifact are untouched.
+        existing = None
 
     budget = tm.budget_for(req.budget_bytes)
-    resolved = await ctx.resolve_file(req.file)
+    if _is_ncbi_genome_package(req.file) and req.prepare:
+        return await _prepare_ncbi(req, ctx, tm, storage, key, budget)
+    backend = ctx.component(f"{BACKEND_PREFIX}{req.file.scheme}")
+    urls: dict[str, Any] = {}
+    if backend is not None:
+        # Schemes that cannot be opened as URLs (EGA) stream through their backend; this
+        # manager keeps budget, quota, resume, cancellation and checksum checks.
+        desc = await backend.describe(req.file, ctx)
+        merged = [*req.file.checksums, *[c for c in desc.checksums if c not in req.file.checksums]]
+        req = req.model_copy(update={"file": req.file.model_copy(update={"checksums": merged})})
+        md5 = next((c.value for c in desc.checksums if c.algorithm == "md5"), None)
+        resolved = StorageResolvedFile(
+            file=req.file.model_copy(update={"size_bytes": desc.size_bytes}),
+            open_uri=f"{BACKEND_PREFIX}{req.file.scheme}",
+            access="https",
+            size_bytes=desc.size_bytes,
+            etag=f"md5:{md5}" if md5 else None,
+            index_state="not_checked",
+        )
+        bctx = dataclasses.replace(ctx, deadline=Deadline(BACKGROUND_TRANSFER_S))
+        urls["data"] = BackendSource(backend, req.file, bctx)
+        name_override: str | None = safe_name(desc.suggested_name)
+    else:
+        resolved = await ctx.resolve_file(req.file)
+        name_override = None
     local = resolved.local_path is not None and resolved.open_uri.startswith("/")
     etag = getattr(resolved, "etag", None)
     last_modified = getattr(resolved, "last_modified", None)
     size = getattr(resolved, "size_bytes", None) or resolved.file.size_bytes
-    name = default_name(req.file)
+    name = name_override or default_name(req.file)
 
     if existing is not None and existing.state == "completed" and existing.artifact:
         reuse, why = _reusable(tm, existing, req, etag, last_modified, size)
@@ -131,7 +165,6 @@ async def fetch_file(req: FetchFileRequest, ctx: OperationContext) -> OperationO
         ReadinessState.INDEX_REQUIRED,
     )
     parts: list[Part] = []
-    urls: dict[str, str] = {}
     local_notes: list[str] = []
     if local:
         if needs_prep:
@@ -148,7 +181,7 @@ async def fetch_file(req: FetchFileRequest, ctx: OperationContext) -> OperationO
             local_notes.append("the file is already local; it was not copied")
     else:
         parts.append(Part("data", name, req.file.display_uri(), size))
-        urls["data"] = resolved.open_uri
+        urls.setdefault("data", resolved.open_uri)
         if req.include_index and resolved.index_open_uri and not needs_prep:
             shown = getattr(resolved, "index_display", None) or (req.file.index_uri or "")
             parts.append(
@@ -192,9 +225,8 @@ async def fetch_file(req: FetchFileRequest, ctx: OperationContext) -> OperationO
     elif existing is not None and existing.state in ("failed", "completed"):
         notes.append(reuse_note or "previous attempt is not resumable; starting again")
 
-    tm.check_quota(
-        (known or budget) - sum(p.done for p in parts), exclude=job.transfer_id if job else None
-    )
+    needed = ((known or budget) - sum(p.done for p in parts)) if parts else 0
+    tm.check_quota(needed, exclude=job.transfer_id if job else None)
     if job is None:
         job = tm.new_job(
             key,
@@ -216,6 +248,25 @@ async def fetch_file(req: FetchFileRequest, ctx: OperationContext) -> OperationO
     tm.start(job, runner)
     await tm.wait(job, min(WAIT_FOR_COMPLETION_S, ctx.deadline.remaining() - 1.0))
     return _output(job)
+
+
+def _checksum_set(checksums: Any) -> set[tuple[str, str]]:
+    out = set()
+    for c in checksums or []:
+        alg = c["algorithm"] if isinstance(c, dict) else c.algorithm
+        val = c["value"] if isinstance(c, dict) else c.value
+        if alg in VERIFIABLE:
+            out.add((alg, val.strip().lower()))
+    return out
+
+
+def _verification_compatible(job: Job, req: FetchFileRequest) -> bool:
+    """May this request share a job that is still running? Only if every checksum it wants
+    verified is one the running job will verify."""
+    wanted = _checksum_set(req.file.checksums) if req.verify_checksum else set()
+    if not wanted:
+        return True
+    return job.verify_checksum and wanted <= _checksum_set(job.file.get("checksums"))
 
 
 def _reusable(
@@ -257,7 +308,7 @@ async def _run_job(
     job: Job,
     req: FetchFileRequest,
     resolved: ResolvedFile,
-    urls: dict[str, str],
+    urls: dict[str, Any],
     trusted: tuple[str, ...],
     cancel: asyncio.Event,
 ) -> None:
@@ -269,6 +320,8 @@ async def _run_job(
         if part.local_source:
             await _copy_local(tm, job, part, cancel)
             transformations.append("copied local source into the work dir (source unchanged)")
+        elif isinstance(urls[part.role], BackendSource):
+            await _download_backend(tm, job, part, urls[part.role], cancel)
         else:
             await _download(tm, storage, job, part, urls[part.role], trusted, cancel)
         if cancel.is_set():
@@ -370,8 +423,7 @@ async def _run_job(
     )
     described = await storage.describe_local(art_ref)
     job.artifact_file = described.file.model_dump(mode="json")
-    st = final_path.stat()
-    job.artifact_identity = {"size": st.st_size, "mtime_ns": st.st_mtime_ns}
+    job.artifact_identity = _identity(final_path)
     job.state = "completed"
     job.error = None
     tm._persist(job)
@@ -537,6 +589,172 @@ async def _stream(
                 "call fetch_file again with the same file to resume",
                 retryable=True,
             ) from None
+
+
+BACKEND_PREFIX = "transfer_backend:"
+BACKGROUND_TRANSFER_S = 6 * 3600.0
+BACKEND_CHUNK_BYTES = 16 * 1024 * 1024
+BACKEND_ALIGN_BYTES = 64 * 1024
+"""Deadline for background backend streams (they outlive the interactive call)."""
+NCBI_PREPARER = "preparer:ncbi_genome_fasta"
+
+
+@dataclasses.dataclass
+class BackendSource:
+    backend: Any
+    file: FileRef
+    ctx: OperationContext
+
+
+class _Body:
+    def __init__(self, body: Any) -> None:
+        self.body = body
+
+    def aiter_raw(self) -> Any:
+        return self.body
+
+
+async def _download_backend(
+    tm: TransferManager, job: Job, part: Part, src: BackendSource, cancel: asyncio.Event
+) -> None:
+    """Stream [offset, size) from a transfer backend into the part (resumable by offset)."""
+    path = tm._part_path(job, part)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    offset = tm.part_size(job, part)
+    if part.expected_size is not None and offset > part.expected_size:
+        offset = 0
+    # Ranges start only at aligned offsets: EGA's decrypted plain stream returns wrong bytes
+    # for ranges starting inside a cipher block (observed live). Resume from an aligned point.
+    aligned = offset - offset % BACKEND_ALIGN_BYTES
+    if aligned != offset or not path.exists():
+        _truncate(path, aligned)
+        offset = aligned
+    part.done = offset
+    if part.expected_size is not None and offset == part.expected_size:
+        return
+    size = part.expected_size
+    if size is None:
+        raise UpstreamError("the transfer backend did not report a size", retryable=False)
+    # Bounded ranged chunks. A range spanning the whole object is never requested: EGA
+    # answers such a request with 200, which a strict range client must refuse.
+    while part.done < size and not cancel.is_set():
+        start = part.done
+        end = min(start + BACKEND_CHUNK_BYTES, size)
+        if start == 0 and end == size and size > BACKEND_ALIGN_BYTES:
+            end = (size // 2) - (size // 2) % BACKEND_ALIGN_BYTES
+        async with src.backend.open(src.file, src.ctx, start=start, end=end) as body:
+            before = part.done
+            await _stream(tm, job, part, _Body(body), path, start, cancel)
+        if part.done != end and not cancel.is_set():
+            raise UpstreamError(
+                f"backend returned {part.done - before} bytes for a {end - start} byte range; "
+                "call fetch_file again to resume",
+                retryable=True,
+            )
+    if not cancel.is_set() and part.expected_size is not None and part.done != part.expected_size:
+        raise UpstreamError(
+            f"transfer ended early ({part.done} of {part.expected_size} bytes); "
+            "call fetch_file again to resume",
+            retryable=True,
+        )
+
+
+def _is_ncbi_genome_package(file: FileRef) -> bool:
+    native = file.native or {}
+    return file.source == "ncbi_datasets" and (
+        native.get("annotation_type") == "GENOME_FASTA"
+        or "include_annotation_type=GENOME_FASTA" in file.uri
+    )
+
+
+async def _prepare_ncbi(
+    req: FetchFileRequest,
+    ctx: OperationContext,
+    tm: TransferManager,
+    storage: Any,
+    key: str,
+    budget: int,
+) -> OperationOutput:
+    """Explicit NCBI genome preparation (ZIP -> verified FASTA + .fai) under E3 accounting."""
+    preparer = ctx.component(NCBI_PREPARER)
+    if preparer is None:
+        raise UnsupportedError("NCBI genome preparation is not available in this build")
+    if not req.file.accession:
+        raise InvalidInputError("the NCBI package FileRef has no assembly accession")
+    tm.check_quota(budget)
+    # A placeholder part with unknown size makes the job reserve its whole budget while it runs.
+    package = Part("package", safe_name(f"{req.file.accession}.zip"), req.file.display_uri())
+    job = tm.new_job(
+        key,
+        req.file,
+        budget,
+        include_index=True,
+        prepare=True,
+        verify=req.verify_checksum,
+        parts=[package],
+        access="https",
+    )
+    # Runs as a managed background job (status/cancel work; it outlives a timed-out call)
+    # with its own deadline; the preparer bounds bytes by `budget` and cleans up on failure.
+    bctx = dataclasses.replace(ctx, deadline=Deadline(PREPARE_TIMEOUT_S))
+
+    async def runner(job: Job, cancel: asyncio.Event) -> None:
+        art = await preparer.prepare(req.file.accession, bctx, budget_bytes=job.budget_bytes)
+        outputs = [Path(f) for f in (art.path, art.index_path) if f]
+        if cancel.is_set():
+            for f in outputs:
+                _unlink(f)
+            return
+        try:
+            tm.check_quota(0, exclude=job.transfer_id)
+        except GenomicsError:
+            for f in outputs:
+                _unlink(f)
+            raise
+        described = await storage.describe_local(
+            FileRef(
+                uri=art.path,
+                index_uri=art.index_path,
+                format=FileFormat.FASTA,
+                assembly=req.file.assembly,
+                source=req.file.source,
+                accession=req.file.accession,
+                visibility=req.file.visibility,
+            )
+        )
+        job.artifact = art.model_dump(mode="json")
+        job.artifact_file = described.file.model_dump(mode="json")
+        job.preparation = {
+            "prepared": True,
+            "steps": [
+                "NCBI Datasets genome package downloaded, member MD5s verified, FASTA "
+                "extracted, .fai built (preparer:ncbi_genome_fasta)"
+            ],
+        }
+        job.source_verified = art.checksum_verified
+        package.state = "done"
+        package.done = art.size_bytes
+        package.expected_size = art.size_bytes
+        job.artifact_identity = _identity(Path(art.path))
+        if cancel.is_set():
+            return
+        job.state = "completed"
+        job.error = None
+        tm._persist(job)
+
+    tm.start(job, runner)
+    await tm.wait(job, min(WAIT_FOR_COMPLETION_S * 4, ctx.deadline.remaining() - 1.0))
+    return _output(job)
+
+
+def _truncate(path: Path, size: int) -> None:
+    with path.open("ab") as fh:
+        fh.truncate(size)
+
+
+def _identity(path: Path) -> dict[str, int]:
+    st = path.stat()
+    return {"size": st.st_size, "mtime_ns": st.st_mtime_ns}
 
 
 def _unlink(path: Path) -> None:

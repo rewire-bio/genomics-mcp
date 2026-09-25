@@ -29,7 +29,27 @@ prov = storage.provenance(resolved, method="...", transformations=[...])
 ```
 
 Readers accept a plain core `ResolvedFile` from other resolvers (e.g. E6 `htsget`/`ega`). If it
-sets `region` and has no index, the slice is scanned and filtered to the interval.
+sets `region` and has no index, the slice is scanned and filtered to the interval. Readers use
+the served format (`resolved.file.format`): EGA serves BAM slices for CRAM sources, so no CRAM
+reference rules apply to them. Pileup indexes a private copy of an unindexed BAM slice.
+Results include `region_slice` (served format, slice region, provider record counts).
+
+## Archive integration (E6/E7)
+
+- `ega://` region reads use the EGA resolver's bounded htsget slice; never a whole file.
+- `fetch_file` for a scheme with a `transfer_backend:<scheme>` component (EGA) calls
+  `describe` for size/MD5, applies the E3 budget and quota, then streams with `open(start, end)`
+  in ranged chunks. Ranges start at 64 KiB-aligned offsets and never span the whole object:
+  EGA answers a whole-object range with 200, and returned wrong bytes for a range starting
+  at an unaligned offset (observed live 2026-09-25; the MD5 check caught it). Resume truncates
+  the partial file to an aligned offset. The source MD5 is verified on the complete file.
+- `fetch_file` with `prepare=true` on an NCBI Datasets `GENOME_FASTA` package calls
+  `preparer:ncbi_genome_fasta` as a managed background job: it reserves its budget, can be
+  cancelled, and keeps a job ID if the call times out. The preparer bounds the `.fai` before
+  writing it, so ZIP + FASTA + `.fai` stay within the budget (scoped edit in
+  `catalogs/ncbi_datasets.py`). `artifact_file` is the verified FASTA + `.fai`.
+- ENA sequence FASTA records are ordinary HTTPS files. Sidecar probes that a server answers
+  with a 4xx other than 401/403 (ENA returns 400) count as absent.
 
 ## Storage (E2)
 
@@ -147,7 +167,10 @@ genomics_mcp.storage._worker`), because a hung libcurl read cannot be interrupte
   `source_verification` reports checksums of the source bytes as received.
 - Failure or cancellation removes the job's own staged and prepared files; sources and other
   jobs' artifacts are never touched.
-- Local files are not copied unless `prepare=true` needs a copy to index.
+- A running job is shared only with requests whose checksum requirements it will verify;
+  otherwise a separate job runs (the other job and its artifact are untouched).
+- Local files are not copied unless `prepare=true` needs a copy to index; a no-copy fetch
+  reserves no quota.
 - Preparation outputs count against the job budget and the work dir quota: the worker caps
   the size of any file it writes and checks growth after each step; exceeding either fails
   with `budget_exceeded` and removes the outputs.
@@ -172,7 +195,7 @@ assembly that differs from the request is `invalid_input`. An interval past the 
 | `get_coverage` | `samtools depth -a` semantics with the same exclude flags, `-Q`, `-q`. Deletions and reference skips are not counted; overlapping mates are both counted. Per-base or `bin_size` bins (mean/min/max). `max_records` caps output only; the summary covers the whole interval. If the input cap (5,000,000 reads) or deadline stops processing, the result is `partial` and positions from the first unprocessed read are not computed (never reported as zero). |
 | `get_pileup` | `samtools mpileup -B -A` semantics: no BAQ, orphans counted, overlap detection on. An entry is kept when `quality[qpos] >= min_base_quality`, `qpos` being the next query base for deletions/skips. Per position: kept depth, bases by strand, deletions, reference skips, insertions after, deletions starting after, low-quality exclusions, mates in column, `depth_limit_reached`. Reference base only when a reference is given. No calling. |
 | `get_variants` | VCF POS kept as `pos`; `start`/`end` 0-based over REF (END-aware). REF, ALT list (symbolic and `*` kept), IDs, QUAL (null if missing), FILTER, INFO, FORMAT per sample. Genotype: exact GT text, allele indices (null = missing), allele strings, ploidy, per-separator phasing. TBI and CSI (long contigs). |
-| `get_sequence` | Plain FASTA + `.fai`, or BGZF + `.fai` + `.gzi`; local or range-capable remote. Case preserved. |
+| `get_sequence` | Plain FASTA + `.fai`, or BGZF + `.fai` + `.gzi`; local or range-capable remote. Remote indexes are staged in the work dir only within the free quota (and 64 MiB), removed afterwards. Case preserved. |
 | `get_features` | BGZF + tabix BED/GFF3/GTF. BED coordinates as-is; GFF3/GTF `start - 1`. Native line and attributes kept (GFF3 percent-decoded, multi-values split). `feature_types` for GFF3/GTF only. bigBed: columns named from the file's autoSql. |
 | `get_signal` | bigWig exact summaries (`exact=True`) for the interval and optional `bins` (libBigWig edges `start + i*L//n`). Without bins: data intervals clipped to the interval. Missing data is `null`. |
 
@@ -206,7 +229,7 @@ GENOMICS_MCP_NETWORK_TESTS=1 GENOMICS_MCP_TEST_S3_KEY=... GENOMICS_MCP_TEST_S3_S
 GENOMICS_MCP_TEST_FIXTURES=<local copy of the MinIO fixtures> uv run pytest -q
 ```
 
-Result: 238 passed, 0 skipped (full suite including core). Without the opt-in variables the
+Result on the E2–E5 stage: 238 passed, 0 skipped. After merging main and wiring EGA/ENA/NCBI: 554 passed, 6 skipped (other workers' opt-ins), 1 failed — E6's live test still asserts `fetch_file` is `unsupported` because E3 was absent; that assertion is obsolete. Without the opt-in variables the
 MinIO and live tests are skipped.
 
 - samtools 1.24 / bcftools 1.24 oracles on synthetic golden data: `samtools view` (6 flag/MAPQ
@@ -221,6 +244,11 @@ MinIO and live tests are skipped.
   explicit synthetic credentials): identical records for reads, coverage, pileup, VCF, BCF,
   BED, FASTA, bigWig and both CRAMs; dummy ambient AWS variables, config files and a dead proxy
   present and unused.
+- Live EGA public test account (EGAF00007243773, GRCh38 chr10:[10000,10050)): 42 of 91
+  received records returned, matching the independent count; pileup on the slice; whole-file
+  `fetch_file` 194,821 bytes with source MD5 `ed365c71…` verified, 1,097 alignments, `.bai`
+  prepared; also over MCP stdio. ENA DQ285577.1 FASTA fetched, indexed and queried. NCBI
+  GCF_000819615.1 (phiX) prepared; NC_001422.1:[0,20) = GAGTTTTATCGCTTCCATGA.
 - Live ENCODE ENCFF792QDS (GRCh38 bigWig, 1.4 GB, range reads through the resolved redirect):
   chr1:[1000000,1001000) exact mean 26.361254017233847 in about 4–5 s. ENCFF001JBR (mm9
   bigBed): features with autoSql names.

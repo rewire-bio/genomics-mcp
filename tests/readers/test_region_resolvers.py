@@ -12,7 +12,7 @@ from gm_test_support import envelope, iv
 
 from genomics_mcp.contracts import ResolvedFile
 from genomics_mcp.errors import UnsupportedError
-from genomics_mcp.models import Readiness, ReadinessState
+from genomics_mcp.models import FileFormat, Readiness, ReadinessState
 
 
 class SliceResolver:
@@ -86,3 +86,38 @@ async def test_region_slice_for_variants(service, golden, tmp_path):
     )
     assert res["status"] == "ok", res.get("error")
     assert [r["pos"] for r in res["data"]["records"]] == [31, 41]
+
+
+class ServedAsBamResolver(SliceResolver):
+    """Like EGA htsget: a CRAM source is served as an unindexed BAM slice of the region."""
+
+    async def resolve_region(self, file, interval, ctx):
+        out = await super().resolve_region(file, interval, ctx)
+        return out.model_copy(update={"file": file.model_copy(update={"format": FileFormat.BAM})})
+
+
+async def test_cram_source_served_as_bam_slice(service, golden, tmp_path):
+    slice_bam = tmp_path / "slice.bam"
+    with (
+        pysam.AlignmentFile(str(golden["bam"])) as src,
+        pysam.AlignmentFile(str(slice_bam), "wb", header=src.header) as out,
+    ):
+        for r in src.fetch("chrG", 100, 300):
+            out.write(r)
+    service.registry._resolvers["ega"] = (ServedAsBamResolver(slice_bam), "test")
+    base = {
+        "file": {"uri": "ega://EGAF00000000001", "format": "cram"},
+        "interval": iv("chrG", 140, 170),
+    }
+    for op in ("get_reads", "get_coverage", "get_pileup"):
+        res = envelope(await service.call(op, base))
+        assert res["status"] == "ok", (op, res.get("error"))
+        direct = envelope(
+            await service.call(
+                op, {"file": {"uri": str(golden["bam"])}, "interval": iv("chrG", 140, 170)}
+            )
+        )
+        assert res["data"]["records"] == direct["data"]["records"], op
+        assert res["data"]["region_slice"]["served_format"] == "bam"
+        assert "reference" not in res["data"]  # no CRAM reference rules for served BAM
+    assert not list(slice_bam.parent.glob("*.bai"))  # slice indexed privately, not in place

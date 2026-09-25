@@ -278,16 +278,13 @@ def prepare(p: dict[str, Any], deadline: float) -> dict[str, Any]:
                 "reason": f"no preparation is defined for {fmt}",
             }
     except OSError as exc:
-        if exc.errno == errno.EFBIG:
+        if exc.errno == errno.EFBIG or _hit_cap(path, p.get("max_file_bytes")):
             raise BudgetExceededError(
                 "preparation output reached the per-file write limit (work dir quota)"
             ) from None
         raise PreparationRequiredError(f"preparation failed: {str(exc)[:300]}") from None
     except pysam.utils.SamtoolsError as exc:
-        cap = p.get("max_file_bytes")
-        if "File too large" in str(exc) or (
-            cap and any(f.stat().st_size >= cap for f in path.parent.iterdir() if f.is_file())
-        ):
+        if "File too large" in str(exc) or _hit_cap(path, p.get("max_file_bytes")):
             raise BudgetExceededError(
                 "preparation output reached the per-file write limit (work dir quota)"
             ) from None
@@ -311,6 +308,13 @@ def _limit_writes(max_file_bytes: int | None) -> None:
         return  # only in the isolated worker process; growth checks still apply otherwise
     signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
     resource.setrlimit(resource.RLIMIT_FSIZE, (max_file_bytes, max_file_bytes))
+
+
+def _hit_cap(path: Path, cap: int | None) -> bool:
+    """True if any output reached the per-file write cap (BGZF/HTSlib may hide EFBIG)."""
+    if not cap:
+        return False
+    return any(f.stat().st_size >= cap for f in path.parent.iterdir() if f.is_file())
 
 
 def _dir_bytes(path: Path) -> int:

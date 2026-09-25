@@ -437,3 +437,131 @@ async def test_recompressed_artifact_reports_its_own_checksums(svc, fixture_serv
     assert art["checksum_verified"] is False
     assert done["data"]["source_verification"]["verified"] is True
     assert done["data"]["source_verification"]["checksums"]["md5"] == hashlib.md5(raw).hexdigest()
+
+
+async def test_running_job_is_not_shared_with_stricter_verification(
+    svc, srv, srv_root, monkeypatch
+):
+    monkeypatch.setattr(fetch_mod, "WAIT_FOR_COMPLETION_S", 0.1)
+    data = blob(srv_root / "held.bin", 300_000, seed=9)
+    wrong = [{"algorithm": "sha256", "value": "0" * 64}]
+    f = {"uri": srv.url("slow/held.bin"), "format": "other", "checksums": wrong}
+    first = await fetch(svc, file=f, verify_checksum=False)
+    second = await fetch(svc, file=f, verify_checksum=True)
+    assert second["data"]["transfer"]["transfer_id"] != first["data"]["transfer"]["transfer_id"]
+    a = await wait_done(svc, first["data"]["transfer"]["transfer_id"], seconds=30)
+    b = await wait_done(svc, second["data"]["transfer"]["transfer_id"], seconds=30)
+    assert a["data"]["transfer"]["state"] == "completed"
+    assert Path(a["data"]["transfer"]["artifact"]["path"]).read_bytes() == data  # untouched
+    assert b["data"]["transfer"]["state"] == "failed"
+    assert "checksum mismatch" in b["data"]["transfer"]["error"]["message"]
+    good = {**f, "checksums": [{"algorithm": "sha256", "value": sha256(data)}]}
+    c = await fetch(svc, file=good, verify_checksum=True)
+    c = await wait_done(svc, c["data"]["transfer"]["transfer_id"], seconds=30)
+    assert c["data"]["source_verification"]["verified"] is True
+
+
+async def test_local_no_copy_reserves_nothing(tmp_path, golden):
+    svc = GenomicsService(
+        make_settings(tmp_path, [golden["root"]], limits={"workspace_max_bytes": 4 * 1024 * 1024})
+    )
+    try:
+        res = await fetch(svc, file={"uri": str(golden["ref"])})
+        done = await wait_done(svc, res["data"]["transfer"]["transfer_id"])
+        assert done["data"]["transfer"]["state"] == "completed"
+    finally:
+        await svc.aclose()
+
+
+async def test_bgzf_recompression_at_quota_is_budget_exceeded(tmp_path, golden):
+    import gzip as gz
+    import random
+
+    rng = random.Random(5)
+    text = "".join(
+        f">c{i}\n{''.join(rng.choice('ACGT') for _ in range(200))}\n" for i in range(5000)
+    )
+    src = golden["root"] / "random_contigs.fa.gz"
+    src.write_bytes(gz.compress(text.encode()))
+    quota = src.stat().st_size + 85_000
+    svc = GenomicsService(
+        make_settings(tmp_path, [golden["root"]], limits={"workspace_max_bytes": quota})
+    )
+    try:
+        res = await fetch(svc, file={"uri": str(src)}, prepare=True)
+        done = await wait_done(svc, res["data"]["transfer"]["transfer_id"], seconds=60)
+        t = done["data"]["transfer"]
+        assert t["state"] == "failed" and t["error"]["code"] == "budget_exceeded", t["error"]
+        from genomics_mcp.artifacts.transfers import dir_usage
+
+        assert dir_usage(svc.settings.paths.work_dir) <= quota
+        assert src.read_bytes() == gz.compress(text.encode()) or src.exists()
+    finally:
+        await svc.aclose()
+
+
+async def test_remote_index_staging_respects_quota(tmp_path, srv, srv_root):
+    import pysam
+
+    fa = srv_root / "many.fa"
+    fa.write_text("".join(f">contig_{i}\nA\n" for i in range(5000)))
+    pysam.faidx(str(fa))
+    assert (srv_root / "many.fa.fai").stat().st_size > 65_536
+    small = srv_root / "small.fa"
+    small.write_text(">s\nACGT\n")
+    pysam.faidx(str(small))
+    svc = GenomicsService(make_settings(tmp_path, [], limits={"workspace_max_bytes": 65_536}))
+    try:
+        big = envelope(
+            await svc.call(
+                "get_sequence",
+                {"file": {"uri": srv.url("many.fa")}, "interval": iv("contig_1", 0, 1, "x")},
+            )
+        )
+        assert big["error"]["code"] == "budget_exceeded", big["error"]
+        staged = svc.settings.paths.work_dir / ".isolation" / "staged"
+        assert not staged.exists() or not any(staged.iterdir())
+        ok = envelope(
+            await svc.call(
+                "get_sequence",
+                {"file": {"uri": srv.url("small.fa")}, "interval": iv("s", 0, 4, "x")},
+            )
+        )
+        assert ok["data"]["records"][0]["sequence"] == "ACGT"
+    finally:
+        await svc.aclose()
+
+
+class SlowPreparer:
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self.started = asyncio.Event()
+
+    async def prepare(self, accession, ctx, *, budget_bytes=None):
+        self.started.set()
+        await asyncio.sleep(30)
+        raise AssertionError("should have been cancelled")
+
+
+async def test_ncbi_preparation_is_a_managed_cancellable_job(svc, tmp_path, monkeypatch):
+    monkeypatch.setattr(fetch_mod, "WAIT_FOR_COMPLETION_S", 0.05)
+    prep = SlowPreparer(tmp_path / "x.fa")
+    svc.registry._components["preparer:ncbi_genome_fasta"] = prep
+    pkg = {
+        "uri": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_000819615.1/download"
+        "?include_annotation_type=GENOME_FASTA",
+        "source": "ncbi_datasets",
+        "accession": "GCF_000819615.1",
+        "format": "other",
+        "native": {"annotation_type": "GENOME_FASTA"},
+    }
+    res = await fetch(svc, file=pkg, prepare=True)
+    tid = res["data"]["transfer"]["transfer_id"]
+    assert res["data"]["transfer"]["state"] in ("queued", "running")
+    await asyncio.wait_for(prep.started.wait(), 5)
+    tm = svc.registry.component("transfers").manager
+    assert tm.reserved_bytes() >= svc.settings.limits.max_transfer_bytes
+    out = envelope(await svc.call("cancel_transfer", {"transfer_id": tid}))
+    assert out["data"]["transfer"]["state"] == "cancelled"
+    await asyncio.sleep(0.2)
+    assert (await status(svc, tid))["data"]["transfer"]["state"] == "cancelled"

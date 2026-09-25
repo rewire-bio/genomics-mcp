@@ -76,8 +76,8 @@ async def _alignment_params(
     req: Any, ctx: OperationContext, call: Any
 ) -> tuple[Any, Any, dict[str, Any]]:
     storage = call.manager
-    fmt = req.file.effective_format()
     resolved = await ctx.resolve_file(req.file, interval=req.interval)
+    fmt = _served_format(req, resolved)
     storage.require_ready(resolved, needs_index=True)
     params = await call.reader_params(resolved)
     params.update(
@@ -122,6 +122,51 @@ def _incomplete(result: dict[str, Any], what: str) -> list[ErrorInfo]:
     ]
 
 
+def _served_format(req: Any, resolved: Any) -> FileFormat:
+    """Format of the bytes actually served. A region resolver may serve another format than
+    the source (EGA htsget returns BAM for CRAM sources); readers follow the served format."""
+    served = resolved.file.effective_format() or req.file.effective_format()
+    requested = req.file.effective_format()
+    families = ({FileFormat.BAM, FileFormat.CRAM}, {FileFormat.VCF, FileFormat.BCF})
+    if (
+        requested
+        and served != requested
+        and not any(requested in f and served in f for f in families)
+    ):
+        raise InvalidInputError(
+            f"the resolver served {served.value} for a {requested.value} request",
+            details={"requested": requested.value, "served": served.value},
+        )
+    return served
+
+
+def _region_info(resolved: Any, req: Any) -> dict[str, Any]:
+    """What a region resolver reported about the bounded slice it served."""
+    if resolved.region is None:
+        return {}
+    info: dict[str, Any] = {
+        "served_format": resolved.file.effective_format().value,
+        "requested_format": req.file.effective_format().value,
+        "slice_region": resolved.region,
+        "post_filtered": "records are filtered to the interval after reading the slice",
+    }
+    meta = (resolved.file.native or {}).get("region_artifact")
+    if isinstance(meta, dict):
+        info["provider"] = {
+            k: meta.get(k)
+            for k in (
+                "provider",
+                "bytes",
+                "sha256",
+                "records_received",
+                "records_overlapping",
+                "checksum_scope",
+            )
+            if k in meta
+        }
+    return {"region_slice": info}
+
+
 def _common(result: dict[str, Any], resolved: Any) -> dict[str, Any]:
     out = {
         "file": resolved.file.display_uri(),
@@ -156,6 +201,7 @@ async def get_reads(req: ReadsRequest, ctx: OperationContext, call: Any) -> Oper
         "records": records,
         "interval": req.interval,
         **_common(result, resolved),
+        **_region_info(resolved, req),
         "applied_filters": {
             "require_flags": req.require_flags,
             "exclude_flags": req.exclude_flags,
@@ -238,6 +284,7 @@ async def get_coverage(req: CoverageRequest, ctx: OperationContext, call: Any) -
         "complete_until": result["complete_until"],
         "reads_processed": result["reads_processed"],
         **_common(result, resolved),
+        **_region_info(resolved, req),
         "applied_filters": {
             "exclude_flags": req.exclude_flags,
             "min_mapping_quality": req.min_mapping_quality,
@@ -265,7 +312,7 @@ async def get_coverage(req: CoverageRequest, ctx: OperationContext, call: Any) -
 @_with_call
 async def get_pileup(req: PileupRequest, ctx: OperationContext, call: Any) -> OperationOutput:
     storage, resolved, params = await _alignment_params(req, ctx, call)
-    if resolved.index_open_uri is None:
+    if resolved.index_open_uri is None and resolved.region is None:
         raise PreparationRequiredError("pileup needs an indexed file")
     params.update(
         exclude_flags=req.exclude_flags,
@@ -294,6 +341,7 @@ async def get_pileup(req: PileupRequest, ctx: OperationContext, call: Any) -> Op
         "interval": req.interval,
         "positions": "only positions with at least one read after read filters",
         **_common(result, resolved),
+        **_region_info(resolved, req),
         "applied_filters": {
             "exclude_flags": req.exclude_flags,
             "min_mapping_quality": req.min_mapping_quality,
@@ -334,8 +382,8 @@ async def get_pileup(req: PileupRequest, ctx: OperationContext, call: Any) -> Op
 @_with_call
 async def get_variants(req: VariantsRequest, ctx: OperationContext, call: Any) -> OperationOutput:
     storage = call.manager
-    fmt = req.file.effective_format()
     resolved = await ctx.resolve_file(req.file, interval=req.interval)
+    fmt = _served_format(req, resolved)
     storage.require_ready(resolved, needs_index=True)
     params = await call.reader_params(resolved)
     params.update(
@@ -359,6 +407,7 @@ async def get_variants(req: VariantsRequest, ctx: OperationContext, call: Any) -
         "interval": req.interval,
         "samples": result["samples"],
         "file": resolved.file.display_uri(),
+        **_region_info(resolved, req),
         "assembly": result["assembly"],
         "header_reference": result["header_reference"],
         "contig_length": result["contig_length"],

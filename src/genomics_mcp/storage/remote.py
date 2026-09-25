@@ -12,7 +12,7 @@ from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
-from genomics_mcp.errors import InvalidInputError, NotFoundError, UnauthorizedError
+from genomics_mcp.errors import InvalidInputError, NotFoundError, UnauthorizedError, UpstreamError
 from genomics_mcp.models import FileRef
 from genomics_mcp.storage.formats import HEAD_BYTES, content_matches, readiness, sniff
 from genomics_mcp.storage.http import HttpAccess
@@ -80,6 +80,12 @@ async def resolve_remote(
             return Probe(state="missing", display=shown)
         except UnauthorizedError:
             return Probe(state="denied", display=shown)
+        except UpstreamError as exc:
+            # Some servers answer an absent sidecar with 400 (e.g. ENA's FASTA API): absent.
+            status = exc.info.details.get("http_status")
+            if isinstance(status, int) and 400 <= status < 500:
+                return Probe(state="missing", display=shown)
+            raise
         if status == 416:
             return Probe(state="present", open_uri=final, display=shown, head=b"", size=0)
         return Probe(state="present", open_uri=final, display=shown, head=head, size=total)

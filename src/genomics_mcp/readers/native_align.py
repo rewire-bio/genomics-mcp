@@ -430,7 +430,34 @@ def coverage(p: dict[str, Any], deadline: float) -> dict[str, Any]:
         o.close()
 
 
+def _slice_index(p: dict[str, Any]) -> str | None:
+    """Index a local, unindexed region slice (e.g. an EGA htsget BAM) into a private temp dir.
+    The slice itself is not modified. Returns the temp dir to remove afterwards."""
+    if p.get("index") or not (p.get("region_slice") and p.get("local")) or p["format"] != "bam":
+        return None
+    Path(p["seal_dir"]).mkdir(parents=True, exist_ok=True)
+    tmp = tempfile.mkdtemp(prefix="slice-", dir=p["seal_dir"])
+    try:
+        pysam.index(p["uri"], os.path.join(tmp, "slice.bai"))
+    except pysam.utils.SamtoolsError as exc:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise PreparationRequiredError(
+            f"the region slice could not be indexed for pileup ({str(exc)[:200]})"
+        ) from None
+    p["index"] = os.path.join(tmp, "slice.bai")
+    return tmp
+
+
 def pileup(p: dict[str, Any], deadline: float) -> dict[str, Any]:
+    tmp = _slice_index(p)
+    try:
+        return _pileup(p, deadline)
+    finally:
+        if tmp:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _pileup(p: dict[str, Any], deadline: float) -> dict[str, Any]:
     o = _open(p)
     try:
         iv = p["interval"]

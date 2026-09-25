@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import os
 import re
 import threading
 import zipfile
@@ -392,7 +393,6 @@ class NcbiDatasetsClient:
         """Explicit preparation: download the GENOME_FASTA package, verify, extract and faidx.
 
         `budget_bytes` bounds both the ZIP download and the extracted FASTA size."""
-        import pysam
 
         acc = _asm(accession)
         if "." not in acc:
@@ -428,7 +428,18 @@ class NcbiDatasetsClient:
             members, verified = await asyncio.to_thread(
                 _extract_fasta, zpath, acc, dest, budget_bytes - dl.size_bytes, stop
             )
-            await asyncio.to_thread(pysam.faidx, str(dest))
+            # The .fai shares the budget and is bounded before anything is written.
+            fai_bound = await asyncio.to_thread(_fai_upper_bound, dest, stop)
+            left = budget_bytes - dl.size_bytes - dest.stat().st_size
+            if fai_bound > left:
+                raise BudgetExceededError(
+                    f"the FASTA index would need up to {fai_bound} bytes; {max(left, 0)} bytes "
+                    "of the budget remain",
+                    source=SOURCE,
+                    hint="Pass an explicit larger budget.",
+                    details={"budget_bytes": budget_bytes, "fai_upper_bound": fai_bound},
+                )
+            await asyncio.to_thread(_faidx_bounded, dest, fai_bound)
         except BaseException:
             stop.set()  # an interrupted extraction thread stops at its next chunk and removes its temp
             remove_quietly(dest, f"{dest}.fai")
@@ -479,6 +490,51 @@ class NcbiDatasetsClient:
 
 
 MAX_MANIFEST_BYTES = 1024 * 1024
+_SCAN_CHUNK = 8 * 1024 * 1024
+
+
+def _faidx_bounded(dest: Path, bound: int) -> None:
+    import pysam
+
+    pysam.faidx(str(dest))
+    if os.path.getsize(f"{dest}.fai") > bound:
+        raise UpstreamError("FASTA index larger than its computed bound", source=SOURCE)
+
+
+def _fai_upper_bound(path: Path, stop: threading.Event | None = None) -> int:
+    """Upper bound on the samtools .fai size for `path`, from its header lines only.
+
+    Each .fai line is `name\tlength\toffset\tlinebases\tlinewidth\n`; every number is at most
+    the file size, so a record needs at most len(name) + 4 * digits(file size) + 5 bytes.
+    Chunked C-speed scanning; checks `stop` between chunks."""
+    digits = len(str(max(1, path.stat().st_size)))
+    total = 0
+
+    def add(line: bytes) -> None:
+        nonlocal total
+        name = line[1:].split(None, 1)
+        total += (len(name[0]) if name else 0) + 4 * digits + 5
+
+    carry = b""
+    with path.open("rb") as fh:
+        while chunk := fh.read(_SCAN_CHUNK):
+            if stop is not None and stop.is_set():
+                raise UpstreamError("preparation was cancelled", source=SOURCE)
+            buf = carry + chunk
+            cut = buf.rfind(b"\n") + 1
+            complete, carry = buf[:cut], buf[cut:]
+            # `complete` starts at a line start and ends with a newline.
+            pos = 0 if complete.startswith(b">") else -1
+            nxt = complete.find(b"\n>")
+            while pos >= 0 or nxt >= 0:
+                if pos < 0:
+                    pos, nxt = nxt + 1, complete.find(b"\n>", nxt + 1)
+                    continue
+                add(complete[pos : complete.find(b"\n", pos)])
+                pos = -1
+    if carry.startswith(b">"):
+        add(carry)
+    return total
 
 
 def _read_member_bounded(zf: zipfile.ZipFile, name: str, cap: int) -> bytes:

@@ -37,8 +37,8 @@ def test_capabilities_are_accurate(tmp_path):
         assert caps["operations"][op]["available"], op
     assert caps["operations"]["get_features"]["keys"] == ["bed", "bigbed", "gff3", "gtf"]
     assert caps["operations"]["get_reads"]["keys"] == ["bam", "cram"]
-    assert caps["operations"]["list_files"]["keys"] == ["local", "s3"]
-    assert caps["file_schemes"] == ["file", "http", "https", "s3"]
+    assert {"local", "s3"} <= set(caps["operations"]["list_files"]["keys"])
+    assert {"file", "http", "https", "s3"} <= set(caps["file_schemes"])
     for p in (
         "genomics_mcp.storage",
         "genomics_mcp.artifacts",

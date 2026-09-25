@@ -13,6 +13,7 @@ Registered as component ``"storage"``. Readers (E3-E5) get it with
 from __future__ import annotations
 
 import contextlib
+import os
 import shutil
 import tempfile
 import time
@@ -46,6 +47,15 @@ if TYPE_CHECKING:
 MAX_STAGED_INDEX_BYTES = 64 * 1024 * 1024
 
 
+def _dir_usage(root: Path) -> int:
+    total = 0
+    for dirpath, _dirs, files in os.walk(root):
+        for f in files:
+            with contextlib.suppress(OSError):
+                total += os.lstat(os.path.join(dirpath, f)).st_size
+    return total
+
+
 def _trusted(resolved: ResolvedFile) -> tuple[str, ...]:
     return tuple(h for h in [getattr(resolved, "endpoint_trusted_host", None)] if h)
 
@@ -63,6 +73,7 @@ class StorageManager:
         self.native = NativeRunner(settings)
         self.s3 = S3Clients(settings, settings.paths.work_dir / ".isolation" / "botocore")
         self.proxy = RangeProxy(self.http)
+        self._staging_reserved = 0
 
     async def aclose(self) -> None:
         await self.proxy.aclose()
@@ -155,22 +166,37 @@ class StorageManager:
             yield params
             return
         tmp = Path(tempfile.mkdtemp(prefix="idx-", dir=self._staging_root()))
+        reserved = 0
         try:
             out = {**params, "companions": dict(params["companions"])}
             trusted = _trusted(resolved)
             for key, uri in remote:
+                free = self._workspace_free(ctx)
+                cap = min(MAX_STAGED_INDEX_BYTES, max(0, free))
                 _status, body, total, _ = await self.http.read_head(
                     uri,
-                    MAX_STAGED_INDEX_BYTES + 1,
+                    cap + 1,
                     source=source_name(resolved.file),
                     timeout_s=min(30.0, ctx.deadline.ensure("index download")),
                     extra_trusted=trusted,
                 )
-                if len(body) > MAX_STAGED_INDEX_BYTES or (total or 0) > MAX_STAGED_INDEX_BYTES:
+                if len(body) > cap or (total or 0) > cap:
+                    quota = cap < MAX_STAGED_INDEX_BYTES
                     raise BudgetExceededError(
-                        f"remote {key} index is larger than {MAX_STAGED_INDEX_BYTES} bytes",
-                        hint="fetch the file and its index with fetch_file",
+                        f"remote {key} index needs more than the "
+                        + (
+                            "free work dir quota"
+                            if quota
+                            else f"{MAX_STAGED_INDEX_BYTES}-byte limit"
+                        )
+                        + f" ({cap} bytes)",
+                        hint="free space in the work dir, raise limits.workspace_max_bytes, or "
+                        "fetch the file with fetch_file",
+                        details={"index_bytes": total, "allowed_bytes": cap},
                     )
+                # Reserve before writing so concurrent staging cannot overrun the quota.
+                self._staging_reserved += len(body)
+                reserved += len(body)
                 path = tmp / f"staged.{key}"
                 path.write_bytes(body)
                 if key == "index":
@@ -179,7 +205,16 @@ class StorageManager:
                     out["companions"][key] = str(path)
             yield out
         finally:
+            self._staging_reserved -= reserved
             shutil.rmtree(tmp, ignore_errors=True)
+
+    def _workspace_free(self, ctx: OperationContext) -> int:
+        limit = self.settings.limits.workspace_max_bytes
+        used = _dir_usage(self.settings.paths.work_dir)
+        transfers = ctx.component("transfers")
+        manager = getattr(transfers, "manager", None)
+        pending = manager.reserved_bytes() if manager is not None else 0
+        return limit - used - pending - self._staging_reserved
 
     def _staging_root(self) -> Path:
         root = self.settings.paths.work_dir / ".isolation" / "staged"
