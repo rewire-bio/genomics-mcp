@@ -46,11 +46,25 @@ Atlas is disabled unless `ReferenceConfig.atlas_api_key` is set explicitly, or a
 ## Entry points
 
 ```python
-from genomics_mcp.references import ReferenceService, ReferenceConfig, call_tool, TOOLS, input_schemas, output_schemas, source_status
+from genomics_mcp.references import (
+    ReferenceService,
+    ReferenceConfig,
+    call_tool,
+    TOOLS,
+    input_schemas,
+    output_schemas,
+    source_status,
+)
 
-service = ReferenceService(httpx.AsyncClient(), ReferenceConfig(ncbi_api_key=None, atlas_api_key=None),
-                           atlas_transport=None, reference_provider=None)
-result: dict = await call_tool(service, "lookup_variant", {"variant": "7-140753336-A-T", "assembly": "GRCh38"})
+service = ReferenceService(
+    httpx.AsyncClient(),
+    ReferenceConfig(ncbi_api_key=None, atlas_api_key=None),
+    atlas_transport=None,
+    reference_provider=None,
+)
+result: dict = await call_tool(
+    service, "lookup_variant", {"variant": "7-140753336-A-T", "assembly": "GRCh38"}
+)
 ```
 
 `TOOLS[name]` gives the request/result Pydantic models and the method name. `call_tool` returns `status="error"` with `invalid_input` for bad arguments instead of raising. `ReferenceProvider` is the protocol for a local FASTA-backed reference. Nothing is read from the environment.
