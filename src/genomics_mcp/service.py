@@ -45,6 +45,11 @@ from genomics_mcp.result import (
 log = logging.getLogger("genomics_mcp.service")
 
 
+def deadline_grace(timeout_s: float) -> float:
+    """Extra time after the call deadline for assembling already-completed partial results."""
+    return min(1.0, max(0.05, 0.05 * timeout_s))
+
+
 class GenomicsService:
     def __init__(
         self,
@@ -101,7 +106,10 @@ class GenomicsService:
                     getattr(request, "allow_external_annotation", False)
                 ),
             )
-            async with asyncio.timeout(ctx.deadline.remaining()):
+            # Handlers and fan-out children are bounded by ctx.deadline. The outer bound adds a
+            # short grace so a child timing out *at* the deadline can still return the other
+            # sources' completed results; it remains a hard, finite bound.
+            async with asyncio.timeout(ctx.deadline.remaining() + deadline_grace(limits.timeout_s)):
                 output = await self._dispatch(op, request, ctx)
             result = self._wrap(op, output, limits)
         except GenomicsError as exc:
@@ -268,7 +276,18 @@ class GenomicsService:
         return OperationOutput(data={"records": items})
 
     def describe_source(self, info: SourceInfo) -> dict[str, Any]:
-        ops = [op.value for op in Operation if self.registry.handler(op, info.name) is not None]
+        # A source is served either by its own handler key or, for fan-out operations, by a
+        # registered planner that declares the operation in SourceInfo.operations.
+        ops = [
+            op.value
+            for op in Operation
+            if self.registry.handler(op, info.name) is not None
+            or (
+                op.value in info.operations
+                and OPERATIONS[op].dispatch == "fanout"
+                and self.registry.handler(op, DEFAULT_KEY) is not None
+            )
+        ]
         schemes = [s for s in SOURCE_SCHEMES.get(info.name, ()) if self.registry.resolver(s)]
         cfg = self.settings.source(info.name)
         if not cfg.enabled:

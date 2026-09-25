@@ -28,6 +28,11 @@ dependencies = [
     "starlette==1.7.0",
 ]
 
+[project.optional-dependencies]
+# Optional AlphaGenome Atlas transport (official client, gRPC). Needs an explicitly configured
+# key: [sources.alphagenome_atlas] api_key_env = "...". Without it Atlas stays disabled.
+atlas = ["alphagenome==0.9.0"]
+
 [project.urls]
 Repository = "https://github.com/rewire-bio/genomics-mcp"
 
@@ -56,7 +61,10 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "-ra"
-markers = ["network: requires public internet (skipped unless GENOMICS_MCP_NETWORK_TESTS=1)"]
+markers = [
+    "network: requires public internet (skipped unless GENOMICS_MCP_NETWORK_TESTS=1)",
+    "live: calls public reference services (skipped unless GENOMICS_MCP_LIVE=1)",
+]
 
 [tool.ruff]
 line-length = 100
