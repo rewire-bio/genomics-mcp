@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
+from genomics_mcp.cache import MemoryCache, note_range_bytes
 from genomics_mcp.config import Settings
 from genomics_mcp.contracts import ResolvedFile
 from genomics_mcp.errors import (
@@ -38,6 +39,7 @@ from genomics_mcp.storage.http import HttpAccess
 from genomics_mcp.storage.local import resolve_local
 from genomics_mcp.storage.native import NativeRunner
 from genomics_mcp.storage.proxy import RangeProxy
+from genomics_mcp.storage.remote import range_cacheable
 from genomics_mcp.storage.s3 import S3Clients
 
 if TYPE_CHECKING:
@@ -66,10 +68,17 @@ def source_name(file: FileRef) -> str:
     return {"file": "local", "http": "https", "https": "https"}.get(file.scheme, file.scheme)
 
 
+def _cache_since(ctx: OperationContext, resolved: ResolvedFile, uri: str) -> float | None:
+    """Start of this call if `uri` may use cached blocks (identity revalidated since then)."""
+    access = getattr(resolved, "access", None)
+    ok = access is not None and range_cacheable(resolved.file, access, uri)
+    return ctx.deadline.started if ok else None
+
+
 class StorageManager:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, cache: MemoryCache | None = None) -> None:
         self.settings = settings
-        self.http = HttpAccess(settings)
+        self.http = HttpAccess(settings, cache=cache)
         self.native = NativeRunner(settings)
         self.s3 = S3Clients(settings, settings.paths.work_dir / ".isolation" / "botocore")
         self.proxy = RangeProxy(self.http)
@@ -179,6 +188,7 @@ class StorageManager:
                     source=source_name(resolved.file),
                     timeout_s=min(30.0, ctx.deadline.ensure("index download")),
                     extra_trusted=trusted,
+                    since=_cache_since(ctx, resolved, uri),
                 )
                 if len(body) > cap or (total or 0) > cap:
                     quota = cap < MAX_STAGED_INDEX_BYTES
@@ -269,6 +279,7 @@ class NativeCall:
                 expires=time.monotonic() + ctx.deadline.remaining(),
                 size=getattr(resolved, "size_bytes", None) if suffix == "" else None,
                 extra_trusted=_trusted(resolved),
+                cache_since=_cache_since(ctx, resolved, uri),
             )
 
         companions = dict(getattr(resolved, "companion_open_uris", {}) or {})
@@ -292,3 +303,5 @@ class NativeCall:
             if upstream:
                 raise upstream[0] from None
             raise
+        finally:
+            note_range_bytes(self.manager.proxy.cached_bytes(self.lease))

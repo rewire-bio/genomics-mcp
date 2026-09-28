@@ -1,0 +1,784 @@
+{
+  "api": [
+    {
+      "cold": {
+        "n": 5,
+        "p50_ms": 3.84,
+        "p95_ms": 9.02,
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "disabled": {
+        "n": 5,
+        "p50_ms": 100.09,
+        "p95_ms": 101.43,
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "family": "archive",
+      "fixture": "recorded",
+      "name": "encode_list_files",
+      "op": "list_files",
+      "results_equal": true,
+      "warm": {
+        "n": 5,
+        "p50_ms": 0.18,
+        "p95_ms": 0.28,
+        "requests": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cold": {
+        "n": 5,
+        "p50_ms": 8.38,
+        "p95_ms": 9.68,
+        "requests": [
+          4,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "disabled": {
+        "n": 5,
+        "p50_ms": 2.3,
+        "p95_ms": 995.99,
+        "requests": [
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "family": "reference",
+      "fixture": "recorded",
+      "name": "hgnc_resolve",
+      "op": "resolve_identifier",
+      "results_equal": true,
+      "warm": {
+        "n": 5,
+        "p50_ms": 0.88,
+        "p95_ms": 0.96,
+        "requests": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cold": {
+        "n": 5,
+        "p50_ms": 3.74,
+        "p95_ms": 4.39,
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "disabled": {
+        "n": 5,
+        "p50_ms": 0.72,
+        "p95_ms": 8.34,
+        "requests": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "family": "reference",
+      "fixture": "recorded",
+      "name": "uniprot_protein",
+      "op": "lookup_protein",
+      "results_equal": true,
+      "warm": {
+        "n": 5,
+        "p50_ms": 0.3,
+        "p95_ms": 0.4,
+        "requests": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "environment": {
+    "date": "2026-09-28T13:25:35+00:00",
+    "fixtures": {
+      "perf.bam": {
+        "bytes": 865024,
+        "sha256": "c986d4c680419ad1"
+      },
+      "perf.bed.gz": {
+        "bytes": 130134,
+        "sha256": "ea2b866f900e7438"
+      },
+      "perf.bw": {
+        "bytes": 790743,
+        "sha256": "9d29ec4b620ab19d"
+      },
+      "perf.fa": {
+        "bytes": 2033340,
+        "sha256": "af13ea517b144bf3"
+      },
+      "perf.vcf.gz": {
+        "bytes": 219261,
+        "sha256": "089e0d34d883aaad"
+      }
+    },
+    "genomics_mcp": "0.1.0",
+    "platform": "Darwin arm64",
+    "pyBigWig": "0.3.26",
+    "pyBigWig_remote": true,
+    "pysam": "0.24.1",
+    "python": "3.12.14",
+    "samtools_bundled": "1.24"
+  },
+  "local": [
+    {
+      "cache_after_warm": {
+        "bytes": 526592,
+        "counts": {
+          "object_stores": 12,
+          "range_hits": 124,
+          "range_misses": 8,
+          "range_stores": 8,
+          "range_upstream_bytes": 524288
+        },
+        "entries": 9
+      },
+      "cold": {
+        "bytes": [
+          393217,
+          393217,
+          393217,
+          393217,
+          393217
+        ],
+        "n": 5,
+        "p50_ms": 374.69,
+        "p95_ms": 382.72,
+        "requests": 5
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          577537,
+          577537,
+          577537,
+          577537,
+          577537
+        ],
+        "n": 5,
+        "p50_ms": 340.56,
+        "p95_ms": 371.92,
+        "requests": 6
+      },
+      "family": "signal",
+      "name": "signal",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 131073,
+          "requests": 2
+        },
+        "cold": {
+          "bytes": 458753,
+          "requests": 5
+        }
+      },
+      "op": "get_signal",
+      "overlap_after_warm": {
+        "bytes": 1,
+        "requests": 1
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "n": 5,
+        "p50_ms": 328.0,
+        "p95_ms": 345.48,
+        "requests": 1
+      }
+    },
+    {
+      "cache_after_warm": {
+        "bytes": 870496,
+        "counts": {
+          "object_stores": 24,
+          "range_hits": 307,
+          "range_misses": 23,
+          "range_stores": 21,
+          "range_upstream_bytes": 1259360
+        },
+        "entries": 17
+      },
+      "cold": {
+        "bytes": [
+          604002,
+          604002,
+          604002,
+          604002,
+          604002
+        ],
+        "n": 5,
+        "p50_ms": 413.08,
+        "p95_ms": 430.32,
+        "requests": 9
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          1797881,
+          1796761,
+          1796761,
+          1796761,
+          1796761
+        ],
+        "n": 5,
+        "p50_ms": 414.26,
+        "p95_ms": 437.32,
+        "requests": [
+          8,
+          7,
+          7,
+          7,
+          7
+        ]
+      },
+      "family": "alignments",
+      "name": "reads",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 131074,
+          "requests": 4
+        },
+        "cold": {
+          "bytes": 931682,
+          "requests": 11
+        }
+      },
+      "op": "get_reads",
+      "overlap_after_warm": {
+        "bytes": 2,
+        "requests": 2
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          131074,
+          131074,
+          131074,
+          131074,
+          131074
+        ],
+        "n": 5,
+        "p50_ms": 348.17,
+        "p95_ms": 351.6,
+        "requests": 4
+      }
+    },
+    {
+      "cache_after_warm": {
+        "bytes": 870496,
+        "counts": {
+          "object_stores": 24,
+          "range_hits": 321,
+          "range_misses": 21,
+          "range_stores": 20,
+          "range_upstream_bytes": 1193824
+        },
+        "entries": 17
+      },
+      "cold": {
+        "bytes": [
+          931682,
+          604002,
+          604002,
+          604002,
+          931682
+        ],
+        "n": 5,
+        "p50_ms": 379.01,
+        "p95_ms": 424.47,
+        "requests": [
+          10,
+          9,
+          9,
+          9,
+          10
+        ]
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          1796761,
+          1796761,
+          1796761,
+          1796761,
+          1796761
+        ],
+        "n": 5,
+        "p50_ms": 371.72,
+        "p95_ms": 387.61,
+        "requests": 7
+      },
+      "family": "alignments",
+      "name": "coverage",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 2,
+          "requests": 2
+        },
+        "cold": {
+          "bytes": 997218,
+          "requests": 11
+        }
+      },
+      "op": "get_coverage",
+      "overlap_after_warm": {
+        "bytes": 2,
+        "requests": 2
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          131074,
+          131074,
+          131074,
+          131074,
+          131074
+        ],
+        "n": 5,
+        "p50_ms": 349.71,
+        "p95_ms": 359.26,
+        "requests": 4
+      }
+    },
+    {
+      "cache_after_warm": {
+        "bytes": 870496,
+        "counts": {
+          "object_stores": 24,
+          "range_hits": 667,
+          "range_misses": 26,
+          "range_stores": 23,
+          "range_upstream_bytes": 1390432
+        },
+        "entries": 17
+      },
+      "cold": {
+        "bytes": [
+          866146,
+          866146,
+          866146,
+          866146,
+          866146
+        ],
+        "n": 5,
+        "p50_ms": 402.33,
+        "p95_ms": 412.73,
+        "requests": 12
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          3526837,
+          3526837,
+          3526837,
+          3526837,
+          3526837
+        ],
+        "n": 5,
+        "p50_ms": 395.89,
+        "p95_ms": 433.08,
+        "requests": 10
+      },
+      "family": "alignments",
+      "name": "pileup",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 2,
+          "requests": 2
+        },
+        "cold": {
+          "bytes": 1128290,
+          "requests": 14
+        }
+      },
+      "op": "get_pileup",
+      "overlap_after_warm": {
+        "bytes": 2,
+        "requests": 2
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          393218,
+          327682,
+          2,
+          2,
+          2
+        ],
+        "n": 5,
+        "p50_ms": 352.43,
+        "p95_ms": 367.16,
+        "requests": [
+          7,
+          7,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "cache_after_warm": {
+        "bytes": 222176,
+        "counts": {
+          "object_stores": 24,
+          "range_hits": 223,
+          "range_misses": 5,
+          "range_stores": 5,
+          "range_upstream_bytes": 220384
+        },
+        "entries": 7
+      },
+      "cold": {
+        "bytes": [
+          220386,
+          220386,
+          220386,
+          220386,
+          220386
+        ],
+        "n": 5,
+        "p50_ms": 324.88,
+        "p95_ms": 349.84,
+        "requests": 6
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          944855,
+          943732,
+          943732,
+          943732,
+          943732
+        ],
+        "n": 5,
+        "p50_ms": 323.8,
+        "p95_ms": 335.48,
+        "requests": [
+          9,
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "family": "variants",
+      "name": "variants",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 2,
+          "requests": 2
+        },
+        "cold": {
+          "bytes": 220386,
+          "requests": 6
+        }
+      },
+      "op": "get_variants",
+      "overlap_after_warm": {
+        "bytes": 2,
+        "requests": 2
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "n": 5,
+        "p50_ms": 304.9,
+        "p95_ms": 319.66,
+        "requests": 2
+      }
+    },
+    {
+      "cache_after_warm": {
+        "bytes": 987669,
+        "counts": {
+          "object_stores": 24,
+          "range_hits": 185,
+          "range_misses": 20,
+          "range_stores": 16,
+          "range_upstream_bytes": 983061
+        },
+        "entries": 18
+      },
+      "cold": {
+        "bytes": [
+          458775,
+          458775,
+          458775,
+          458775,
+          458775
+        ],
+        "n": 5,
+        "p50_ms": 350.08,
+        "p95_ms": 365.62,
+        "requests": 8
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          2490411,
+          2424875,
+          1966123,
+          2490411,
+          2490411
+        ],
+        "n": 5,
+        "p50_ms": 331.65,
+        "p95_ms": 342.8,
+        "requests": 6
+      },
+      "family": "sequence",
+      "name": "sequence",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 655362,
+          "requests": 7
+        },
+        "cold": {
+          "bytes": 917527,
+          "requests": 11
+        }
+      },
+      "op": "get_sequence",
+      "overlap_after_warm": {
+        "bytes": 2,
+        "requests": 2
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          65538,
+          65538,
+          2,
+          2,
+          2
+        ],
+        "n": 5,
+        "p50_ms": 304.11,
+        "p95_ms": 315.76,
+        "requests": [
+          3,
+          3,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "cache_after_warm": {
+        "bytes": 131938,
+        "counts": {
+          "object_stores": 24,
+          "range_hits": 45,
+          "range_misses": 3,
+          "range_stores": 3,
+          "range_upstream_bytes": 130658
+        },
+        "entries": 5
+      },
+      "cold": {
+        "bytes": [
+          130660,
+          130660,
+          130660,
+          130660,
+          130660
+        ],
+        "n": 5,
+        "p50_ms": 327.76,
+        "p95_ms": 340.25,
+        "requests": 5
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          196719,
+          196195,
+          196195,
+          196195,
+          196195
+        ],
+        "n": 5,
+        "p50_ms": 316.19,
+        "p95_ms": 329.54,
+        "requests": [
+          5,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "family": "features",
+      "name": "features",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 2,
+          "requests": 2
+        },
+        "cold": {
+          "bytes": 130660,
+          "requests": 5
+        }
+      },
+      "op": "get_features",
+      "overlap_after_warm": {
+        "bytes": 2,
+        "requests": 2
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "n": 5,
+        "p50_ms": 315.74,
+        "p95_ms": 336.51,
+        "requests": 2
+      }
+    },
+    {
+      "cache_after_warm": {
+        "bytes": 1619264,
+        "counts": {
+          "object_stores": 84,
+          "range_hits": 1035,
+          "range_misses": 37,
+          "range_stores": 35,
+          "range_upstream_bytes": 2069568
+        },
+        "entries": 33
+      },
+      "cold": {
+        "bytes": [
+          1415335,
+          1769127,
+          1415335,
+          1756071,
+          1415335
+        ],
+        "n": 5,
+        "p50_ms": 470.05,
+        "p95_ms": 500.09,
+        "requests": [
+          26,
+          28,
+          26,
+          27,
+          26
+        ]
+      },
+      "concurrent_warm_calls": 4,
+      "disabled": {
+        "bytes": [
+          5114791,
+          5114791,
+          5114791,
+          5114791,
+          5114791
+        ],
+        "n": 5,
+        "p50_ms": 466.21,
+        "p95_ms": 478.69,
+        "requests": 28
+      },
+      "family": "composed",
+      "name": "inspect_locus",
+      "neighbour": {
+        "after_warm": {
+          "bytes": 131079,
+          "requests": 8
+        },
+        "cold": {
+          "bytes": 2739111,
+          "requests": 34
+        }
+      },
+      "op": "inspect_locus",
+      "overlap_after_warm": {
+        "bytes": 7,
+        "requests": 7
+      },
+      "results_equal": true,
+      "warm": {
+        "bytes": [
+          262151,
+          262151,
+          131079,
+          7,
+          7
+        ],
+        "n": 5,
+        "p50_ms": 434.91,
+        "p95_ms": 453.26,
+        "requests": [
+          11,
+          11,
+          9,
+          7,
+          7
+        ]
+      }
+    }
+  ],
+  "schema": "genomics-mcp-cache-benchmark/1"
+}

@@ -18,6 +18,7 @@ from urllib.parse import urlsplit
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from genomics_mcp.archives._common.redact import redact_url
+from genomics_mcp.cache import original_retrieval
 
 
 def utcnow() -> datetime:
@@ -70,6 +71,13 @@ class Provenance(_Model):
     @classmethod
     def _redact(cls, v: str | None) -> str | None:
         return redact_url(v) if v else v
+
+    @model_validator(mode="after")
+    def _original_retrieval(self) -> Provenance:
+        # A response reused from the cache keeps its original retrieval time.
+        if "retrieved_at" not in self.model_fields_set and (t := original_retrieval(self.source)):
+            self.retrieved_at = t
+        return self
 
 
 class FileFormat(StrEnum):

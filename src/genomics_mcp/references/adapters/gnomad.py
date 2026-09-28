@@ -134,6 +134,7 @@ class GnomadClient:
             headers={"Content-Type": "application/json"},
             deadline=deadline,
             accept_status=(200, 400),
+            read_only=True,  # GraphQL query, never a mutation
         )
         body = self.http.decode_json(response, operation)
         if not isinstance(body, dict):

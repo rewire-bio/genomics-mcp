@@ -133,7 +133,12 @@ class GeoClient:
         self.http = SourceHttp(
             client,
             SourcePolicy(
-                SOURCE, API_HOSTS, min_interval_s=interval, timeout_s=timeout_s, terms_url=TERMS_URL
+                SOURCE,
+                API_HOSTS,
+                min_interval_s=interval,
+                timeout_s=timeout_s,
+                terms_url=TERMS_URL,
+                cacheable=True,
             ),
         )
         self.files = SourceHttp(

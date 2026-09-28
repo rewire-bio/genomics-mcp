@@ -55,9 +55,10 @@ class DiscoverySource:
     async def client(self, ctx: OperationContext) -> AsyncIterator[Any]:
         async with self.runtime.client() as http:
             c = await self.make_client(http, ctx, self.runtime)
-            share_limiters(
-                self.runtime, ctx, *[v for v in vars(c).values() if hasattr(v, "limiter")]
-            )
+            https = [v for v in vars(c).values() if hasattr(v, "limiter")]
+            share_limiters(self.runtime, ctx, *https)
+            for h in https:  # the server's cache outlives this per-call client
+                h.cache = ctx.component("cache")
             yield c
 
     async def _call(self, ctx: OperationContext, fn: Callable[[Any, float], Awaitable[Any]]) -> Any:

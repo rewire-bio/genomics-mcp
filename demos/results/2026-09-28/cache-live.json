@@ -1,0 +1,159 @@
+{
+  "environment": {
+    "date": "2026-09-28T13:49:36+00:00",
+    "genomics_mcp": "0.1.0",
+    "platform": "Darwin arm64",
+    "pyBigWig": "0.3.26",
+    "pyBigWig_remote": true,
+    "pysam": "0.24.1",
+    "python": "3.12.14",
+    "samtools_bundled": "1.24"
+  },
+  "live": {
+    "api": [
+      {
+        "cache_note": false,
+        "digest": "a42faa5cc2d0e547",
+        "ms": 175.1,
+        "op": "resolve_identifier",
+        "repeat": 0,
+        "retrieved_at": "2026-09-28T13:49:36.228379+00:00"
+      },
+      {
+        "cache_note": false,
+        "digest": "a42faa5cc2d0e547",
+        "ms": 56.8,
+        "op": "resolve_identifier",
+        "repeat": 1,
+        "retrieved_at": "2026-09-28T13:49:36.286081+00:00"
+      },
+      {
+        "cache_note": false,
+        "digest": "f65e6dc50c7f9b42",
+        "ms": 106.6,
+        "op": "lookup_protein",
+        "repeat": 0,
+        "retrieved_at": "2026-09-28T13:49:36.404908+00:00"
+      },
+      {
+        "cache_note": true,
+        "digest": "f65e6dc50c7f9b42",
+        "ms": 3.3,
+        "op": "lookup_protein",
+        "repeat": 1,
+        "retrieved_at": "2026-09-28T13:49:36.404908+00:00"
+      }
+    ],
+    "api_cache": {
+      "bytes": 214510,
+      "counts": {
+        "api_hits": 1,
+        "api_misses": 8,
+        "api_stores": 1
+      },
+      "enabled": true,
+      "entries": 1,
+      "max_bytes": 67108864,
+      "max_entries": 4096,
+      "ttl_s": 300.0
+    },
+    "bigwig_cache": {
+      "bytes": 726831,
+      "counts": {
+        "object_stores": 5,
+        "range_hits": 44,
+        "range_misses": 11,
+        "range_stores": 11,
+        "range_upstream_bytes": 720896
+      },
+      "enabled": true,
+      "entries": 12,
+      "max_bytes": 67108864,
+      "max_entries": 4096,
+      "ttl_s": 300.0
+    },
+    "regions": [
+      {
+        "digest": "cfa91d82dd2bf936",
+        "mean": 26.361254017233847,
+        "mode": "disabled",
+        "ms": 5121.5,
+        "region": "chr1:1000000-1001000",
+        "repeat": 0
+      },
+      {
+        "digest": "cfa91d82dd2bf936",
+        "mean": 26.361254017233847,
+        "mode": "disabled",
+        "ms": 4871.0,
+        "region": "chr1:1000000-1001000",
+        "repeat": 1
+      },
+      {
+        "digest": "cfa91d82dd2bf936",
+        "mean": 26.361254017233847,
+        "mode": "disabled",
+        "ms": 4844.4,
+        "region": "chr1:1000000-1001000",
+        "repeat": 2
+      },
+      {
+        "digest": "595e9f8ecf5139b1",
+        "mean": 6.782948183148034,
+        "mode": "disabled",
+        "ms": 4890.5,
+        "region": "chr1:1001000-1002000",
+        "repeat": 0
+      },
+      {
+        "digest": "3adb940e9cfae270",
+        "mean": null,
+        "mode": "disabled",
+        "ms": 4960.8,
+        "region": "chr1:5000000-5001000",
+        "repeat": 0
+      },
+      {
+        "digest": "cfa91d82dd2bf936",
+        "mean": 26.361254017233847,
+        "mode": "cold_then_warm",
+        "ms": 4258.5,
+        "region": "chr1:1000000-1001000",
+        "repeat": 0
+      },
+      {
+        "digest": "cfa91d82dd2bf936",
+        "mean": 26.361254017233847,
+        "mode": "cold_then_warm",
+        "ms": 832.0,
+        "region": "chr1:1000000-1001000",
+        "repeat": 1
+      },
+      {
+        "digest": "cfa91d82dd2bf936",
+        "mean": 26.361254017233847,
+        "mode": "cold_then_warm",
+        "ms": 549.8,
+        "region": "chr1:1000000-1001000",
+        "repeat": 2
+      },
+      {
+        "digest": "595e9f8ecf5139b1",
+        "mean": 6.782948183148034,
+        "mode": "cold_then_warm",
+        "ms": 508.0,
+        "region": "chr1:1001000-1002000",
+        "repeat": 0
+      },
+      {
+        "digest": "3adb940e9cfae270",
+        "mean": null,
+        "mode": "cold_then_warm",
+        "ms": 1178.0,
+        "region": "chr1:5000000-5001000",
+        "repeat": 0
+      }
+    ]
+  },
+  "schema": "genomics-mcp-cache-benchmark/1"
+}

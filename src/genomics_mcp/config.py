@@ -204,6 +204,17 @@ class LoggingSettings(_Model):
     )
 
 
+class CacheSettings(_Model):
+    """In-memory cache of public file ranges and API responses (see genomics_mcp.cache)."""
+
+    enabled: bool = True
+    max_bytes: int = Field(default=64 * MiB, ge=0, description="Memory bound for cached bytes.")
+    max_entries: int = Field(default=4096, ge=0)
+    ttl_s: float = Field(
+        default=300.0, ge=0, description="Longest reuse; Cache-Control max-age may shorten it."
+    )
+
+
 class Settings(_Model):
     limits: Limits = Field(default_factory=Limits)
     http: HttpSettings = Field(default_factory=HttpSettings)
@@ -211,6 +222,7 @@ class Settings(_Model):
     storage: StorageSettings = Field(default_factory=StorageSettings)
     sources: dict[str, SourceSettings] = Field(default_factory=dict)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
+    cache: CacheSettings = Field(default_factory=CacheSettings)
 
     # Environment captured at load time, restricted to named secrets and GENOMICS_MCP_*.
     _env: dict[str, str] = PrivateAttr(default_factory=dict)
@@ -292,6 +304,7 @@ class Settings(_Model):
                 }
                 for name, p in self.storage.profiles.items()
             },
+            "cache": self.cache.model_dump(),
             "sources": {
                 name: {
                     "enabled": s.enabled,
@@ -335,6 +348,8 @@ def _env_overrides(env: Mapping[str, str]) -> dict[str, Any]:
         put("paths", "allowed_roots", [p for p in v.split(os.pathsep) if p])
     if v := env.get(f"{ENV_PREFIX}LOG_LEVEL"):
         put("logging", "level", v.upper())
+    if v := env.get(f"{ENV_PREFIX}CACHE_ENABLED"):
+        put("cache", "enabled", v)
     return data
 
 
