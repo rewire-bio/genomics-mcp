@@ -33,7 +33,7 @@ Steps:
 is measured every 0.5 s while a toolkit process runs and once more when it exits; past the
 budget the process group is killed and the job fails. This is a watchdog, not a filesystem
 quota: between samples a process can overshoot by what it writes in 0.5 s. prefetch --max-size
-applies per file. Network bytes are not metered separately; prefetch writes what it downloads
+applies to the run file only (prefetch 3.4.1 does not size-check dependencies). Network bytes are not metered separately; prefetch writes what it downloads
 and resumes rather than restarting. NCBI's size figures are estimates (in testing the output
 estimate was slightly below the real output), so they are used only to refuse early.
 
