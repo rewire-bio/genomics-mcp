@@ -1,6 +1,6 @@
 # Genomics MCP: product requirements
 
-Status: approved scope; E0–E9 implemented; E10–E11 release prepared. Version 0.1.0 is **not released**. Approved 2026-09-24.
+Status: approved scope; E0–E10 implemented and verified. Version 0.1.0 is released on GitHub, GHCR and the official MCP Registry. E11 directory submissions and account-dependent publication remain in progress; see `docs/registry-ledger.md`. Approved 2026-09-24.
 Repository: `rewire-bio/genomics-mcp`. Distribution: `rewire-genomics-mcp` (MIT, Python 3.12). Registry name: `io.github.rewire-bio/genomics-mcp`.
 
 This document replaces `docs/prd-original.md` (kept for history). Reasons for the changes are in `docs/prd-review.md`. Delivery order and epics are in `docs/implementation-plan.md`; module contracts are in `docs/architecture.md`.
@@ -99,9 +99,9 @@ Release gates are listed in `docs/implementation-plan.md` and apply unchanged.
 
 ## 10. Current factual limitations (2026-09-25)
 
-- All 23 tools are implemented. Version 0.1.0 is not yet published to PyPI, GHCR, a GitHub release or any MCP registry; release status is tracked in `docs/registry-ledger.md`.
+- All 23 tools are implemented. Version 0.1.0 is public on GitHub, GHCR and the official MCP Registry (OCI and MCPB). PyPI is not published. Directory submissions and the existing Glama listing are tracked in `docs/registry-ledger.md`.
 - Clean-install demonstrations passed on 2026-09-25 (macOS arm64) against live EGA, ENA, ENCODE, NCBI and ClinVar and a local MinIO: `demos/results/2026-09-25/`. Live sources can change or be unavailable; failures are reported as errors.
-- Tested platforms: macOS arm64 (local suite, clean install, demos) and Linux x86_64 (CI suite with `pyBigWig.remote == 1`). The linux/amd64 container and MCPB bundle are exercised by `package.yml`, which had not yet run when this was written. Linux arm64 and Intel macOS are not tested. Windows only through WSL2 or the container.
+- Tested platforms: macOS arm64 (local suite, clean install, demos) and Linux x86_64 (CI suite with `pyBigWig.remote == 1`). The linux/amd64 container and MCPB bundle passed MCP initialization, 23-tool discovery and an exact sequence query in package and release CI. Linux arm64 and Intel macOS are not tested. Windows only through WSL2 or the container.
 - Remote bigWig/bigBed needs pyBigWig built with libcurl. The published Linux pyBigWig wheel lacks it, so installs build pyBigWig from source (C compiler, libcurl and zlib headers). There is no compiler-free native install.
 - A file's reference/header build label (for example `AS:GRCh38`) is reported as a label, not as proof of a precise assembly accession or patch.
 - PulseMCP new submissions are paused; MCP.so requires payment and is outside the approved unpaid launch. PyPI (trusted publisher) and Smithery (namespace) need personal account setup outside this repository.
