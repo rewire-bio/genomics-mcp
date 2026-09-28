@@ -37,6 +37,8 @@ The ENCODE request above, run through a clean install on 2026-09-25 with live da
 
 Four other live demonstrations ran with the same install: an EGA test BAM region, an ENA sequence download, a reference check with ClinVar, and local MinIO. Commands and machine-readable results: [docs/demos.md](docs/demos.md).
 
+Agent case study: a Claude Code agent, limited to this server's tools, compares ENCODE DNase-seq signal at the BCL11A erythroid enhancer across 26 files, with a transcript and a model-free replay: [examples/agent-case-study/](examples/agent-case-study/).
+
 ## Quickstart
 
 ### Container (Linux x86_64 with Docker)

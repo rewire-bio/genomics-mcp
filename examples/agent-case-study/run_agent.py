@@ -115,7 +115,8 @@ def provenance(server_command: list[str], env: dict[str, str]) -> dict:
     return {
         "example_commit": git("rev-parse", "HEAD"),
         "example_files_dirty": bool(
-            git("status", "--porcelain", "--", str(HERE.relative_to(REPO)))
+            # The run's own output directory under runs/ does not count.
+            git("status", "--porcelain", "--", str(HERE.relative_to(REPO)), ":!*/runs/*")
         ),
         "runtime_src_tree": src,
         "runtime_src_equals_v0_1_0": src is not None and src == git("rev-parse", "v0.1.0^{}:src"),

@@ -1,0 +1,43 @@
+{
+  "completion": "complete",
+  "session_id": "783458be-0e17-4e42-b201-5b2583f6acb7",
+  "model_requested": "claude-opus-5",
+  "models_used": [
+    "claude-opus-5"
+  ],
+  "model_fallbacks": [],
+  "claude_code_version": "2.1.283",
+  "mcp_servers": [
+    {
+      "name": "genomics",
+      "status": "connected"
+    }
+  ],
+  "started_utc": "2026-09-28T15:05:55+00:00",
+  "finished_utc": "2026-09-28T15:20:18+00:00",
+  "elapsed_seconds": 862.8,
+  "exit_code": 0,
+  "num_turns": 30,
+  "usage_tokens": {
+    "input_tokens": 26,
+    "output_tokens": 68125,
+    "cache_read_input_tokens": 2281399,
+    "cache_creation_input_tokens": 291849
+  },
+  "mcp_calls": 29,
+  "mcp_calls_without_result": 0,
+  "mcp_calls_failed": 0,
+  "mcp_calls_partial": 5,
+  "calls_by_tool": {
+    "compare_samples": 18,
+    "describe_dataset": 2,
+    "list_files": 3,
+    "lookup_gene": 2,
+    "normalize_variant": 4
+  },
+  "signal_measurements": 209,
+  "work_dir_bytes_after": 0,
+  "raw_log_sha256": "9e32068d7ce63fcc93d4bf6afb9f9807b5ca4c5509848677d186400cf5ae2b85",
+  "raw_log_bytes": 1706076,
+  "raw_log_note": "unmodified local stream-json log; not published (contains hidden thinking-token events, request IDs and local paths)"
+}

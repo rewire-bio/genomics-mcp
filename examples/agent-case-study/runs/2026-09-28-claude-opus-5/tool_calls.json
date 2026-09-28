@@ -1,0 +1,4741 @@
+[
+ {
+  "n": 1,
+  "id": "toolu_0156CgpPvJLrqnktr7ivYcpH",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs7606173",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1475
+ },
+ {
+  "n": 2,
+  "id": "toolu_01QqsStBihoMhKPwsgw177pU",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs6706648",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1209
+ },
+ {
+  "n": 3,
+  "id": "toolu_019CJ9NcUBdYRiGa9zL9uvQ3",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs6738440",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "partial",
+  "error": null,
+  "partial_errors": [
+   {
+    "code": "timeout",
+    "message": "no response within 13.6s",
+    "source": "ensembl",
+    "retryable": true,
+    "hint": null,
+    "details": {
+     "kind": "timeout",
+     "operation": "sequence/region",
+     "url": "https://rest.ensembl.org/sequence/region/human/2:60495042..60495170:1"
+    }
+   },
+   {
+    "code": "timeout",
+    "message": "deadline exhausted before request",
+    "source": "ncbi_nuccore",
+    "retryable": false,
+    "hint": null,
+    "details": {
+     "kind": "timeout",
+     "operation": "efetch/fasta",
+     "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+    }
+   }
+  ],
+  "measurements": [],
+  "result_bytes": 2655
+ },
+ {
+  "n": 4,
+  "id": "toolu_01PeSEgs2rh45ie8GhoLwMR4",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs1427407",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1209
+ },
+ {
+  "n": 5,
+  "id": "toolu_01JEw23Xw1aurJ7P6crHPkrh",
+  "tool": "lookup_gene",
+  "input": {
+   "gene": "BCL11A",
+   "assembly": "GRCh38",
+   "include": [
+    "transcripts"
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 9092
+ },
+ {
+  "n": 6,
+  "id": "toolu_01D8gmLRs7D8t4JQ8DqLHeWM",
+  "tool": "lookup_gene",
+  "input": {
+   "gene": "GAPDH",
+   "assembly": "GRCh38",
+   "include": [
+    "transcripts"
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 16556
+ },
+ {
+  "n": 7,
+  "id": "toolu_019UfqeBoW8fCWnJP8AF8tcd",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.03655854641646147,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.03539374418929219,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.14934232990443708,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.3746801892369986,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.8758673620820046,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.9157111086249351,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 1.169574056327343,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 1.456482793301344,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 1.4236896945238113,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.3307315929532051,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.7565685600936413,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 1.0806607269644737,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.628984040260315,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.9972835114002228,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.8292400559186935,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 1.2624417514801025,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 30142
+ },
+ {
+  "n": 8,
+  "id": "toolu_01NjR1iyEMgQt3cxCh7AQ3yt",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.1017276043817401,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.08018202155828476,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.4965295668691397,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.6922963909804821,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.3700117963552474,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.4478924903273582,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 2.6765867501497267,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 3.131937365680933,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 4.046009455621243,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.8016643208265305,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.9875196918845177,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.94415823135525,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.1915444418787957,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.6744590348005295,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.723445815294981,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 3.3854275166988375,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 30134
+ },
+ {
+  "n": 9,
+  "id": "toolu_012rgwTJWdEyzqqCCcqZ5iRc",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.081342021971941,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.108969637747854,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.32188170838728547,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.5430965255405754,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.9254607259277254,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.9139497090131045,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 1.4832679538950324,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 1.5115924578905107,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 1.5526187573224306,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.5709749580398202,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.9582594863176346,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 1.0314801679700614,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.5894711396172643,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 1.0753217138648032,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 1.2059808525294065,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 1.6442744879722595,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 30140
+ },
+ {
+  "n": 10,
+  "id": "toolu_01Jnu5uGg8GwzUv4g23bvTNm",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "partial",
+  "error": null,
+  "partial_errors": [
+   {
+    "code": "timeout",
+    "message": "f1.signal did not finish in time",
+    "source": "f1.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f3.signal did not finish in time",
+    "source": "f3.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f6.signal did not finish in time",
+    "source": "f6.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f9.signal did not finish in time",
+    "source": "f9.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f10.signal did not finish in time",
+    "source": "f10.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   }
+  ],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.09981782517395914,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f1.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.08882443613372742,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f3.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.09029432783275843,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.09445062422705815,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f6.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.07880212963931263,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.07943924652785063,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f9.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f10.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06109150585345924,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.07558945635519922,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.08868805735185742,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.08309921318991109,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.0760261573754251,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 25185
+ },
+ {
+  "n": 11,
+  "id": "toolu_01TsjnZsViVaa1a5jY4JtYKs",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "partial",
+  "error": null,
+  "partial_errors": [
+   {
+    "code": "timeout",
+    "message": "f2.signal did not finish in time",
+    "source": "f2.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f6.signal did not finish in time",
+    "source": "f6.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f8.signal did not finish in time",
+    "source": "f8.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f9.signal did not finish in time",
+    "source": "f9.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f12.signal did not finish in time",
+    "source": "f12.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f13.signal did not finish in time",
+    "source": "f13.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   }
+  ],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.05308612158112228,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.0635024249668233,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f2.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.050829209138639274,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.07920823944229632,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.1076064663629979,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f6.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.10784220246672631,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f8.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f9.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.09904985515326262,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.10279130662232637,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f12.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f13.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.10515767973251641,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.11089331129714847,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 24190
+ },
+ {
+  "n": 12,
+  "id": "toolu_01MojqZZLyWwtfrGgdpZYsFm",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "partial",
+  "error": null,
+  "partial_errors": [
+   {
+    "code": "timeout",
+    "message": "f4.signal did not finish in time",
+    "source": "f4.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f5.signal did not finish in time",
+    "source": "f5.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f6.signal did not finish in time",
+    "source": "f6.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f8.signal did not finish in time",
+    "source": "f8.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f12.signal did not finish in time",
+    "source": "f12.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f13.signal did not finish in time",
+    "source": "f13.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f14.signal did not finish in time",
+    "source": "f14.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f15.signal did not finish in time",
+    "source": "f15.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   }
+  ],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 2.667924266695976,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 1.7983270496428012,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 1.8184404938519,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 2.2307459523528816,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f4.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f5.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f6.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 1.5957549624741076,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f8.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.19928080209344626,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.665530960187316,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.4939727784246206,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f12.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f13.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f14.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f15.signal did not finish in time"
+     }
+    ]
+   }
+  ],
+  "result_bytes": 22177
+ },
+ {
+  "n": 13,
+  "id": "toolu_01BUsLYTu82MMdag9uZADTGs",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "partial",
+  "error": null,
+  "partial_errors": [
+   {
+    "code": "timeout",
+    "message": "f1.signal did not finish in time",
+    "source": "f1.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f5.signal did not finish in time",
+    "source": "f5.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f6.signal did not finish in time",
+    "source": "f6.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f7.signal did not finish in time",
+    "source": "f7.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f8.signal did not finish in time",
+    "source": "f8.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f11.signal did not finish in time",
+    "source": "f11.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f13.signal did not finish in time",
+    "source": "f13.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   },
+   {
+    "code": "timeout",
+    "message": "f15.signal did not finish in time",
+    "source": "f15.signal",
+    "retryable": true,
+    "hint": null,
+    "details": {}
+   }
+  ],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 2.9588830634355543,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f1.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 4.02629337143898,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 5.116195534467697,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 4.608875833749771,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f5.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f6.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f7.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f8.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 0.6829240776896477,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 2.1779332369565965,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f11.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 0.7467400895655155,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f13.signal did not finish in time"
+     }
+    ]
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.4009909586906433,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "timeout",
+    "error": [
+     {
+      "code": "timeout",
+      "message": "f15.signal did not finish in time"
+     }
+    ]
+   }
+  ],
+  "result_bytes": 22170
+ },
+ {
+  "n": 14,
+  "id": "toolu_015p8skcSRArqwzHeXEyrDMy",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38"
+   },
+   "max_records": 10,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF841CYA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF694WKV",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF028ZFZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF338HAQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF960FMM",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF113VII",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF841CYA",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.074771709740162,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF694WKV",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 1.0382754804193974,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.5713056157529354,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.314160166233778,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.0676031993702054,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.11642304934561253,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF960FMM",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.13628065135329961,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.0566667890176177,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF113VII",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.056335533391684296,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": 0.11660463105887174,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 19420
+ },
+ {
+  "n": 15,
+  "id": "toolu_013uqvXHBwofoDW3JAZ6Kks3",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38"
+   },
+   "max_records": 10,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF841CYA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF694WKV",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF028ZFZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF338HAQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF960FMM",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF113VII",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF841CYA",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.5217754639983178,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF694WKV",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.5057291307449341,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.3936477569937706,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.21542412745952605,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.056983551394194365,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.032302348017692564,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF960FMM",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.02323642033338547,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.03922940889000893,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF113VII",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.043204703144729135,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": 0.032125224858522414,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 19436
+ },
+ {
+  "n": 16,
+  "id": "toolu_01Kw9PfyC3rXNWv9aXVKyXNe",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38"
+   },
+   "max_records": 10,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF841CYA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF694WKV",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF028ZFZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF338HAQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF960FMM",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF113VII",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF841CYA",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.670537039488554,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF694WKV",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.7094575281441212,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.4712599732130766,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.23345030594617128,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.035076868396485224,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.07209711630642414,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF960FMM",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.06449670592695475,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.05469407745823264,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF113VII",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.041748663473874334,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407,
+    "assembly": "GRCh38",
+    "mean": 0.1392312427125871,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 19428
+ },
+ {
+  "n": 17,
+  "id": "toolu_016k3DZWopYMxGcp5x8U433J",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38"
+   },
+   "max_records": 10,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF841CYA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF694WKV",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF028ZFZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF338HAQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF960FMM",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF113VII",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF841CYA",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.3434522749632597,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF694WKV",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.29002794210612776,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.3630372677147388,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.34841985842585566,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.09068915827572346,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.6088548810333013,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF960FMM",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.2876806506216526,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.1341206355765462,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF113VII",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.13168958877399564,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.9234955516755581,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 19422
+ },
+ {
+  "n": 18,
+  "id": "toolu_01GpH6RgEqVxTF3j6CKCmryH",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38"
+   },
+   "max_records": 10,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF841CYA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF694WKV",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF028ZFZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF338HAQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF960FMM",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF113VII",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF841CYA",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.32018359208107,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF694WKV",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 0.9571813473701477,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.037249329328537,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 0.786393728852272,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.1125012863874435,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 2.7611357617378234,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF960FMM",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.5820484157204628,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.63624607026577,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF113VII",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.7852220332622528,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 2.6107386062145235,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 19399
+ },
+ {
+  "n": 19,
+  "id": "toolu_01NmvPupdF7Zq2U1DkcyiHVH",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38"
+   },
+   "max_records": 5,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.09451537254918367,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.07836478740070016,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06898491541855037,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.0690760539183393,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06894894395023585,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 10502
+ },
+ {
+  "n": 20,
+  "id": "toolu_01D2nfRUMytQEpeNWsViRdQT",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38"
+   },
+   "max_records": 8,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 1.789829987153411,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 1.4095907240509986,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 1.3089501006156206,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 1.6056040392518043,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.15192133285850287,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.38344067902863027,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.30689160434901713,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153,
+    "assembly": "GRCh38",
+    "mean": 0.46081756229698656,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 15851
+ },
+ {
+  "n": 21,
+  "id": "toolu_01JrVUtfZHednrhbhH6Cfp1Z",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38"
+   },
+   "max_records": 8,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.8449502627253533,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 3.395281455874443,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 3.2926248766183854,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 3.962686476349831,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 3.873287312269211,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.7857274955511093,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.171160287618637,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.9558925958871842,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 15834
+ },
+ {
+  "n": 22,
+  "id": "toolu_014RouKgAA6ZpvDA7QsyDZoh",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38"
+   },
+   "max_records": 6,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.05543756420947611,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.09854556237086654,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.10738770549651236,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.08115052357949316,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.09100760285444558,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.14173604196086526,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 12290
+ },
+ {
+  "n": 23,
+  "id": "toolu_019tdVsK57VWzEFDDFfERf27",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38"
+   },
+   "max_records": 10,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF841CYA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF694WKV",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF028ZFZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF338HAQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF960FMM",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF113VII",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF841CYA",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06119366676360369,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF694WKV",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06722030922025442,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06061525994166732,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06008111631125212,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.050517277079168706,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.1413452812358737,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF960FMM",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.2714461602382362,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.06679047015495598,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF113VII",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.0633827706053853,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315,
+    "assembly": "GRCh38",
+    "mean": 0.6001600616499781,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 19429
+ },
+ {
+  "n": 24,
+  "id": "toolu_019WBA6Dx4NqEnBwryxMUFop",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38"
+   },
+   "max_records": 10,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF841CYA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF694WKV",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF028ZFZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF338HAQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF960FMM",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF113VII",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF841CYA",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.07161941607389599,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF694WKV",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.07315040332563222,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.06550949727930129,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.06858936129622162,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.052641821988206355,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.04328068261295557,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF960FMM",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.051226483592018486,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.16570700353421272,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF113VII",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.17686174692586065,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907,
+    "assembly": "GRCh38",
+    "mean": 0.0804349249534309,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 19437
+ },
+ {
+  "n": 25,
+  "id": "toolu_017F2VVTbFBF81htVhsfvFmx",
+  "tool": "list_files",
+  "input": {
+   "source": "encode",
+   "accession": "ENCSR000EMT",
+   "formats": [
+    "bigwig"
+   ],
+   "max_records": 15
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 6081
+ },
+ {
+  "n": 26,
+  "id": "toolu_01H1m55dAc9X5Dhi4bGZYX3y",
+  "tool": "list_files",
+  "input": {
+   "source": "encode",
+   "accession": "ENCSR098PTC",
+   "formats": [
+    "bigwig"
+   ],
+   "max_records": 15
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1406
+ },
+ {
+  "n": 27,
+  "id": "toolu_01GBoWEafJB21HfHEHVpbhsr",
+  "tool": "list_files",
+  "input": {
+   "source": "encode",
+   "accession": "ENCSR148VUP",
+   "formats": [
+    "bigwig"
+   ],
+   "max_records": 15
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1406
+ },
+ {
+  "n": 28,
+  "id": "toolu_01RGuyiRMetiLw8t7BLWKCqX",
+  "tool": "describe_dataset",
+  "input": {
+   "source": "encode",
+   "accession": "ENCSR000EMT"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 4763
+ },
+ {
+  "n": 29,
+  "id": "toolu_01K9csURkZijgk4KVf5zvuVm",
+  "tool": "describe_dataset",
+  "input": {
+   "source": "encode",
+   "accession": "ENCSR000EKS"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 4222
+ }
+]

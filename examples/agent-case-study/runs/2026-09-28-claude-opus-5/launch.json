@@ -1,0 +1,58 @@
+{
+  "session_id": "783458be-0e17-4e42-b201-5b2583f6acb7",
+  "started_utc": "2026-09-28T15:05:55+00:00",
+  "model_requested": "claude-opus-5",
+  "claude_args": [
+    "--print",
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--session-id",
+    "783458be-0e17-4e42-b201-5b2583f6acb7",
+    "--model",
+    "claude-opus-5",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "--tools",
+    "",
+    "--allowedTools",
+    "mcp__genomics",
+    "--no-session-persistence",
+    "--setting-sources",
+    "project"
+  ],
+  "server_command": [
+    "genomics-mcp"
+  ],
+  "server_config": "genomics-mcp.toml",
+  "env_passed": [
+    "AWS_CONFIG_FILE",
+    "AWS_EC2_METADATA_DISABLED",
+    "AWS_SDK_LOAD_CONFIG",
+    "AWS_SHARED_CREDENTIALS_FILE",
+    "BOTO_CONFIG",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "LOGNAME",
+    "PATH",
+    "SHELL",
+    "TERM",
+    "TMPDIR",
+    "USER"
+  ],
+  "provenance": {
+    "example_commit": "f1f1d90846cbae45bace795eff1f7298acc20c75",
+    "example_files_dirty": true,
+    "runtime_src_tree": "f13b04a3e6c1862fb8d0f241695a620b2e26ffe6",
+    "runtime_src_equals_v0_1_0": true,
+    "runtime_dirty": false,
+    "server_version": "genomics-mcp 0.1.0",
+    "claude_code_version": "2.1.283 (Claude Code)"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 862.8,
+  "work_dir_bytes_after": 0,
+  "finished_utc": "2026-09-28T15:20:18+00:00"
+}
