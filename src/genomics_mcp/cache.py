@@ -84,16 +84,21 @@ def _secret_params(url: str) -> bool:
 
 
 def _http_date(value: str | None) -> datetime | None:
+    """An HTTP date with a time zone, or None (malformed or zone-less values are refused)."""
     try:
-        return email.utils.parsedate_to_datetime(value) if value else None
-    except (TypeError, ValueError):
+        parsed = email.utils.parsedate_to_datetime(value) if value else None
+    except (TypeError, ValueError, IndexError, OverflowError):
         return None
+    return parsed if parsed is not None and parsed.tzinfo is not None else None
 
 
 def _seconds(value: str) -> float | None:
-    """HTTP delta-seconds: digits only (no signs, fractions, NaN or infinity)."""
+    """HTTP delta-seconds: ASCII digits only (no signs, fractions, NaN, infinity or other
+    Unicode digits); values past 2**31 are clamped to it (RFC 9111 section 1.2.2)."""
     value = value.strip()
-    return float(value) if value.isdigit() else None
+    if not (value.isascii() and value.isdigit()):
+        return None
+    return float(2**31 if len(value) > 10 else min(int(value), 2**31))
 
 
 def lifetime(headers: Mapping[str, str], ttl_s: float, *, now: datetime | None = None) -> float:

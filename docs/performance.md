@@ -1,5 +1,7 @@
 # Cache and performance (#49, #50)
 
+Status: unreleased. Available from the development checkout only. Release 0.1.0 has no cache and rejects a `[cache]` configuration section. Results below were measured on the development branch.
+
 One bounded in-memory cache per server process (`genomics_mcp/cache.py`). Nothing is written to disk and there is no external service.
 
 ## What is cached

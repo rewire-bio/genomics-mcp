@@ -102,6 +102,28 @@ def test_cache_control_lifetime(headers, expected):
     assert lifetime(headers, 300, now=now) == expected
 
 
+@pytest.mark.parametrize(
+    "headers",
+    [
+        {"date": f"{DAY} 09:00:00 GMT", "expires": f"{DAY} 10:00:00"},  # zone-less Expires
+        {"date": f"{DAY} 09:00:00", "cache-control": "max-age=60"},  # zone-less Date
+        {"date": f"{DAY} 09:00:00 -0000", "cache-control": "max-age=60"},  # RFC 2822 "unknown"
+        {"expires": "Mon, 99 Sep 2026 10:00:00 GMT"},
+        {"cache-control": "max-age=\u00b2"},  # Unicode digit
+        {"cache-control": "max-age=\u0663"},  # Arabic-Indic digit
+        {"age": "\u00b2", "cache-control": "max-age=60"},
+    ],
+)
+def test_malformed_dates_and_delta_seconds_fail_closed(headers):
+    assert lifetime(headers, 300) == 0
+
+
+def test_huge_delta_seconds_are_clamped_not_converted():
+    now = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
+    assert lifetime({"cache-control": "max-age=" + "9" * 5000}, 300, now=now) == 300
+    assert lifetime({"cache-control": "max-age=60", "age": "9" * 5000}, 300, now=now) == 0
+
+
 def test_object_identity_change_invalidates_old_blocks_and_signed_urls_are_ignored():
     c, clock = cache()
     url = "https://example.org/a.bw"

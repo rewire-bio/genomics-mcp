@@ -28,13 +28,14 @@ level = "INFO"
 log_query_content = false
 
 # In-memory cache of public file ranges and public API responses (docs/performance.md).
+# Unreleased: development checkout only. Release 0.1.0 rejects a [cache] section.
 # Nothing is written to disk; restarting the server clears it.
-# GENOMICS_MCP_CACHE_ENABLED=0 also turns it off.
-[cache]
-enabled = true
-max_bytes = 67108864                     # 64 MiB
-max_entries = 4096
-ttl_s = 300                              # Cache-Control max-age may shorten it
+# GENOMICS_MCP_CACHE_ENABLED=0 also turns it off. Defaults shown:
+# [cache]
+# enabled = true
+# max_bytes = 67108864                   # 64 MiB
+# max_entries = 4096
+# ttl_s = 300                            # Cache-Control max-age may shorten it
 
 # Storage. Loopback/private hosts and plain http are refused unless listed here
 # (e.g. a local fixture server). S3 profile endpoints are allowed implicitly.
