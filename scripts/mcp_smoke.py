@@ -9,7 +9,8 @@
         docker run --rm -i --mount type=bind,source="$PWD/smoke",target=/data,readonly IMAGE
 
 Checks initialize, tools/list (all 24 tools available), resources, list_sources and an exact
-synthetic FASTA region, with dummy ambient AWS credentials present and unused.
+synthetic FASTA region, with dummy ambient AWS credentials present and unused. Without the
+optional SRA Toolkit, convert_sra_run must return an actionable `unsupported` error.
 """
 
 from __future__ import annotations
@@ -76,6 +77,13 @@ async def run(args: argparse.Namespace) -> dict:
 
         status = (await client.read_resource("genomics://status")).contents[0].text
         assert not any(v in status for v in DUMMY_AWS.values())
+        sra = json.loads(status)["sra_toolkit"]
+        checks["sra_toolkit"] = {"available": sra["available"], "version": sra["version"]}
+        if not sra["available"]:
+            # Without the optional SRA Toolkit, conversion is refused with an actionable reason.
+            res = await call(client, "convert_sra_run", {"accession": "SRR13450355"})
+            assert res["error"]["code"] == "unsupported" and "ENA" in res["error"]["hint"], res
+            checks["convert_sra_run_without_toolkit"] = res["error"]["code"]
     log = errlog.read_text()
     errlog.unlink()
     assert not any(v in log for v in DUMMY_AWS.values()), "dummy secret in server log"

@@ -111,3 +111,39 @@ jobs:
             --env GENOMICS_MCP_LAUNCHER_TEST_IMAGE=genomics-mcp:ci -- \
             node "$RUNNER_TEMP/unpacked/server/launcher.cjs" "$(command -v docker)" \
               "$RUNNER_TEMP/bundle-data" "$RUNNER_TEMP/bundle-work"
+
+  sra-container:
+    # Optional SRA Toolkit image variant (`--target sra`): real public runs through MCP stdio,
+    # non-root user, read-only root filesystem, bind-mounted work dir owned by the image user.
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.2"
+      - name: Build linux/amd64 SRA image (toolkit checksum verified in the build)
+        run: |
+          docker build --platform linux/amd64 --target sra --build-arg VERSION="$(uv version --short)" -t genomics-mcp-sra:ci .
+          docker image inspect --format '{{.Id}}' genomics-mcp-sra:ci | tee sra-image-id.txt
+      - name: Image metadata (labels, user, entrypoint)
+        run: python3 scripts/check_image.py genomics-mcp-sra:ci
+      - name: Real public runs to FASTQ over MCP stdio
+        run: |
+          mkdir -p "$RUNNER_TEMP/sra-work"
+          sudo chown 10001:10001 "$RUNNER_TEMP/sra-work"
+          uv run --script scripts/sra_demo.py --out sra-container.json \
+            --work-dir "$RUNNER_TEMP/sra-work" --server-work-dir /work \
+            --image-ref "genomics-mcp-sra:ci $(cat sra-image-id.txt)" -- \
+            docker run --rm -i --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+              --cap-drop ALL --security-opt no-new-privileges \
+              --mount type=bind,source="$RUNNER_TEMP/sra-work",target=/work \
+              genomics-mcp-sra:ci
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: sra-container
+          path: |
+            sra-container.json
+            sra-image-id.txt
+
