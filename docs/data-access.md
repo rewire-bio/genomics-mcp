@@ -32,7 +32,7 @@ skipped there.
 | Package | Epic | Registers |
 | --- | --- | --- |
 | `genomics_mcp.storage` | E2 | resolvers `file`, `http`, `https`, `s3`; `list_files` for `local`, `s3`; component `storage` |
-| `genomics_mcp.artifacts` | E3 | `fetch_file`, `get_transfer_status`, `cancel_transfer`; `get_sequence/fasta`; `get_features/bed,gff3,gtf`; component `transfers` |
+| `genomics_mcp.artifacts` | E3 | `fetch_file`, `get_transfer_status`, `cancel_transfer`; `get_sequence/fasta`; `get_features/bed,gff3,gtf`; `convert_sra_run`; components `transfers`, `sra_toolkit` |
 | `genomics_mcp.readers` | E4 | `get_reads`, `get_coverage`, `get_pileup` for `bam`, `cram`; `get_variants` for `vcf`, `bcf` |
 | `genomics_mcp.signal` | E5 | `get_signal/bigwig`; `get_features/bigbed` |
 
@@ -192,6 +192,9 @@ genomics_mcp.storage._worker`), because a hung libcurl read cannot be interrupte
   `source_verification` reports checksums of the source bytes as received.
 - Failure or cancellation removes the job's own staged and prepared files; sources and other
   jobs' artifacts are never touched.
+- `convert_sra_run` jobs (optional SRA Toolkit) use the same manager, status, cancellation,
+  concurrency and quota. Their budget bounds disk use rather than a byte count; see
+  [sra-toolkit.md](sra-toolkit.md).
 - A running job is shared only with requests whose checksum requirements it will verify;
   otherwise a separate job runs (the other job and its artifact are untouched).
 - Local files are not copied unless `prepare=true` needs a copy to index; a no-copy fetch

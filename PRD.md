@@ -39,12 +39,12 @@ Clinical verdicts, ACMG/AMP automation, treatment recommendations, variant calli
 
 ## 4. Tools
 
-All tools return the same envelope (section 6). 23 tools in five groups:
+All tools return the same envelope (section 6). 24 tools in five groups (`convert_sra_run` is unreleased and needs the optional SRA Toolkit):
 
 | Group | Tools |
 | --- | --- |
 | Discovery | `list_sources`, `search_datasets`, `describe_dataset`, `list_files`, `list_samples`, `get_sample_metadata` |
-| Transfers | `fetch_file`, `get_transfer_status`, `cancel_transfer` |
+| Transfers | `fetch_file`, `get_transfer_status`, `cancel_transfer`, `convert_sra_run` |
 | Genomics | `get_reads`, `get_coverage`, `get_pileup`, `get_variants`, `get_sequence`, `get_features`, `get_signal` |
 | Composition | `inspect_locus`, `compare_samples` |
 | Reference | `resolve_identifier`, `normalize_variant`, `lookup_variant`, `lookup_gene`, `lookup_protein` |
@@ -99,7 +99,7 @@ Release gates are listed in `docs/implementation-plan.md` and apply unchanged.
 
 ## 10. Current factual limitations (2026-09-25)
 
-- All 23 tools are implemented. Version 0.1.0 is public on GitHub, GHCR and the official MCP Registry (OCI and MCPB). PyPI is not published. Directory submissions and the existing Glama listing are tracked in `docs/registry-ledger.md`.
+- The 23 tools of version 0.1.0 are implemented. Version 0.1.0 is public on GitHub, GHCR and the official MCP Registry (OCI and MCPB). PyPI is not published. Directory submissions and the existing Glama listing are tracked in `docs/registry-ledger.md`.
 - Clean-install demonstrations passed on 2026-09-25 (macOS arm64) against live EGA, ENA, ENCODE, NCBI and ClinVar and a local MinIO: `demos/results/2026-09-25/`. Live sources can change or be unavailable; failures are reported as errors.
 - Tested platforms: macOS arm64 (local suite, clean install, demos) and Linux x86_64 (CI suite with `pyBigWig.remote == 1`). The linux/amd64 container and MCPB bundle passed MCP initialization, 23-tool discovery and an exact sequence query in package and release CI. Linux arm64 and Intel macOS are not tested. Windows only through WSL2 or the container.
 - Remote bigWig/bigBed needs pyBigWig built with libcurl. The published Linux pyBigWig wheel lacks it, so installs build pyBigWig from source (C compiler, libcurl and zlib headers). There is no compiler-free native install.
@@ -110,3 +110,4 @@ Release gates are listed in `docs/implementation-plan.md` and apply unchanged.
 - gnomAD's public API is rate limited (about 10 requests/minute), so gnomAD-backed lookups are slow by design.
 - Remote region reads depend on the server honouring HTTP range requests; files are checked, not assumed.
 - Unreleased after 0.1.0: a bounded in-memory cache for public file ranges and public API responses (#49, #50). It covers only files marked public with a strong ETag and credential-free API requests. Measurements and exclusions are in `docs/performance.md`.
+- Unreleased after 0.1.0: optional `convert_sra_run` (#47, #48) converts a public SRA run to FASTQ with SRA Toolkit 3.x as a budgeted job; see `docs/sra-toolkit.md`. Real `fasterq-dump` conversion is verified on macOS arm64. The real `prefetch` step is blocked while NCBI's run locator returns 404 for public runs (28 September 2026). The optional container variant is not yet run in CI or published.

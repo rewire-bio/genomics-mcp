@@ -37,6 +37,15 @@ log_query_content = false
 # max_entries = 4096
 # ttl_s = 300                            # Cache-Control max-age may shorten it
 
+# Optional SRA Toolkit for convert_sra_run (docs/sra-toolkit.md). Unreleased: development
+# checkout only; release 0.1.0 rejects this section. GENOMICS_MCP_SRA_TOOLKIT_DIR sets bin_dir.
+# Without bin_dir, prefetch and fasterq-dump are looked up on PATH. threads and timeout_s show
+# the defaults:
+# [sra_toolkit]
+# bin_dir = "~/opt/sratoolkit.3.4.1-mac-arm64/bin"
+# threads = 4                            # fasterq-dump --threads
+# timeout_s = 3600                       # per job, download included
+
 # Storage. Loopback/private hosts and plain http are refused unless listed here
 # (e.g. a local fixture server). S3 profile endpoints are allowed implicitly.
 # [storage]
