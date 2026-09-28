@@ -5,9 +5,16 @@
 #     --mount type=bind,source=/path/to/workspace,target=/work \
 #     ghcr.io/rewire-bio/genomics-mcp:0.1.0
 #
+# The default build is the standard image. `--target sra` builds the optional variant with
+# NCBI SRA Toolkit prefetch and fasterq-dump for convert_sra_run (docs/sra-toolkit.md).
+#
 # Base images are pinned by index digest (python 3.12.14-slim-trixie, uv 0.8.2).
 ARG PYTHON_IMAGE=python:3.12.14-slim-trixie@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
 ARG UV_IMAGE=ghcr.io/astral-sh/uv:0.8.2@sha256:a7999d42cba0e5af47ef3c06ac310229c7f29c5314e35902f8353e8e170eeed1
+# NCBI's Linux x86_64 build of SRA Toolkit 3.4.1. SHA-256 computed from the download, whose
+# MD5 (ec6e9056a2bfebcf23c6cd6e02951ef2) matches https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.4.1/md5sum.txt
+ARG SRA_TOOLKIT_VERSION=3.4.1
+ARG SRA_TOOLKIT_SHA256=b950362c054765a4184af41947f022f040e94e964862017c0ecb0b0273db3596
 
 FROM ${UV_IMAGE} AS uv
 
@@ -32,7 +39,7 @@ COPY src ./src
 RUN uv sync --locked --no-dev --no-editable \
  && /opt/venv/bin/python -c "import pyBigWig, sys; sys.exit(0 if pyBigWig.remote == 1 else 'pyBigWig built without remote support')"
 
-FROM ${PYTHON_IMAGE}
+FROM ${PYTHON_IMAGE} AS standard
 ARG VERSION=0.1.0
 LABEL org.opencontainers.image.source="https://github.com/rewire-bio/genomics-mcp" \
       org.opencontainers.image.title="genomics-mcp" \
@@ -63,3 +70,34 @@ WORKDIR /work
 VOLUME ["/work"]
 ENTRYPOINT ["genomics-mcp"]
 CMD ["--transport", "stdio"]
+
+# Only prefetch, fasterq-dump, their dispatcher and NCBI's bundled default configuration.
+FROM ${PYTHON_IMAGE} AS sra-toolkit
+ARG SRA_TOOLKIT_VERSION
+ARG SRA_TOOLKIT_SHA256
+ADD https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/${SRA_TOOLKIT_VERSION}/sratoolkit.${SRA_TOOLKIT_VERSION}-ubuntu64.tar.gz /tmp/sratoolkit.tar.gz
+RUN echo "${SRA_TOOLKIT_SHA256}  /tmp/sratoolkit.tar.gz" | sha256sum -c - \
+ && mkdir -p /opt/sratoolkit/bin \
+ && tar -xzf /tmp/sratoolkit.tar.gz -C /tmp \
+ && cd /tmp/sratoolkit.${SRA_TOOLKIT_VERSION}-ubuntu64 \
+ && cp -a README.md CHANGES /opt/sratoolkit/ \
+ && cp -a bin/ncbi bin/sratools.${SRA_TOOLKIT_VERSION} bin/prefetch-orig.${SRA_TOOLKIT_VERSION} \
+      bin/fasterq-dump-orig.${SRA_TOOLKIT_VERSION} /opt/sratoolkit/bin/ \
+ && cd /opt/sratoolkit/bin \
+ && for tool in prefetch fasterq-dump; do \
+      ln -s sratools.${SRA_TOOLKIT_VERSION} ${tool}.${SRA_TOOLKIT_VERSION} \
+      && ln -s ${tool}.${SRA_TOOLKIT_VERSION} ${tool}; \
+    done \
+ && rm -rf /tmp/sratoolkit*
+
+FROM standard AS sra
+ARG SRA_TOOLKIT_VERSION
+LABEL org.opencontainers.image.title="genomics-mcp-sra" \
+      org.opencontainers.image.description="genomics-mcp with the optional NCBI SRA Toolkit (prefetch, fasterq-dump)" \
+      io.github.rewire-bio.sra-toolkit.version="${SRA_TOOLKIT_VERSION}" \
+      io.github.rewire-bio.sra-toolkit.license="Public domain (US Government work); see /opt/sratoolkit/README.md"
+COPY --from=sra-toolkit /opt/sratoolkit /opt/sratoolkit
+ENV PATH=/opt/sratoolkit/bin:$PATH
+
+# The default target stays the standard image, without SRA Toolkit.
+FROM standard

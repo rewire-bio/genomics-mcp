@@ -10,6 +10,7 @@ import json
 import os
 import shutil
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -156,6 +157,7 @@ async def test_paired_and_unpaired_reads_are_kept_and_verified(svc, toolkit):
         "bases_counted": 30,
         "biological_bases_in_run": 30,
         "all_biological_bases_written": True,
+        "spot_numbers_strictly_increasing": True,
         "pairs": 3,
         "unpaired_reads": 2,
         "records_well_formed": True,
@@ -408,17 +410,141 @@ async def test_incomplete_or_inconsistent_output_is_never_completed(svc, toolkit
     assert not (root / "fastq").exists() or list((root / "fastq").glob("*")) == []
 
 
-def test_truncated_single_file_is_detected(tmp_path):
+def fastq_dir(tmp_path, **files: str) -> Path:
     d = tmp_path / "fq"
     d.mkdir()
-    (d / f"{ACC}.fastq").write_text(f"@{ACC}.1 1 length=4\nACGT\n+\nIII")
-    with pytest.raises(Exception, match="truncated record"):
-        sra_mod.verify_fastq(d, ACC, lambda: False)
+    for name, text in files.items():
+        (d / name.replace("R", ACC)).write_text(text)
+    return d
 
 
-def test_reads_from_another_run_are_rejected(tmp_path):
-    d = tmp_path / "fq"
-    d.mkdir()
-    (d / f"{ACC}.fastq").write_text("@SRR9.1 1 length=4\nACGT\n+\nIIII\n")
-    with pytest.raises(Exception, match="not from this run"):
-        sra_mod.verify_fastq(d, ACC, lambda: False)
+def rec(spot, seq="ACGT", name=None):
+    name = name or f"{ACC}.{spot}"
+    return f"@{name} {spot} length={len(seq)}\n{seq}\n+{name} {spot} length={len(seq)}\n{'I' * len(seq)}\n"
+
+
+@pytest.mark.parametrize(
+    ("files", "message"),
+    [
+        ({"R.fastq": f"@{ACC}.1 1 length=4\nACGT\n+\nIII"}, "truncated record"),
+        ({"R.fastq": rec(1, name="SRR9.1")}, "not <accession>.<spot>"),
+        ({"R.fastq": rec(1, name=f"{ACC}.x")}, "not <accession>.<spot>"),
+        ({"R.fastq": rec(1).replace("length=4", "length=5")}, "length= does not match"),
+        ({"R.fastq": rec(9)}, "spot number outside the run"),
+        # The same spot twice in both mate files: counts and mate names still agree.
+        ({"R_1.fastq": rec(1) * 2, "R_2.fastq": rec(1) * 2}, "repeat or are out of order"),
+        ({"R_1.fastq": rec(2) + rec(1), "R_2.fastq": rec(2) + rec(1)}, "out of order"),
+        ({"R_1.fastq": rec(1), "R_2.fastq": rec(1), "R.fastq": rec(1)}, "repeat"),
+        ({"R_1.fastq": rec(1)}, "not the expected split-3 set"),
+    ],
+)
+def test_verifier_rejects_malformed_or_duplicated_reads(tmp_path, files, message):
+    with pytest.raises(Exception, match=message):
+        sra_mod.verify_fastq(fastq_dir(tmp_path, **files), ACC, 3, lambda: False)
+
+
+def test_verifier_accepts_interleaved_pairs_and_unpaired_spots(tmp_path):
+    d = fastq_dir(
+        tmp_path,
+        **{"R_1.fastq": rec(1) + rec(3), "R_2.fastq": rec(1) + rec(3), "R.fastq": rec(2, "GG")},
+    )
+    got = {
+        f["role"]: (f["reads"], f["bases"]) for f in sra_mod.verify_fastq(d, ACC, 3, lambda: False)
+    }
+    assert got == {"mate_1": (2, 8), "mate_2": (2, 8), "unpaired": (1, 2)}
+
+
+def test_verifier_bounds_line_length(tmp_path, monkeypatch):
+    monkeypatch.setattr(sra_mod, "MAX_LINE_BYTES", 16)
+    d = fastq_dir(tmp_path, **{"R.fastq": rec(1, "A" * 40)})
+    with pytest.raises(Exception, match="longer than 16 bytes"):
+        sra_mod.verify_fastq(d, ACC, 3, lambda: False)
+
+
+async def test_unsupported_sequence_table_is_refused_before_conversion(svc, toolkit):
+    control(toolkit, table="CONSENSUS")
+    res = await run_job(svc)
+    assert res["data"]["transfer"]["error"]["code"] == "unsupported"
+    assert "CONSENSUS" in res["data"]["transfer"]["error"]["message"]
+    assert [c["tool"] for c in calls(toolkit)].count("fasterq-dump") == 2  # --version + check
+
+
+async def test_descendants_that_outlive_the_toolkit_are_stopped(svc, toolkit):
+    control(toolkit, prefetch="orphan")
+    res = await run_job(svc)
+    assert res["data"]["transfer"]["state"] == "completed"
+    await asyncio.sleep(0.2)
+    assert not pid_alive(int((toolkit / "grandchild.pid").read_text()))
+
+
+async def test_resumed_job_reserves_its_budget_minus_what_is_on_disk(tmp_path, toolkit):
+    control(toolkit, fasterq="truncated", pairs=2000, run_bytes=50_000)
+    settings = make_settings(
+        tmp_path,
+        [],
+        sra_toolkit={"bin_dir": str(toolkit)},
+        limits={"workspace_max_bytes": 3_000_000},
+    )
+    svc = GenomicsService(settings)
+    try:
+        failed = await run_job(svc, budget_bytes=1_000_000)
+        assert failed["data"]["transfer"]["state"] == "failed"
+        tm = svc.registry.component("transfers").manager
+        job = tm.get(failed["data"]["transfer"]["transfer_id"])
+        root = job_dir(svc, failed)
+        kept = sra_mod.dir_usage(root)
+        # Cleanup of the failed conversion is reflected in the job's accounting.
+        assert job.parts[0].done == kept and kept < 100_000
+        # Only the download is kept, and the error is retryable: resume it with a longer run.
+        control(toolkit, fasterq="hang", run_bytes=50_000)
+        job.error["retryable"] = True
+        job.no_resume = False
+        res = await convert(svc, budget_bytes=1_000_000)
+        assert res["data"]["transfer"]["transfer_id"] == job.transfer_id
+        assert tm.reserved_bytes() == 1_000_000 - job.parts[0].done
+        # An ordinary transfer is refused if it would not fit next to the reservation.
+        used = sra_mod.dir_usage(svc.settings.paths.work_dir)
+        with pytest.raises(Exception, match="quota"):
+            tm.check_quota(3_000_000 - used - tm.reserved_bytes() + 1)
+        tm.check_quota(3_000_000 - used - tm.reserved_bytes())
+        await svc.call("cancel_transfer", {"transfer_id": job.transfer_id})
+    finally:
+        await svc.aclose()
+
+
+async def test_timeout_during_verification_waits_for_the_reader(svc, toolkit, monkeypatch):
+    seen = {}
+
+    def slow(directory, acc, spots, stop):
+        while not stop():
+            time.sleep(0.01)
+        time.sleep(0.3)
+        seen["files_present_when_reader_stopped"] = (directory / f"{acc}_1.fastq").exists()
+        return []
+
+    monkeypatch.setattr(sra_mod, "verify_fastq", slow)
+    res = await run_job(svc, timeout_s=1.5)
+    assert res["data"]["transfer"]["error"]["code"] == "timeout"
+    assert seen == {"files_present_when_reader_stopped": True}
+    assert list((job_dir(svc, res) / "fastq").glob("*")) == []
+
+
+async def test_process_group_is_killed_after_its_leader_exits(tmp_path):
+    from genomics_mcp.storage.native import kill_process_group
+
+    pid_file = tmp_path / "child.pid"
+    code = (
+        "import subprocess, sys, time\n"
+        "c = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])\n"
+        f"open({str(pid_file)!r}, 'w').write(str(c.pid))\n"
+    )
+    proc = await asyncio.create_subprocess_exec(sys.executable, "-c", code, start_new_session=True)
+    await proc.wait()
+    child = int(pid_file.read_text())
+    assert pid_alive(child)
+    kill_process_group(proc)
+    for _ in range(50):
+        if not pid_alive(child):
+            break
+        await asyncio.sleep(0.02)
+    assert not pid_alive(child)

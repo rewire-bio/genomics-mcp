@@ -68,6 +68,10 @@ def prefetch():
         sys.exit(0)
     if mode == "hang":
         hang()
+    if mode == "orphan":
+        # A descendant that outlives this process and keeps the output pipe open.
+        child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+        (HERE / "grandchild.pid").write_text(str(child.pid))
     run_dir.mkdir(parents=True, exist_ok=True)
     tmp = run_dir / f"{acc}.sra.tmp"
     if mode == "grow":
@@ -111,7 +115,7 @@ def fasterq_dump():
     if "--size-check" in args:
         if mode != "no_estimate":
             print(f"est. output          : {control.get('estimate', 2000):,} bytes")
-            print("... uses 'SEQUENCE' as sequence-table")
+            print(f"... uses '{control.get('table', 'SEQUENCE')}' as sequence-table")
             print(f"SEQ.spot_count = {control.get('spots', pairs + single):,}")
             print(f"SEQ.bio_base_count = {control.get('bio_bases', 8 * pairs + 3 * single):,}")
         sys.exit(0)

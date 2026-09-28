@@ -13,21 +13,29 @@ The job owns transfers/<id>/sra.part/, removed on cancel or permanent failure:
 Steps:
 1. prefetch <acc> --type sra --transport http --max-size <remaining budget KB>, resume and verify
    on. prefetch continues an interrupted download and checks the finished one.
-2. fasterq-dump --size-check only --details gives an output estimate and the sequence table.
-   Without an estimate the job fails. It needs budget for the bytes already used plus 1.25x the
-   estimate (output) plus 1.5x the estimate (scratch, NCBI's prefetch/fasterq-dump guide).
+2. fasterq-dump --size-check only --details gives an output estimate, the sequence table and
+   the run's biological base count. Without an estimate or base count, or with a table other than
+   SEQUENCE (e.g. PacBio CONSENSUS), the job fails before converting. It needs budget for the
+   bytes already used plus 1.25x the estimate (output) plus 1.5x the estimate (scratch, NCBI's
+   prefetch/fasterq-dump guide).
 3. fasterq-dump --split-3 --skip-technical with remote access disabled, so a run whose local
    material is incomplete fails instead of being read from the network.
-4. Every FASTQ record is checked (four lines, @ and + headers, equal sequence and quality
-   lengths, read names from this run). Mate files must list the same read names in the same
-   order, the read total must equal fasterq-dump's "reads written", and for the SEQUENCE table
-   the bases written must equal the run's biological base count (no biological read dropped).
-   Only then are the files moved to artifacts/<id>/ and the job marked completed. Other output
-   layouts than split-3's (<acc>_1, <acc>_2, <acc>.fastq) are refused, not guessed.
+4. Every FASTQ record is checked: four lines, @ and + headers, equal sequence and quality
+   lengths, `length=` matching the sequence, and a read name `<acc>.<spot>` with spot 1..spot
+   count. Mate files must hold the same spots in the same order; taken together with the
+   unpaired file, spot numbers must strictly increase (no spot duplicated or in two files). The
+   read total must equal fasterq-dump's "reads written" and the bases written must equal the
+   run's biological base count, so no biological read was dropped. Only then are the files
+   moved to artifacts/<id>/ and the job marked completed. Output other than split-3's
+   <acc>_1.fastq, <acc>_2.fastq and <acc>.fastq is refused, not guessed.
 
-`budget_bytes` bounds the job directory's peak size. NCBI's size figures are estimates (in
-testing the output estimate was slightly below the real output), so a watchdog measures the
-directory while a toolkit process runs and kills its process group once it exceeds the budget.
+`budget_bytes` limits the job directory on disk: download, dependencies, scratch and FASTQ. It
+is measured every 0.5 s while a toolkit process runs and once more when it exits; past the
+budget the process group is killed and the job fails. This is a watchdog, not a filesystem
+quota: between samples a process can overshoot by what it writes in 0.5 s. prefetch --max-size
+applies per file. Network bytes are not metered separately; prefetch writes what it downloads
+and resumes rather than restarting. NCBI's size figures are estimates (in testing the output
+estimate was slightly below the real output), so they are used only to refuse early.
 
 Toolkit settings: a random GUID, no cloud instance identity, no AWS/GCP charges, local cache off.
 Children get the native-reader environment allowlist without cloud credentials, no shell, no
@@ -46,6 +54,7 @@ import os
 import re
 import shutil
 import subprocess
+import threading
 import time
 import uuid
 from collections.abc import Callable
@@ -91,6 +100,8 @@ OUTPUT_MARGIN = 1.25
 SCRATCH_FACTOR = 1.5
 WATCH_S = 0.5
 MAX_OUTPUT_CHARS = 64 * 1024
+MAX_LINE_BYTES = 16 * 1024 * 1024
+DRAIN_S = 5.0
 INSTALL_HINT = (
     "install SRA Toolkit 3.x (https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit) "
     "and put prefetch and fasterq-dump on PATH or set sra_toolkit.bin_dir, or use the "
@@ -289,6 +300,7 @@ async def convert_sra_run(req: ConvertSraRunRequest, ctx: OperationContext) -> O
             job.notes.append("the previous result is not reusable; converting again")
     else:
         job.budget_bytes = budget
+        job.parts[0].done = kept  # the reservation is the budget minus what is on disk
         job.notes.append(
             "resuming: prefetch continues and verifies the download; conversion starts again"
         )
@@ -377,12 +389,23 @@ async def _run(
             [toolkit.fasterq_dump, *common, "--size-check", "only", "--details"], local
         )
         estimate = _number(_ESTIMATE, details)
-        if rc != 0 or estimate is None:
+        table = _text(_TABLE, details)
+        spots = _number(_SPOTS, details)
+        bio_bases = _number(_BIO_BASES, details)
+        if rc != 0 or None in (estimate, spots, bio_bases):
             raise UpstreamError(
-                "fasterq-dump did not report an output size estimate; conversion was not started",
+                "fasterq-dump did not report the output estimate, spot count and biological "
+                "base count needed to bound and verify the conversion; it was not started",
                 source="sra",
                 retryable=False,
                 details={"toolkit_output": _tail(details)},
+            )
+        if table != "SEQUENCE":
+            raise UnsupportedError(
+                f"runs read from the {table} table are not supported: completeness of their "
+                "FASTQ output cannot be verified here",
+                source="sra",
+                details={"sequence_table": table},
             )
         used = dir_usage(root)
         needed = used + math.ceil(estimate * OUTPUT_MARGIN) + math.ceil(estimate * SCRATCH_FACTOR)
@@ -426,7 +449,18 @@ async def _run(
                 retryable=False,
                 details={"toolkit_output": _tail(conv)},
             )
-        files = await asyncio.to_thread(verify_fastq, fastq, acc, cancel.is_set)
+        stop = threading.Event()
+        verifying = asyncio.ensure_future(
+            asyncio.to_thread(verify_fastq, fastq, acc, spots, stop.is_set)
+        )
+        try:
+            files = await asyncio.shield(verifying)
+        finally:
+            # On cancel or timeout the reader thread stops and is waited for before its files
+            # are removed.
+            stop.set()
+            with contextlib.suppress(BaseException):
+                await verifying
         convert_s = time.monotonic() - started
         if cancel.is_set():
             return
@@ -434,14 +468,7 @@ async def _run(
         bases = sum(f["bases"] for f in files)
         pairs = next((f["reads"] for f in files if f["role"] == "mate_1"), 0)
         unpaired = next((f["reads"] for f in files if f["role"] == "unpaired"), 0)
-        spots = _number(_SPOTS, details)
-        table = _text(_TABLE, details)
-        bio_bases = _number(_BIO_BASES, details) if table == "SEQUENCE" else None
-        if (
-            counted != written
-            or (spots is not None and pairs + unpaired > spots)
-            or (bio_bases is not None and bases != bio_bases)
-        ):
+        if counted != written or bases != bio_bases:
             raise UpstreamError(
                 "the FASTQ files do not match fasterq-dump's report; the output is not used",
                 source="sra",
@@ -465,7 +492,8 @@ async def _run(
                     "reads_counted": counted,
                     "bases_counted": bases,
                     "biological_bases_in_run": bio_bases,
-                    "all_biological_bases_written": bases == bio_bases if bio_bases else None,
+                    "all_biological_bases_written": True,
+                    "spot_numbers_strictly_increasing": True,
                     "pairs": pairs,
                     "unpaired_reads": unpaired,
                     "records_well_formed": True,
@@ -481,6 +509,7 @@ async def _run(
     except BaseException:
         shutil.rmtree(fastq, ignore_errors=True)
         shutil.rmtree(scratch, ignore_errors=True)
+        part.done = dir_usage(root)
         raise
     shutil.rmtree(root, ignore_errors=True)
     part.state = "done"
@@ -614,14 +643,24 @@ class _Watch:
         reader = asyncio.create_task(_read_tail(proc.stdout))
         waiter = asyncio.create_task(proc.wait())
         try:
-            while not waiter.done():
+            # returncode, not the waiter: wait() does not return while a descendant still holds
+            # the output pipe.
+            while True:
                 await asyncio.wait({waiter}, timeout=WATCH_S)
-                self.measure()
+                self.measure()  # also once after the leader exits
+                if proc.returncode is not None:
+                    break
+            # Descendants that outlived the leader are stopped too, so none can keep writing
+            # or hold the output pipe open.
+            kill_process_group(proc)
             self.tm._persist(self.job)
-            output = await reader
+            try:
+                output = await asyncio.wait_for(reader, DRAIN_S)
+            except TimeoutError:
+                output = "(toolkit output was not closed)"
         finally:
+            kill_process_group(proc)
             if proc.returncode is None:
-                kill_process_group(proc)
                 with contextlib.suppress(Exception):
                     await proc.wait()
             for task in (reader, waiter):
@@ -707,10 +746,11 @@ def _conversion_error(rc: int, out: str) -> Exception:
 class _Reader:
     """Reads four-line FASTQ records, hashing every byte and counting reads and bases."""
 
-    def __init__(self, path: Path, acc: str) -> None:
+    def __init__(self, path: Path, acc: str, spots: int | None) -> None:
         self.path = path
         self.fh = path.open("rb")
         self.prefix = f"{acc}.".encode()
+        self.spots = spots
         self.md5 = hashlib.md5()  # noqa: S324 - file checksum, not security
         self.sha256 = hashlib.sha256()
         self.reads = 0
@@ -723,13 +763,16 @@ class _Reader:
             retryable=False,
         )
 
-    def next(self) -> bytes | None:
-        lines = [self.fh.readline() for _ in range(4)]
+    def next(self) -> int | None:
+        """The next record's spot number, or None at the end of the file."""
+        lines = [self.fh.readline(MAX_LINE_BYTES + 1) for _ in range(4)]
         for line in lines:
             self.md5.update(line)
             self.sha256.update(line)
         if not lines[0]:
             return None
+        if any(len(line) > MAX_LINE_BYTES for line in lines):
+            raise self.bad(f"a line longer than {MAX_LINE_BYTES} bytes")
         if not all(line.endswith(b"\n") for line in lines):
             raise self.bad("truncated record")
         head, seq, plus, qual = (line.rstrip(b"\r\n") for line in lines)
@@ -737,12 +780,20 @@ class _Reader:
             raise self.bad("not a FASTQ record")
         if len(seq) != len(qual):
             raise self.bad("sequence and quality lengths differ")
-        name = head[1:].split(maxsplit=1)[0] if len(head) > 1 else b""
-        if not name.startswith(self.prefix):
-            raise self.bad("read name is not from this run")
+        words = head[1:].split()
+        name = words[0] if words else b""
+        spot = name[len(self.prefix) :]
+        if not name.startswith(self.prefix) or not spot.isdigit():
+            raise self.bad("read name is not <accession>.<spot> from this run")
+        length = next((w[7:] for w in words if w.startswith(b"length=")), None)
+        if length is not None and length != str(len(seq)).encode():
+            raise self.bad("length= does not match the sequence")
+        number = int(spot)
+        if not 1 <= number <= (self.spots or number):
+            raise self.bad("spot number outside the run")
         self.reads += 1
         self.bases += len(seq)
-        return name
+        return number
 
     def summary(self, role: str) -> dict[str, Any]:
         self.fh.close()
@@ -757,8 +808,13 @@ class _Reader:
         }
 
 
-def verify_fastq(directory: Path, acc: str, stop: Callable[[], bool]) -> list[dict[str, Any]]:
-    """Check fasterq-dump split-3 output independently of the toolkit's own report."""
+def verify_fastq(
+    directory: Path, acc: str, spots: int | None, stop: Callable[[], bool]
+) -> list[dict[str, Any]]:
+    """Check fasterq-dump split-3 output independently of the toolkit's own report.
+
+    Mates are read in step; the pair stream and the unpaired file are merged by spot number,
+    which must strictly increase, so a spot cannot repeat or appear in both."""
     names = sorted(p.name for p in directory.iterdir())
     mates = [m for m in (f"{acc}_1.fastq", f"{acc}_2.fastq") if m in names]
     unpaired = f"{acc}.fastq" if f"{acc}.fastq" in names else None
@@ -770,25 +826,33 @@ def verify_fastq(directory: Path, acc: str, stop: Callable[[], bool]) -> list[di
             retryable=False,
             details={"files": names},
         )
-    results: list[dict[str, Any]] = []
-    if mates:
-        readers = [_Reader(directory / m, acc) for m in mates]
-        try:
-            while not stop():
-                ids = [r.next() for r in readers]
-                if all(i is None for i in ids):
-                    break
-                if None in ids or len(set(ids)) != 1:
-                    raise readers[0].bad("mate files disagree on read names or counts")
-        finally:
-            results += [r.summary(f"mate_{n}") for n, r in enumerate(readers, 1)]
-    if unpaired:
-        reader = _Reader(directory / unpaired, acc)
-        try:
-            while not stop() and reader.next() is not None:
-                pass
-        finally:
-            results.append(reader.summary("unpaired"))
+    readers = [_Reader(directory / m, acc, spots) for m in mates]
+    single = _Reader(directory / unpaired, acc, spots) if unpaired else None
+
+    def next_pair() -> int | None:
+        if not readers:
+            return None
+        ids = [r.next() for r in readers]
+        if len(set(ids)) != 1:
+            raise readers[0].bad("mate files disagree on spots or read counts")
+        return ids[0]
+
+    try:
+        pair, alone, last = next_pair(), single.next() if single else None, 0
+        while (pair is not None or alone is not None) and not stop():
+            if alone is None or (pair is not None and pair < alone):
+                current, pair = pair, next_pair()
+            else:
+                current, alone = alone, single.next() if single else None
+            if current is None or current <= last:
+                raise (readers or [single])[0].bad(
+                    "spot numbers repeat or are out of order across the split-3 files"
+                )
+            last = current
+    finally:
+        results = [r.summary(f"mate_{n}") for n, r in enumerate(readers, 1)]
+        if single:
+            results.append(single.summary("unpaired"))
     return results
 
 

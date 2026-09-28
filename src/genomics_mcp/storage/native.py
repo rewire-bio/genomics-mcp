@@ -172,12 +172,13 @@ async def _communicate(proc: asyncio.subprocess.Process, payload: bytes) -> tupl
 
 
 def kill_process_group(proc: asyncio.subprocess.Process) -> None:
-    if proc.returncode is not None:
-        return
+    """SIGKILL the child's process group (started with start_new_session=True), including
+    descendants that outlive an already exited leader. Call only while the caller owns it."""
     with contextlib.suppress(ProcessLookupError, PermissionError):
         os.killpg(proc.pid, signal.SIGKILL)
-    with contextlib.suppress(ProcessLookupError):
-        proc.kill()
+    if proc.returncode is None:
+        with contextlib.suppress(ProcessLookupError):
+            proc.kill()
 
 
 def _decode(task: str, rc: int | None, out: bytes, stderr_text: str, what: str) -> Any:
