@@ -9,7 +9,9 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from genomics_mcp.cache import original_retrieval
 
 Assembly = Literal["GRCh37", "GRCh38"]
 
@@ -90,6 +92,13 @@ class Evidence(_Model):
     transformations: list[Transformation] = Field(default_factory=list)
     limitations: list[str] = Field(default_factory=list)
     truncation: list[Truncation] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _original_retrieval(self) -> Evidence:
+        # A response reused from the cache keeps its original retrieval time.
+        if "retrieved_at" not in self.model_fields_set and (t := original_retrieval(self.source)):
+            self.retrieved_at = t
+        return self
 
 
 class SourceOutcome(_Model):

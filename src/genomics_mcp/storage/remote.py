@@ -4,6 +4,10 @@ Data: range preflight (`bytes=0-0`), then a bounded head read for content sniffi
 server honours ranges. Indexes: an explicit index is read (bounded) and checked; otherwise
 conventional sidecars are observed with one bounded request each. URLs with a query string
 (e.g. signed URLs) are not probed for sidecars, because a sidecar needs its own signature.
+
+Cache: for `range_cacheable` files every request here revalidates the object identity (the
+data preflight, and a one-byte request before each sidecar read), so cached blocks used later
+in the same call belong to the version seen now.
 """
 
 from __future__ import annotations
@@ -12,8 +16,9 @@ from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
+from genomics_mcp.cache import plain_url
 from genomics_mcp.errors import InvalidInputError, NotFoundError, UnauthorizedError, UpstreamError
-from genomics_mcp.models import FileRef
+from genomics_mcp.models import FileRef, Visibility
 from genomics_mcp.storage.formats import HEAD_BYTES, content_matches, readiness, sniff
 from genomics_mcp.storage.http import HttpAccess
 from genomics_mcp.storage.indexes import Probe, locate_index
@@ -32,6 +37,32 @@ def _step(ctx: OperationContext) -> float:
     return min(STEP_TIMEOUT_S, ctx.deadline.ensure("storage request"))
 
 
+def range_cacheable(file: FileRef, access: str, url: str) -> bool:
+    """Blocks may be shared only for anonymous HTTP(S) files marked public and URLs without a
+    query string or userinfo (signed or credentialed URLs are never cached)."""
+    return (
+        access == "https"
+        and file.scheme in ("http", "https")
+        and file.visibility is Visibility.PUBLIC
+        and plain_url(url)
+    )
+
+
+async def _revalidate(
+    http: HttpAccess, url: str, source: str, timeout_s: float, extra_trusted: tuple[str, ...]
+) -> str:
+    """One-byte request recording the object's identity for this call; returns the final URL."""
+    try:
+        pre = await http.preflight(
+            url, source=source, timeout_s=timeout_s, extra_trusted=extra_trusted, observe=True
+        )
+    except UpstreamError as exc:
+        if exc.info.details.get("http_status") == 416:  # empty file: the head read handles it
+            return url
+        raise
+    return pre.final_url
+
+
 async def resolve_remote(
     ctx: OperationContext,
     http: HttpAccess,
@@ -48,9 +79,13 @@ async def resolve_remote(
     strict: bool = True,
 ) -> StorageResolvedFile:
     open_url, _ = await sign(data_name)
+    cache = http.cache is not None and range_cacheable(file, access, open_url)
     pre = await http.preflight(
-        open_url, source=source, timeout_s=_step(ctx), extra_trusted=extra_trusted
+        open_url, source=source, timeout_s=_step(ctx), extra_trusted=extra_trusted, observe=cache
     )
+    # A redirect to a signed URL is never cached (`observe` ignores such URLs as well).
+    cache = cache and range_cacheable(file, access, pre.final_url)
+    since = ctx.deadline.started if cache else None
     fmt = file.effective_format()
     reasons: list[str] = []
     compression = None
@@ -58,7 +93,12 @@ async def resolve_remote(
     if pre.range_capable:
         n = HEAD_BYTES if pre.size is None else max(1, min(HEAD_BYTES, pre.size))
         _, head, _, _ = await http.read_head(
-            pre.final_url, n, source=source, timeout_s=_step(ctx), extra_trusted=extra_trusted
+            pre.final_url,
+            n,
+            source=source,
+            timeout_s=_step(ctx),
+            extra_trusted=extra_trusted,
+            since=since,
         )
         s = sniff(head)
         compression, kind = s.compression, s.kind
@@ -73,8 +113,15 @@ async def resolve_remote(
     async def probe(name: str) -> Probe:
         url, shown = await sign(name)
         try:
+            if cache and range_cacheable(file, access, url):
+                url = await _revalidate(http, url, source, _step(ctx), extra_trusted)
             status, head, total, final = await http.read_head(
-                url, HEAD_BYTES, source=source, timeout_s=_step(ctx), extra_trusted=extra_trusted
+                url,
+                HEAD_BYTES,
+                source=source,
+                timeout_s=_step(ctx),
+                extra_trusted=extra_trusted,
+                since=since,
             )
         except NotFoundError:
             return Probe(state="missing", display=shown)

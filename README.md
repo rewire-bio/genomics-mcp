@@ -115,6 +115,7 @@ Resources: `genomics://capabilities`, `genomics://status`, `genomics://schemas`,
 - **Limits:** 1 Mb regions, 10,000 records, 1 MiB responses and a 30 s deadline; calls may lower these. Transfers are capped at 100 MiB unless a call sets a larger budget. Truncation is reported. Nothing is lifted over between assemblies.
 - **Local only:** stdio, or Streamable HTTP with a bearer token on 127.0.0.1. There is no hosted service. Local reads are limited to the folders you allow, and source files are never modified.
 - **Credentials and egress:** ambient AWS credentials are never used; private S3 and EGA need explicit configuration. Values from files not marked `public` go to external APIs only when a call sets `allow_external_annotation`.
+- **Cache (unreleased; development checkout only, not in v0.1.0):** a bounded in-memory cache reuses byte ranges of public HTTPS files marked `public` (revalidated by ETag on every call) and public API responses. It is never used for private, signed or authenticated requests. Turn it off with `[cache] enabled = false`; restarting clears it. Details and measurements: [performance](docs/performance.md).
 
 Configuration: [config.example.toml](config.example.toml). Scope and known limits: [PRD.md](PRD.md). Directory and PyPI status: [publication ledger](docs/registry-ledger.md). Technical details: [data access](docs/data-access.md), [archives](docs/archive-sources.md), [references](docs/reference-sources.md), [composition](docs/composition.md). Security: [SECURITY.md](SECURITY.md).
 

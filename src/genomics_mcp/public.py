@@ -59,7 +59,8 @@ class Deadline:
 
     def __init__(self, seconds: float) -> None:
         self.seconds = seconds
-        self.expires = time.monotonic() + seconds
+        self.started = time.monotonic()
+        self.expires = self.started + seconds
 
     def remaining(self) -> float:
         return max(0.0, self.expires - time.monotonic())

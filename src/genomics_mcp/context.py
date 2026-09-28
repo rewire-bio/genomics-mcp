@@ -111,7 +111,9 @@ class OperationContext:
         seconds = self.deadline.remaining()
         if timeout_s is not None:
             seconds = min(seconds, timeout_s)
-        return dataclasses.replace(self, deadline=Deadline(seconds))
+        deadline = Deadline(seconds)
+        deadline.started = self.deadline.started  # same call: cache revalidation window
+        return dataclasses.replace(self, deadline=deadline)
 
 
 def _covers(region: Interval | None, interval: Interval) -> bool:

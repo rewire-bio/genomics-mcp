@@ -12,6 +12,7 @@ Package `genomics_mcp` (distribution `rewire-genomics-mcp`). This file is the co
 | `security` | `resolve_local_path`, `scrubbed_env` | E1 |
 | `result` | `ToolResult`, `OperationOutput`, `Truncation`, `EffectiveLimits`, `check_region`, `take_records`, `fit_to_response_budget` | E1 |
 | `public` | `PublicHttpClient`, `SourcePolicy`, `Deadline`, `EgressContext`, `PublicResponse` | E1 |
+| `cache` | `MemoryCache` (component `cache`), object identity, API request policy, per-call cache use; see docs/performance.md | #49 |
 | `registry` | `Operation`, `Category`, `OPERATIONS`, `Registry`, `SourceInfo`, `PROVIDER_MODULES` | E1 |
 | `contracts` | `FileResolver` protocol, `ResolvedFile` | E1 |
 | `context` | `OperationContext`, `fan_out`, `FanOutResult` | E1 |

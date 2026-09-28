@@ -6,6 +6,8 @@
   Cross-origin hops carry only safe headers.
 - The client ignores proxy/netrc environment (`trust_env=False`) and sends no credentials.
 - The final URL is returned for native readers but never logged or returned to callers.
+- With a `MemoryCache`, public files are read in 64 KiB blocks reused across calls
+  (`read_blocks`); see `genomics_mcp.cache` for when a block may be reused.
 """
 
 from __future__ import annotations
@@ -14,13 +16,21 @@ import asyncio
 import contextlib
 import logging
 import re
-from collections.abc import AsyncIterator, Iterable
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from urllib.parse import parse_qsl, urljoin, urlsplit
 
 import httpx
 
+from genomics_mcp.cache import (
+    BLOCK_BYTES,
+    Identity,
+    MemoryCache,
+    lifetime,
+    object_identity,
+    plain_url,
+)
 from genomics_mcp.config import Settings
 from genomics_mcp.errors import (
     DeadlineExceededError,
@@ -37,6 +47,8 @@ from genomics_mcp.storage.netguard import check_destination, check_peer
 log = logging.getLogger("genomics_mcp.storage.http")
 
 MAX_REDIRECTS = 5
+MAX_RUN_BLOCKS = 64
+"""Most blocks fetched by one upstream range request (4 MiB)."""
 _CONTENT_RANGE = re.compile(r"^bytes (\d+)-(\d+)/(\d+|\*)$")
 
 
@@ -114,9 +126,14 @@ class HttpAccess:
     """Shared async client for storage requests. One per server."""
 
     def __init__(
-        self, settings: Settings, *, transport: httpx.AsyncBaseTransport | None = None
+        self,
+        settings: Settings,
+        *,
+        transport: httpx.AsyncBaseTransport | None = None,
+        cache: MemoryCache | None = None,
     ) -> None:
         self.settings = settings
+        self.cache = cache if cache is not None and cache.enabled else None
         self._client = httpx.AsyncClient(
             transport=transport,
             trust_env=False,
@@ -189,8 +206,11 @@ class HttpAccess:
         source: str,
         timeout_s: float,
         extra_trusted: Iterable[str] = (),
+        observe: bool = False,
     ) -> Preflight:
-        """Prove byte-range support with GET bytes=0-0. Never downloads the file."""
+        """Prove byte-range support with GET bytes=0-0. Never downloads the file.
+
+        `observe` records the object identity for cached block reads in this call."""
         host = urlsplit(url).hostname or ""
         try:
             async with asyncio.timeout(max(0.1, timeout_s)):
@@ -224,6 +244,13 @@ class HttpAccess:
                             if len(body) > 64:
                                 break
                         capable = len(body) == 1
+                        if observe and capable and self.cache is not None:
+                            ident = object_identity(resp.headers, size)
+                            if self._client.cookies:  # sent or set: per-client, never shared
+                                ident = None
+                            self.cache.observe(
+                                final, ident, lifetime(resp.headers, self.cache.settings.ttl_s)
+                            )
                     elif status == 200:
                         # Range ignored: close without reading the body.
                         cl = resp.headers.get("content-length")
@@ -307,11 +334,37 @@ class HttpAccess:
         source: str,
         timeout_s: float,
         extra_trusted: Iterable[str] = (),
+        since: float | None = None,
     ) -> tuple[int, bytes, int | None, str]:
         """Read at most `length` bytes from the start (206, or a 200 closed after `length`).
 
-        Returns (status, bytes, total size if known, final URL). 4xx/5xx raise.
+        Returns (status, bytes, total size if known, final URL). 4xx/5xx raise. With `since`,
+        cached blocks are used if a request at or after it validated the object's identity.
         """
+        valid = self.cache.validated(url, since) if self.cache and since is not None else None
+        if valid is not None:
+            ident = valid[0]
+            if ident.size == 0:
+                return 416, b"", 0, url
+            buf = bytearray()
+
+            async def collect(piece: bytes, _cached: bool) -> None:
+                buf.extend(piece)
+
+            try:
+                async with asyncio.timeout(max(0.1, timeout_s)):
+                    await self.read_blocks(
+                        url,
+                        0,
+                        min(length, ident.size) - 1,
+                        valid,
+                        collect,
+                        source=source,
+                        extra_trusted=extra_trusted,
+                    )
+            except TimeoutError:
+                raise DeadlineExceededError(f"{source}: read timed out", source=source) from None
+            return 206, bytes(buf), ident.size, url
         try:
             async with asyncio.timeout(max(0.1, timeout_s)):
                 async with self.open(
@@ -339,3 +392,118 @@ class HttpAccess:
                     return resp.status_code, bytes(buf[:length]), total, final
         except TimeoutError:
             raise DeadlineExceededError(f"{source}: read timed out", source=source) from None
+
+    async def read_blocks(
+        self,
+        url: str,
+        start: int,
+        end: int,
+        valid: tuple[Identity, float],
+        sink: Callable[[bytes, bool], Awaitable[None]],
+        *,
+        source: str,
+        extra_trusted: Iterable[str] = (),
+        open_ended: bool = False,
+    ) -> None:
+        """Deliver bytes [start, end] of a validated public object to `sink(piece, cached)`.
+
+        Cached blocks are served from memory; each run of missing blocks is one upstream
+        request with `If-Range: <ETag>`. A response that is not a 206 of the validated identity
+        with identity encoding invalidates the object and raises, so versions never mix. A
+        valid response whose own policy forbids sharing (no-store, cookies, a signed redirect
+        target) is delivered but not stored, and the object is dropped. Only complete blocks
+        are stored. Bytes stream through block by block (nothing larger is buffered).
+        An `open_ended` request (the reader did not say where it stops) starts with one block
+        per upstream request and doubles, to limit read-ahead.
+        """
+        assert self.cache is not None
+        ident = valid[0]
+        cache, pos = self.cache, start
+        run = 1
+        while pos <= end:
+            first = pos // BLOCK_BYTES
+            block = cache.get(("range", url, ident, first))
+            if block is not None:
+                piece = block[pos - first * BLOCK_BYTES : end + 1 - first * BLOCK_BYTES]
+                await sink(piece, True)
+                pos += len(piece)
+                continue
+            limit = first + (run if open_ended else MAX_RUN_BLOCKS) - 1
+            last = first
+            while last < min(limit, end // BLOCK_BYTES) and not cache.contains(
+                ("range", url, ident, last + 1)
+            ):
+                last += 1
+            cache.note("range_misses", last - first)  # get() counted the first block
+            pos = await self._fill(url, first, last, pos, end, valid, sink, source, extra_trusted)
+            run = min(run * 2, MAX_RUN_BLOCKS)
+
+    async def _fill(
+        self,
+        url: str,
+        first: int,
+        last: int,
+        pos: int,
+        end: int,
+        valid: tuple[Identity, float],
+        sink: Callable[[bytes, bool], Awaitable[None]],
+        source: str,
+        extra_trusted: Iterable[str],
+    ) -> int:
+        """Fetch blocks first..last, store them, deliver [pos, end] from them. Returns new pos."""
+        assert self.cache is not None
+        ident, ttl = valid
+        lo, hi = first * BLOCK_BYTES, min((last + 1) * BLOCK_BYTES, ident.size) - 1
+        headers = {"Range": f"bytes={lo}-{hi}", "If-Range": ident.etag}
+        async with self.open(url, source=source, headers=headers, extra_trusted=extra_trusted) as (
+            resp,
+            final,
+            _,
+        ):
+            if resp.status_code >= 400 and resp.status_code != 416:
+                raise status_error(source, resp.status_code, urlsplit(final).hostname or "")
+            cr = parse_content_range(resp.headers.get("content-range"))
+            same = object_identity(resp.headers, cr[2] if cr else None) == ident
+            encoding = resp.headers.get("content-encoding", "identity").lower()
+            if (
+                resp.status_code != 206
+                or cr is None
+                or cr[:2] != (lo, hi)
+                or not same
+                or encoding != "identity"
+            ):
+                self.cache.invalidate(url)
+                raise UpstreamError(
+                    f"{source}: the remote file changed during the query; retry it",
+                    source=source,
+                    retryable=True,
+                )
+            ttl = min(ttl, lifetime(resp.headers, ttl))
+            store = ttl > 0 and plain_url(final) and not self._client.cookies
+            if not store:
+                self.cache.invalidate(url)
+                self.cache.note("range_bypass")
+            buf = bytearray()
+            block = first
+            async for chunk in resp.aiter_raw():
+                buf.extend(chunk)
+                while block <= last:
+                    size = min(BLOCK_BYTES, ident.size - block * BLOCK_BYTES)
+                    if len(buf) < size:
+                        break
+                    data = bytes(buf[:size])
+                    del buf[:size]
+                    if store:
+                        self.cache.put(("range", url, ident, block), data, size, ttl)
+                    self.cache.note("range_upstream_bytes", size)
+                    base = block * BLOCK_BYTES
+                    if pos <= end and pos < base + size:
+                        piece = data[pos - base : end + 1 - base]
+                        await sink(piece, False)
+                        pos += len(piece)
+                    block += 1
+                if block > last:
+                    break
+            if block <= last:
+                raise UpstreamError(f"{source}: range response ended early", source=source)
+        return pos

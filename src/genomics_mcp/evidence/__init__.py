@@ -18,6 +18,7 @@ from typing import Any
 
 import httpx
 
+from genomics_mcp.cache import MemoryCache, private_query
 from genomics_mcp.config import Settings
 from genomics_mcp.context import OperationContext
 from genomics_mcp.errors import ErrorCode, ErrorInfo, InvalidInputError
@@ -151,7 +152,7 @@ class ReferenceRuntime:
             )
         return self._client
 
-    def service(self, settings: Settings) -> ReferenceService:
+    def service(self, settings: Settings, cache: MemoryCache | None = None) -> ReferenceService:
         key = settings.model_dump_json(include={"sources", "limits"})
         svc = self._services.get(key)
         if svc is None:
@@ -159,6 +160,7 @@ class ReferenceRuntime:
                 self.client(),
                 config_from_settings(settings),
                 atlas_transport=self._atlas_transport,
+                cache=cache,
                 **self._service_kwargs,
             )
             self._services[key] = svc
@@ -180,6 +182,10 @@ class ReferenceRuntime:
 
 def _runtime(ctx: OperationContext) -> ReferenceRuntime:
     return ctx.require_component("reference_runtime")
+
+
+def _service(ctx: OperationContext) -> ReferenceService:
+    return _runtime(ctx).service(ctx.settings, ctx.component("cache"))
 
 
 def _budget(ctx: OperationContext) -> float:
@@ -290,9 +296,10 @@ async def normalize(
     request = ref.NormalizeVariantRequest(
         variant=value, assembly=asm, use_remote_reference=True, **_origin(egress)
     )
-    svc = _runtime(ctx).service(ctx.settings)
-    with selected_sources(
-        None if selection is None else [s for s in selection if s != LOCAL_FASTA]
+    svc = _service(ctx)
+    with (
+        selected_sources(None if selection is None else [s for s in selection if s != LOCAL_FASTA]),
+        private_query(egress.derived_from_private),
     ):
         result = await svc.normalize_variant(
             request, deadline_s=_budget(ctx), reference_provider=provider
@@ -346,8 +353,11 @@ async def lookup_variant(
     request = ref.LookupVariantRequest(
         variant=value, assembly=asm, sources=chosen, use_remote_reference=True, **_origin(egress)
     )
-    svc = _runtime(ctx).service(ctx.settings)
-    result = await svc.lookup_variant(request, deadline_s=_budget(ctx), reference_provider=provider)
+    svc = _service(ctx)
+    with private_query(egress.derived_from_private):
+        result = await svc.lookup_variant(
+            request, deadline_s=_budget(ctx), reference_provider=provider
+        )
     norm = result.normalization
     data = {
         "canonical_variant": _dump(result.canonical_variant),
@@ -376,9 +386,7 @@ async def _gene(req: LookupGeneRequest, ctx: OperationContext) -> OperationOutpu
     asm = _assembly(req.assembly, default="GRCh38")
     request = ref.LookupGeneRequest(gene=req.gene, assembly=asm, include=include)  # type: ignore[arg-type]
     with selected_sources(selection):
-        result = (
-            await _runtime(ctx).service(ctx.settings).lookup_gene(request, deadline_s=_budget(ctx))
-        )
+        result = await _service(ctx).lookup_gene(request, deadline_s=_budget(ctx))
     if req.assembly is None:
         result.warnings.append(
             "assembly not given; GRCh38 used for gene coordinates and constraint"
@@ -392,11 +400,7 @@ async def _protein(req: LookupProteinRequest, ctx: OperationContext) -> Operatio
     selection, errors, statuses = _select(Operation.LOOKUP_PROTEIN, req.sources, ctx.settings)
     request = ref.LookupProteinRequest(protein=req.protein)
     with selected_sources(selection):
-        result = (
-            await _runtime(ctx)
-            .service(ctx.settings)
-            .lookup_protein(request, deadline_s=_budget(ctx))
-        )
+        result = await _service(ctx).lookup_protein(request, deadline_s=_budget(ctx))
     data = {"protein": result.protein, "candidates": _dump(result.candidates)}
     return to_output(result, result.evidence, data, max_records=ctx.limits.max_records,
                      extra_errors=errors, extra_statuses=statuses)  # fmt: skip
@@ -406,11 +410,7 @@ async def _resolve(req: ResolveIdentifierRequest, ctx: OperationContext) -> Oper
     selection, errors, statuses = _select(Operation.RESOLVE_IDENTIFIER, req.sources, ctx.settings)
     request = ref.ResolveIdentifierRequest(identifier=req.identifier, assembly=req.assembly)
     with selected_sources(selection):
-        result = (
-            await _runtime(ctx)
-            .service(ctx.settings)
-            .resolve_identifier(request, deadline_s=_budget(ctx))
-        )
+        result = await _service(ctx).resolve_identifier(request, deadline_s=_budget(ctx))
     resolved = result.resolved
     if req.target_types:
         unknown = [t for t in req.target_types if t not in TARGET_KEYS]

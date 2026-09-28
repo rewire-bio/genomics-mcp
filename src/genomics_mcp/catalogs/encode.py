@@ -192,6 +192,7 @@ class EncodeClient:
                 timeout_s=timeout_s,
                 terms_url=TERMS_URL,
                 max_body_bytes=MAX_OBJECT_BYTES,
+                cacheable=True,
             ),
         )
         self.data = SourceHttp(

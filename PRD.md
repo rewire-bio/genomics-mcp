@@ -109,3 +109,4 @@ Release gates are listed in `docs/implementation-plan.md` and apply unchanged.
 - EGA controlled data requires the user's own approved account; development uses the public test account and dataset only.
 - gnomAD's public API is rate limited (about 10 requests/minute), so gnomAD-backed lookups are slow by design.
 - Remote region reads depend on the server honouring HTTP range requests; files are checked, not assumed.
+- Unreleased after 0.1.0: a bounded in-memory cache for public file ranges and public API responses (#49, #50). It covers only files marked public with a strong ETag and credential-free API requests. Measurements and exclusions are in `docs/performance.md`.

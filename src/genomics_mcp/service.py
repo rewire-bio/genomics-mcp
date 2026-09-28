@@ -17,6 +17,7 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from genomics_mcp import __version__
+from genomics_mcp.cache import MemoryCache, track_call
 from genomics_mcp.catalog import PLANNED_SOURCES, SOURCE_SCHEMES
 from genomics_mcp.config import Settings
 from genomics_mcp.context import OperationContext, fan_out
@@ -64,6 +65,9 @@ class GenomicsService:
         for info in PLANNED_SOURCES:
             if self.registry.source(info.name) is None:
                 self.registry.register_source(info)
+        if self.registry.component("cache") is None:
+            self.registry.provide("cache", MemoryCache(settings.cache))
+        self.cache: MemoryCache = self.registry.component("cache")
         if load_providers:
             self.registry.load_providers()
         self._http = http
@@ -109,9 +113,14 @@ class GenomicsService:
             # Handlers and fan-out children are bounded by ctx.deadline. The outer bound adds a
             # short grace so a child timing out *at* the deadline can still return the other
             # sources' completed results; it remains a hard, finite bound.
-            async with asyncio.timeout(ctx.deadline.remaining() + deadline_grace(limits.timeout_s)):
-                output = await self._dispatch(op, request, ctx)
+            with track_call() as use:
+                async with asyncio.timeout(
+                    ctx.deadline.remaining() + deadline_grace(limits.timeout_s)
+                ):
+                    output = await self._dispatch(op, request, ctx)
             result = self._wrap(op, output, limits)
+            if note := use.summary():
+                result.warnings.append(note)
         except GenomicsError as exc:
             result = error_result(op.value, exc.info, limits=limits.applied())
         except TimeoutError:
@@ -320,6 +329,7 @@ class GenomicsService:
             "server_version": __version__,
             "sources": [self.describe_source(s) for s in self.registry.sources()],
             "config": self.settings.public_view(),
+            "cache": self.cache.metrics(),
         }
 
     def _log_call(
