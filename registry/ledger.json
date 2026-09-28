@@ -153,23 +153,28 @@
       "artifact": "https://mcpservers.org/submit (free plan, review within 2 weeks)",
       "how": "Form fields: Server Name 'Genomics MCP'; Category (closest science/data category offered); Short Description (as punkpeye entry); Repository https://github.com/rewire-bio/genomics-mcp; Official MCP Registry Name io.github.rewire-bio/genomics-mcp; remote connection: no; Contact Email: maintainer's choice.",
       "prepared": "2026-09-25",
-      "submitted": null,
+      "submitted": "2026-09-28",
       "published": null,
       "approved": null,
-      "gate": "Free form prepared with public release details; awaiting the maintainer-selected personal contact email. Not submitted. No paid option selected.",
-      "state": "needs_contact_email"
+      "gate": "Awaiting directory review; receipt quotes review within 2 weeks and email notification on approval.",
+      "state": "submitted",
+      "validated": "Free-plan WebMCP submission returned success; the page displayed Submission Successful for Genomics MCP. No payment made.",
+      "receipt_recorded_at": "2026-09-28T08:39:03+00:00"
     },
     {
       "route": "smithery_local_mcpb",
-      "artifact": "genomics-mcp-0.1.0.mcpb (GitHub release asset; Node launcher for the digest-pinned GHCR image)",
-      "how": "smithery mcp publish ./genomics-mcp-0.1.0.mcpb -n <owned namespace>/genomics-mcp; payload {\"type\":\"stdio\",\"runtime\":\"node\"}",
-      "validated": "Released MCPB uses the exact tested image digest and passed actual Linux container protocol checks in release CI. Bundle checksum verified anonymously. Host application installation and macOS Docker are untested.",
+      "artifact": "https://smithery.ai/servers/tim-80ew/genomics-mcp",
+      "how": "Official Smithery CLI4.11.1 published the tested release MCPB in the authenticated owner namespace tim-80ew. Public display name, description, homepage and repository link were saved through the owner settings.",
+      "validated": "CLI returned deployment status SUCCESS. Public page shows Genomics MCP, Local, published28September2026, the saved description and repository links. The uploaded bundle is the independently verified release artifact; upstream Linux container protocol tests passed. No hosted endpoint or paid plan.",
       "prepared": "2026-09-25",
-      "submitted": null,
-      "published": null,
+      "submitted": "2026-09-28",
+      "published": "2026-09-28",
       "approved": null,
-      "state": "needs_permission",
-      "gate": "Web sign-in is complete. Explicit confirmation is pending for the official CLI to access the account API key, followed by selection of an owned namespace. The unapproved CLI login attempt expired without publication; regenerate only after confirmation."
+      "state": "published",
+      "gate": "Public listing and local bundle are published; Smithery currently reports no capabilities found. No Smithery capability scan or client installation is claimed.",
+      "last_verified": "2026-09-28",
+      "qualified_name": "tim-80ew/genomics-mcp",
+      "deployment_id": "84e6b07b-a967-451f-9e79-7ab6d1d1408a"
     },
     {
       "route": "pulsemcp",
@@ -197,13 +202,15 @@
     {
       "route": "mcp_market",
       "artifact": "https://mcpmarket.com/submit",
-      "state": "needs_contact_email",
+      "state": "submitted",
       "prepared": "2026-09-28",
-      "submitted": null,
+      "submitted": "2026-09-28",
       "published": null,
       "approved": null,
       "how": "Free queue selected and public GitHub repository entered; advertised review 4\u20136 weeks.",
-      "gate": "Contact email confirmation pending. No submission or payment made."
+      "gate": "Awaiting free-queue review; receipt quotes approximately 4\u20136 weeks.",
+      "validated": "GitHub repository and contact fields completed with Free Queue selected. The page displayed Submitted! You are in the free queue. No payment made.",
+      "receipt_recorded_at": "2026-09-28T08:39:03+00:00"
     },
     {
       "route": "cline_marketplace",

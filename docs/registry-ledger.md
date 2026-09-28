@@ -15,10 +15,10 @@ Updated 2026-09-28. Machine-readable copy: [registry/ledger.json](../registry/le
 | Glama | Updated package published 2026-09-28 | [Listing](https://glama.ai/mcp/servers/rewire-bio/genomics-mcp) claimed and README synced. Glama build passed after adding native build prerequisites; package `0.1.1` is explicitly a Glama packaging revision of project `0.1.0`. Quality evaluation may still lag. |
 | LobeHub | Existing public listing observed 2026-09-28 | [Listing](https://lobehub.com/mcp/rewire-bio-genomics-mcp) still shows old development documentation and Unvalidated status. One metadata refresh attempted; updated content not confirmed. |
 | Awesome MCP Servers | Submitted 2026-09-25 | [PR #15126](https://github.com/punkpeye/awesome-mcp-servers/pull/15126), awaiting review. |
-| mcpservers.org | Free form prepared | Needs a maintainer-selected personal contact email. Not submitted. |
-| MCP Market | Free queue prepared | [Form](https://mcpmarket.com/submit); contact email confirmation pending. Not submitted. |
+| mcpservers.org | Submitted 2026-09-28 | Free submission success receipt verified; review within two weeks. Email notification on approval. |
+| MCP Market | Submitted 2026-09-28 | Free-queue success receipt verified; current quoted wait is four to six weeks. |
 | Cline Marketplace | Deferred pending client test | [Submission requirements](https://github.com/cline/mcp-marketplace) include successful Cline installation and a 400x400 logo. Cline client test not performed. |
-| Smithery | Tested release bundle ready | Web sign-in complete. Needs separate CLI authorization and an owned namespace to upload the released bundle. |
+| Smithery | Published 2026-09-28 | [Local bundle listing](https://smithery.ai/servers/tim-80ew/genomics-mcp); CLI deployment succeeded and public metadata verified. Smithery capability discovery is not yet available. |
 | PyPI | Workflow ready; not published | Needs a personal account and trusted publisher configuration; see [release instructions](release.md). |
 | PulseMCP | Deferred | New submissions paused when checked 2026-09-24. |
 | MCP.so | Excluded from unpaid launch | Requires a $39 listing fee. |
