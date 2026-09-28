@@ -145,6 +145,9 @@ registered with a loopback proxy (`storage/proxy.py`) and the child receives
   connections.
 - A refused hop (e.g. a redirect to an unapproved host) becomes the call's typed error; the
   unapproved host receives no request.
+- Public files (`visibility: "public"`, plain HTTP(S), no query string) are relayed through a
+  64 KiB block cache shared across calls. Each call revalidates the file's strong ETag and size
+  first; blocks are reused only for that exact version. See [performance](performance.md).
 
 pysam/HTSlib and pyBigWig run in a child process per call (`python -I -m
 genomics_mcp.storage._worker`), because a hung libcurl read cannot be interrupted from a thread.
