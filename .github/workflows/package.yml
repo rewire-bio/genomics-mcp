@@ -133,8 +133,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sra-work"
           sudo chown 10001:10001 "$RUNNER_TEMP/sra-work"
           uv run --script scripts/sra_demo.py --out sra-container.json \
-            --work-dir "$RUNNER_TEMP/sra-work" --server-work-dir /work \
-            --image-ref "genomics-mcp-sra:ci $(cat sra-image-id.txt)" -- \
+            --work-dir "$RUNNER_TEMP/sra-work" --server-work-dir /work --expect-uid 10001 \
+            --image genomics-mcp-sra:ci --image-id "$(cat sra-image-id.txt)" -- \
             docker run --rm -i --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
               --cap-drop ALL --security-opt no-new-privileges \
               --mount type=bind,source="$RUNNER_TEMP/sra-work",target=/work \

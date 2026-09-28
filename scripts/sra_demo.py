@@ -8,7 +8,7 @@
         --work-dir /tmp/sra-work --env GENOMICS_MCP_SRA_TOOLKIT_DIR=/path/to/sratoolkit/bin \\
         -- genomics-mcp
     uv run --script scripts/sra_demo.py --out sra-container.json --work-dir "$WORK" \\
-        --server-work-dir /work --image-ref IMAGE@DIGEST -- \\
+        --server-work-dir /work --expect-uid 10001 --image IMAGE --image-id sha256:... -- \\
         docker run --rm -i --mount type=bind,source="$WORK",target=/work IMAGE
 
 Checks, all through MCP tools and resources:
@@ -22,14 +22,17 @@ Checks, all through MCP tools and resources:
 
 Every FASTQ artifact is re-read here, independently of the server: record structure, spot
 numbering, mate pairing, sha256/md5 against the reported checksums, and read and base counts
-against ENA's and NCBI's own run metadata. File ownership (uid) is recorded. The harness never
-imports genomics_mcp. A source failure is recorded as a failed check, never as success.
+against ENA's and NCBI's own run metadata. Every FASTQ file must be owned by --expect-uid
+(default: this user). The run passes only if every expected check ran and passed. The harness
+never imports genomics_mcp. A source failure is recorded as a failed check, never as success.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
+import io
 import json
 import os
 import platform
@@ -49,6 +52,14 @@ PAIRED, SINGLE = "SRR13450355", "SRR24157174"
 INTERRUPT, CANCEL = "SRR10063098", "SRR10063100"
 SMALL_BUDGET = 16 * 1024 * 1024
 MID_BUDGET = 400 * 1024 * 1024
+BASE_CHECKS = ("status", "invalid", "budget", "paired", "single")
+MID_SIZE_CHECKS = ("cancel", "interrupt", "interrupt_resume")
+
+
+def verdict(checks: dict[str, Any], skip_mid_size: bool) -> bool:
+    """True only if every expected check is present and passed."""
+    expected = BASE_CHECKS + (() if skip_mid_size else MID_SIZE_CHECKS)
+    return all(checks.get(name, {}).get("ok") is True for name in expected)
 
 
 class Failed(Exception):
@@ -74,11 +85,7 @@ def archive_counts(acc: str) -> dict[str, Any]:
     ena_row = dict(zip(ena[0].split("\t"), ena[1].split("\t"), strict=True))
     q = urllib.parse.urlencode({"db": "sra", "id": acc, "rettype": "runinfo", "retmode": "text"})
     rows = fetch_text(f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?{q}")
-    lines = [line for line in rows.splitlines() if line.strip()]
-    header = lines[0].split(",")
-    ncbi = next(
-        dict(zip(header, r.split(","), strict=False)) for r in lines[1:] if r.startswith(acc)
-    )
+    ncbi = next(r for r in csv.DictReader(io.StringIO(rows)) if r.get("Run") == acc)
     return {
         "ena": {k: ena_row[k] for k in ("read_count", "base_count", "library_layout")},
         "ncbi_runinfo": {k: ncbi[k] for k in ("spots", "bases", "LibraryLayout", "size_MB")},
@@ -107,7 +114,7 @@ def read_fastq(path: Path, acc: str) -> tuple[list[int], int, dict[str, str]]:
     return spots, bases, {"md5": md5.hexdigest(), "sha256": sha.hexdigest()}
 
 
-def independent_check(data: dict, acc: str, host_path) -> dict[str, Any]:
+def independent_check(data: dict, acc: str, host_path, uid: int) -> dict[str, Any]:
     arts = {Path(a["path"]).name: a for a in data["artifacts"]}
     files: dict[str, Any] = {}
     all_spots: list[int] = []
@@ -120,7 +127,9 @@ def independent_check(data: dict, acc: str, host_path) -> dict[str, Any]:
             reported["sha256"] == sums["sha256"] and reported["md5"] == sums["md5"],
             f"{name} checksum",
         )
-        files[name] = {"reads": len(spots), "bases": n_bases, "uid": path.stat().st_uid, **sums}
+        owner = path.stat().st_uid
+        check(owner == uid, f"{name} owned by uid {owner}, expected {uid}")
+        files[name] = {"reads": len(spots), "bases": n_bases, "uid": owner, **sums}
         bases += n_bases
         if not name.endswith(("_2.fastq",)):
             all_spots += spots
@@ -248,7 +257,7 @@ async def run(args: argparse.Namespace) -> dict:
             )
             return {
                 "result": summary(final),
-                "independent": independent_check(final["data"], acc, host_path),
+                "independent": independent_check(final["data"], acc, host_path, args.expect_uid),
             }
 
         await step("status", s_status)
@@ -271,22 +280,29 @@ async def run(args: argparse.Namespace) -> dict:
             check(not (work / "artifacts" / tid).exists(), "no artifacts")
             return {"transfer_id": tid, "remaining": [p.name for p in left]}
 
-        if not args.skip_mid_size:
-            await step("cancel", s_cancel)
+        interrupted = ""
+
+        async def s_interrupt():
+            nonlocal interrupted
             res = await call(
                 client, "convert_sra_run", {"accession": INTERRUPT, "budget_bytes": MID_BUDGET}
             )
+            check(res["status"] == "ok", f"started: {res.get('error')}")
             interrupted = res["data"]["transfer"]["transfer_id"]
-            try:
-                before = await wait_downloading(client, interrupted)
-                checks["interrupt"] = {
-                    "bytes_done_when_stopped": before["data"]["transfer"]["bytes_done"]
-                }
-            except Exception as exc:  # noqa: BLE001 - recorded, never hidden
-                checks["interrupt"] = {"ok": False, "failure": f"{type(exc).__name__}: {exc}"}
+            before = await wait_downloading(client, interrupted)
+            return {
+                "transfer_id": interrupted,
+                "bytes_done_when_stopped": before["data"]["transfer"]["bytes_done"],
+            }
+
+        if not args.skip_mid_size:
+            await step("cancel", s_cancel)
+            await step("interrupt", s_interrupt)
     # The server has exited here; its shutdown marks the interrupted job failed and resumable.
 
-    if not args.skip_mid_size and "failure" not in checks.get("interrupt", {}):
+    if not args.skip_mid_size and not checks["interrupt"]["ok"]:
+        checks["interrupt_resume"] = {"ok": False, "failure": "not run: no interrupted download"}
+    elif not args.skip_mid_size:
         async with connect(args.command, env, errlog.with_name(errlog.stem + "-2.log")) as client:
 
             async def s_resume():
@@ -310,18 +326,30 @@ async def run(args: argparse.Namespace) -> dict:
                     },
                     "partial_files_before_resume": partial,
                     "result": summary(final),
-                    "independent": independent_check(final["data"], INTERRUPT, host_path),
+                    "independent": independent_check(
+                        final["data"], INTERRUPT, host_path, args.expect_uid
+                    ),
                 }
 
             await step("interrupt_resume", s_resume)
 
     usage = resource.getrusage(resource.RUSAGE_CHILDREN)
+    toolkit = (status.get("sra_toolkit") or {}).get("prefetch")
     return {
         "date": datetime.now(UTC).isoformat(timespec="seconds"),
         "platform": f"{platform.system()} {platform.machine()}",
         "command": args.command[:3] + (["..."] if len(args.command) > 3 else []),
-        "image": args.image_ref,
+        "image": {
+            "name": args.image,
+            "local_image_id": args.image_id,
+            "note": "local content ID from docker image inspect, not a registry digest; the "
+            "SRA image is not published",
+        }
+        if args.image
+        else None,
         "harness_uid": os.getuid(),
+        "expected_fastq_uid": args.expect_uid,
+        "_toolkit_dir": str(Path(toolkit).parent) if toolkit else None,
         "child_rusage": {
             "max_rss": usage.ru_maxrss,
             "max_rss_unit": "bytes" if sys.platform == "darwin" else "KiB",
@@ -329,7 +357,7 @@ async def run(args: argparse.Namespace) -> dict:
             "note": "server and toolkit processes it waited for (for docker run: the CLI only)",
         },
         "checks": checks,
-        "passed": all(c.get("ok", False) for k, c in checks.items() if k != "interrupt"),
+        "passed": verdict(checks, args.skip_mid_size),
     }
 
 
@@ -339,7 +367,9 @@ def main() -> int:
     p.add_argument("--work-dir", required=True, help="host path of the server work dir")
     p.add_argument("--server-work-dir", help="the same directory as the server sees it (container)")
     p.add_argument("--env", action="append", default=[], help="KEY=VALUE for the server")
-    p.add_argument("--image-ref", help="container image reference with digest, for the record")
+    p.add_argument("--image", help="container image name, for the record")
+    p.add_argument("--image-id", help="local image ID from docker image inspect, for the record")
+    p.add_argument("--expect-uid", type=int, default=os.getuid(), help="owner of FASTQ files")
     p.add_argument("--skip-mid-size", action="store_true", help="skip interrupt and cancel runs")
     p.add_argument("command", nargs=argparse.REMAINDER)
     args = p.parse_args()
@@ -349,9 +379,11 @@ def main() -> int:
         p.error("give the server command after --")
     report = anyio.run(run, args)
     work = str(Path(args.work_dir).resolve())
-    report = scrub(
-        report, {work: "$WORK", **({args.server_work_dir: "$WORK"} if args.server_work_dir else {})}
-    )
+    paths = {work: "$WORK", **({args.server_work_dir: "$WORK"} if args.server_work_dir else {})}
+    toolkit_dir = report.pop("_toolkit_dir")
+    if toolkit_dir and not args.server_work_dir:  # a local path; the image's /opt path is kept
+        paths[toolkit_dir] = "$SRA_TOOLKIT_BIN"
+    report = scrub(report, paths)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2) + "\n")
