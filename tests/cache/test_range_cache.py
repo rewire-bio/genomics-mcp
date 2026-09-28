@@ -206,30 +206,158 @@ async def test_byte_cap_applies_to_cached_hits(gsettings, perf_server):
         await http.aclose()
 
 
-async def test_cancelled_read_stores_only_complete_blocks(gsettings, perf):
-    srv = FixtureServer(perf["bam"].parent)
-    srv.httpd.handle_error = lambda *a: None
+class RangeObject:
+    """In-process public object (MockTransport): 206 answers with a strong ETag. Tests set
+    `extra` response headers after the preflight, or make a response stall mid-stream."""
+
+    URL = "http://127.0.0.1:9/obj.bin"
+
+    def __init__(self, size: int = 4 * BLOCK_BYTES) -> None:
+        self.data = bytes(i % 251 for i in range(size))
+        self.extra: dict[str, str] = {}
+        self.stall_after: int | None = None
+        self.stalled = asyncio.Event()
+        self.closed = 0
+        self.requests: list[httpx.Request] = []
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        a, _, b = request.headers["range"].removeprefix("bytes=").partition("-")
+        start, end = int(a), min(int(b or len(self.data) - 1), len(self.data) - 1)
+        headers = {"etag": '"v1"', "content-range": f"bytes {start}-{end}/{len(self.data)}"}
+        return httpx.Response(
+            206, headers={**headers, **self.extra}, stream=_Body(self, self.data[start : end + 1])
+        )
+
+
+class _Body(httpx.AsyncByteStream):
+    def __init__(self, obj: RangeObject, body: bytes) -> None:
+        self.obj, self.body = obj, body
+
+    async def __aiter__(self):
+        n = self.obj.stall_after
+        if n is None:
+            yield self.body
+            return
+        yield self.body[:n]
+        self.obj.stalled.set()
+        await asyncio.Event().wait()  # never resumes: only cancellation ends this stream
+
+    async def aclose(self) -> None:
+        self.obj.closed += 1
+
+
+async def validated_object(gsettings, obj: RangeObject):
     cache = MemoryCache(CacheSettings())
-    http = HttpAccess(gsettings, cache=cache)
+    http = HttpAccess(gsettings, cache=cache, transport=httpx.MockTransport(obj))
+    since = time.monotonic()
+    await http.preflight(obj.URL, source="https", timeout_s=5, observe=True)
+    return http, cache, cache.validated(obj.URL, since)
+
+
+async def collect(http, obj, valid, end: int) -> bytes:
+    got = bytearray()
+
+    async def sink(piece: bytes, cached: bool) -> None:
+        got.extend(piece)
+
+    await http.read_blocks(obj.URL, 0, end, valid, sink, source="https")
+    return bytes(got)
+
+
+def range_keys(cache: MemoryCache) -> list:
+    return [k for k in cache._items if k[0] == "range"]
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [{"cache-control": "no-store"}, {"cache-control": "private"}, {"set-cookie": "s=synthetic"}],
+)
+async def test_block_response_policy_is_checked_not_only_the_preflight(gsettings, extra):
+    obj = RangeObject()
+    http, cache, valid = await validated_object(gsettings, obj)
     try:
-        since = time.monotonic()
-        url = srv.url("slow/perf.bw")  # 4 KiB every 50 ms: one block takes about 0.8 s
-        await http.preflight(url, source="https", timeout_s=5, observe=True)
-        valid = cache.validated(url, since)
-
-        async def sink(piece: bytes, cached: bool) -> None:
-            pass
-
-        with pytest.raises(TimeoutError):
-            await asyncio.wait_for(
-                http.read_blocks(url, 0, 4 * BLOCK_BYTES - 1, valid, sink, source="https"), 1.2
-            )
-        blocks = {k[3]: v[0] for k, v in cache._items.items() if k[0] == "range"}
-        assert blocks and all(len(v) == BLOCK_BYTES for v in blocks.values())
-        assert len(blocks) < 4
+        assert valid is not None
+        obj.extra = extra  # the actual block response forbids sharing
+        assert await collect(http, obj, valid, 2 * BLOCK_BYTES) == obj.data[: 2 * BLOCK_BYTES + 1]
+        assert range_keys(cache) == [] and cache.validated(obj.URL, 0) is None
     finally:
         await http.aclose()
-        srv.close()
+
+
+async def test_changed_content_encoding_is_rejected(gsettings):
+    obj = RangeObject()
+    http, cache, valid = await validated_object(gsettings, obj)
+    try:
+        obj.extra = {"content-encoding": "gzip"}
+        with pytest.raises(UpstreamError, match="changed"):
+            await collect(http, obj, valid, 1000)
+        assert range_keys(cache) == [] and cache.validated(obj.URL, 0) is None
+    finally:
+        await http.aclose()
+
+
+async def test_cookie_carrying_client_does_not_share_ranges(gsettings):
+    obj = RangeObject()
+    obj.extra = {"set-cookie": "session=synthetic"}
+    http, cache, valid = await validated_object(gsettings, obj)
+    try:
+        assert valid is None  # the preflight set a cookie: no identity recorded
+        obj.extra = {}
+        await http.preflight(obj.URL, source="https", timeout_s=5, observe=True)
+        assert cache.validated(obj.URL, 0) is None  # later requests carry the cookie
+        assert "cookie" in obj.requests[-1].headers
+    finally:
+        await http.aclose()
+
+
+async def test_inverted_explicit_range_is_416_on_a_cached_route(gsettings):
+    obj = RangeObject()
+    http, _cache, _valid = await validated_object(gsettings, obj)
+    proxy = RangeProxy(http)
+    try:
+        route = await proxy.register(
+            "call", obj.URL, source="https", name="obj.bin",
+            expires=time.monotonic() + 30, cache_since=0,
+        )  # fmt: skip
+        async with httpx.AsyncClient() as client:
+            bad = await client.get(route, headers={"Range": "bytes=10-5"}, timeout=5)
+            good = await client.get(route, headers={"Range": "bytes=0-9"}, timeout=5)
+        assert bad.status_code == 416 and good.content == obj.data[:10]
+    finally:
+        await proxy.aclose()
+        await http.aclose()
+
+
+async def test_cancelled_relay_keeps_only_complete_blocks_and_closes_upstream(gsettings):
+    """Event-driven: the upstream delivers block 0 and part of block 1, then stalls until the
+    call is released. No wall-clock timing is involved."""
+    obj = RangeObject()
+    http, cache, _valid = await validated_object(gsettings, obj)
+    proxy = RangeProxy(http)
+    obj.stall_after = BLOCK_BYTES + 1000
+    try:
+        route = await proxy.register(
+            "call", obj.URL, source="https", name="obj.bin",
+            expires=time.monotonic() + 60, cache_since=0,
+        )  # fmt: skip
+
+        async def reader() -> None:
+            async with httpx.AsyncClient() as client:
+                await client.get(route, headers={"Range": f"bytes=0-{3 * BLOCK_BYTES}"})
+
+        task = asyncio.create_task(reader())
+        await asyncio.wait_for(obj.stalled.wait(), 30)  # generous; not a timing assertion
+        assert proxy.active_relays() == 1
+        await proxy.release("call")  # what finishing/cancelling a tool call does
+        assert proxy.active_relays() == 0 and obj.closed >= 1  # upstream stream closed
+        with pytest.raises(httpx.HTTPError):
+            await task  # the reader saw a truncated response, not a complete one
+        stored = {k[3]: v[0] for k, v in cache._items.items() if k[0] == "range"}
+        assert list(stored) == [0] and stored[0] == obj.data[:BLOCK_BYTES]
+    finally:
+        await proxy.aclose()
+        await http.aclose()
 
 
 async def test_concurrent_calls_and_small_memory_bound_keep_results_exact(perf_server, tmp_path):

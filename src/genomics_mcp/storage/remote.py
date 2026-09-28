@@ -16,6 +16,7 @@ from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
+from genomics_mcp.cache import plain_url
 from genomics_mcp.errors import InvalidInputError, NotFoundError, UnauthorizedError, UpstreamError
 from genomics_mcp.models import FileRef, Visibility
 from genomics_mcp.storage.formats import HEAD_BYTES, content_matches, readiness, sniff
@@ -39,12 +40,11 @@ def _step(ctx: OperationContext) -> float:
 def range_cacheable(file: FileRef, access: str, url: str) -> bool:
     """Blocks may be shared only for anonymous HTTP(S) files marked public and URLs without a
     query string or userinfo (signed or credentialed URLs are never cached)."""
-    p = urlsplit(url)
     return (
         access == "https"
         and file.scheme in ("http", "https")
         and file.visibility is Visibility.PUBLIC
-        and not (p.query or p.username or p.password)
+        and plain_url(url)
     )
 
 

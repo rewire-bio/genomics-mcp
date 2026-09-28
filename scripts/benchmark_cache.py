@@ -399,6 +399,8 @@ async def run_api_workloads(work: Path, samples: int) -> list[dict[str, Any]]:
             await svc.aclose()
             row[mode] = {"requests": counts, **_stats(times)}
         row["results_equal"] = len(seen) == 1
+        if not row["results_equal"]:
+            raise RuntimeError(f"{name}: results differ between cache modes")
         rows.append(row)
     return rows
 

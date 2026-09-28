@@ -5,7 +5,7 @@ transport, proxies and tests. Only read-only requests are issued (GET, and POST
 for GraphQL queries), so retrying them is safe.
 
 With the server's `MemoryCache`, successful credential-free GETs and POSTs the adapter marks
-`read_only` (GraphQL queries) are reused; see `genomics_mcp.cache.cacheable_request`.
+`read_only` (GraphQL queries) are reused; see `genomics_mcp.cache.request_key`.
 """
 
 from __future__ import annotations
@@ -24,10 +24,10 @@ import httpx
 from genomics_mcp.cache import (
     CachedResponse,
     MemoryCache,
-    cacheable_request,
     lifetime,
-    note_hit,
-    storable_body,
+    note_response,
+    request_key,
+    storable,
 )
 from genomics_mcp.errors import GenomicsError
 from genomics_mcp.errors import redact as core_redact
@@ -290,15 +290,20 @@ class SourceHttp:
             raise failure(
                 self.source, operation, "forbidden", exc.info.message, url=safe_url
             ) from None
-        key = None
+        key = req = None
         if self.cache is not None:
-            hdrs = {**self._headers, **(headers or {})}
-            key = cacheable_request(
-                self.source, method, url, params, hdrs, json_body, read_only=read_only
+            req = self.client.build_request(
+                method,
+                url,
+                params=params,
+                json=json_body,
+                headers={**self._headers, **(headers or {})},
             )
+            key = request_key(self.source, req, self.client, read_only=read_only)
+            live = deadline is None or self._clock() < deadline  # hits obey the deadline too
             if key is None:
                 self.cache.note("api_bypass")
-            elif (hit := self._cached(key, accepted, limit)) is not None:
+            elif live and (hit := self._cached(key, req, accepted, limit)) is not None:
                 return hit
         last: SourceFailure | None = None
         for attempt in range(self.max_retries + 1):
@@ -359,8 +364,10 @@ class SourceHttp:
                 )
             else:
                 if response.status_code in accepted:
-                    if key is not None:
-                        self._store(key, response, graphql=json_body is not None)
+                    now = datetime.now(UTC)
+                    note_response(self.source, now, hit=False)
+                    if key is not None and req is not None:
+                        self._store(key, req, response, now, graphql=json_body is not None)
                     return response
                 kind = status_kind(response.status_code)
                 retryable = response.status_code in RETRYABLE_STATUS
@@ -387,33 +394,38 @@ class SourceHttp:
         assert last is not None
         raise last
 
-    def _cached(self, key: tuple, accepted: set[int], limit: int) -> httpx.Response | None:
+    def _cached(
+        self, key: tuple, req: httpx.Request, accepted: set[int], limit: int
+    ) -> httpx.Response | None:
         """A stored response, if it still fits this call's accepted statuses and byte limit."""
         assert self.cache is not None
         hit: CachedResponse | None = self.cache.get(key)
         if hit is None or hit.status not in accepted or len(hit.body) > limit:
             return None
-        note_hit(self.source, hit.retrieved_at)
-        request = self.client.build_request(key[2], hit.url)
-        return httpx.Response(
-            hit.status, headers=list(hit.headers), content=hit.body, request=request
-        )
+        note_response(self.source, hit.retrieved_at, hit=True)
+        return httpx.Response(hit.status, headers=list(hit.headers), content=hit.body, request=req)
 
-    def _store(self, key: tuple, response: httpx.Response, *, graphql: bool) -> None:
+    def _store(
+        self,
+        key: tuple,
+        req: httpx.Request,
+        response: httpx.Response,
+        retrieved_at: datetime,
+        *,
+        graphql: bool,
+    ) -> None:
         assert self.cache is not None
-        body = response.content
-        if response.status_code != 200 or not storable_body(
-            response.headers, body, graphql=graphql
+        body, status = response.content, response.status_code
+        if not storable(
+            req, status, response.headers, body, str(req.url), self.client, graphql=graphql
         ):
             return
         value = CachedResponse(
-            response.status_code,
-            str(response.request.url),
-            tuple(response.headers.multi_items()),
-            body,
-            datetime.now(UTC),
+            status, str(req.url), tuple(response.headers.multi_items()), body, retrieved_at
         )
-        self.cache.put(key, value, len(body), lifetime(response.headers, self.cache.settings.ttl_s))
+        self.cache.put(
+            key, value, value.nbytes, lifetime(response.headers, self.cache.settings.ttl_s)
+        )
 
     async def _attempt(
         self,

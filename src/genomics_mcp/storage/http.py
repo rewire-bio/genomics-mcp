@@ -23,7 +23,14 @@ from urllib.parse import parse_qsl, urljoin, urlsplit
 
 import httpx
 
-from genomics_mcp.cache import BLOCK_BYTES, Identity, MemoryCache, lifetime, object_identity
+from genomics_mcp.cache import (
+    BLOCK_BYTES,
+    Identity,
+    MemoryCache,
+    lifetime,
+    object_identity,
+    plain_url,
+)
 from genomics_mcp.config import Settings
 from genomics_mcp.errors import (
     DeadlineExceededError,
@@ -238,10 +245,11 @@ class HttpAccess:
                                 break
                         capable = len(body) == 1
                         if observe and capable and self.cache is not None:
+                            ident = object_identity(resp.headers, size)
+                            if self._client.cookies:  # sent or set: per-client, never shared
+                                ident = None
                             self.cache.observe(
-                                final,
-                                object_identity(resp.headers, size),
-                                lifetime(resp.headers, self.cache.settings.ttl_s),
+                                final, ident, lifetime(resp.headers, self.cache.settings.ttl_s)
                             )
                     elif status == 200:
                         # Range ignored: close without reading the body.
@@ -400,9 +408,11 @@ class HttpAccess:
         """Deliver bytes [start, end] of a validated public object to `sink(piece, cached)`.
 
         Cached blocks are served from memory; each run of missing blocks is one upstream
-        request with `If-Range: <ETag>`. Only complete blocks whose response still carries the
-        validated identity are stored; any other answer invalidates the object and raises, so
-        versions never mix. Bytes stream through block by block (nothing larger is buffered).
+        request with `If-Range: <ETag>`. A response that is not a 206 of the validated identity
+        with identity encoding invalidates the object and raises, so versions never mix. A
+        valid response whose own policy forbids sharing (no-store, cookies, a signed redirect
+        target) is delivered but not stored, and the object is dropped. Only complete blocks
+        are stored. Bytes stream through block by block (nothing larger is buffered).
         An `open_ended` request (the reader did not say where it stops) starts with one block
         per upstream request and doubles, to limit read-ahead.
         """
@@ -454,13 +464,25 @@ class HttpAccess:
                 raise status_error(source, resp.status_code, urlsplit(final).hostname or "")
             cr = parse_content_range(resp.headers.get("content-range"))
             same = object_identity(resp.headers, cr[2] if cr else None) == ident
-            if resp.status_code != 206 or cr is None or cr[:2] != (lo, hi) or not same:
+            encoding = resp.headers.get("content-encoding", "identity").lower()
+            if (
+                resp.status_code != 206
+                or cr is None
+                or cr[:2] != (lo, hi)
+                or not same
+                or encoding != "identity"
+            ):
                 self.cache.invalidate(url)
                 raise UpstreamError(
                     f"{source}: the remote file changed during the query; retry it",
                     source=source,
                     retryable=True,
                 )
+            ttl = min(ttl, lifetime(resp.headers, ttl))
+            store = ttl > 0 and plain_url(final) and not self._client.cookies
+            if not store:
+                self.cache.invalidate(url)
+                self.cache.note("range_bypass")
             buf = bytearray()
             block = first
             async for chunk in resp.aiter_raw():
@@ -471,7 +493,8 @@ class HttpAccess:
                         break
                     data = bytes(buf[:size])
                     del buf[:size]
-                    self.cache.put(("range", url, ident, block), data, size, ttl)
+                    if store:
+                        self.cache.put(("range", url, ident, block), data, size, ttl)
                     self.cache.note("range_upstream_bytes", size)
                     base = block * BLOCK_BYTES
                     if pos <= end and pos < base + size:

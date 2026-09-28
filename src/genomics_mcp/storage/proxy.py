@@ -297,7 +297,7 @@ class RangeProxy:
         the reader as an HTTP error."""
         assert route.valid is not None
         size = route.valid[0].size
-        if start >= size:
+        if start >= size or (end is not None and end < start):
             await _reply(writer, 416, {"Content-Range": f"bytes */{size}"})
             return True
         last = size - 1 if end is None else min(end, size - 1)

@@ -6,15 +6,19 @@ Two kinds of entry share the store, which is bounded by bytes, entries and age:
   (size + strong ETag). Identity comes from a request made during the current tool call
   (``object`` entries), so every new reader call revalidates the file before any block is
   reused, and blocks of different object versions never mix. See `storage.http`.
-- ``api``: successful public archive/catalogue and reference API responses, keyed by source,
-  method, URL, parameters, safe headers and (read-only GraphQL) body. See `cacheable_request`.
+- ``api``: successful public archive/catalogue and reference API responses, keyed by a digest
+  of the request as it would actually be sent (method, URL with parameters, every header
+  including the client's own, body). See `request_key`.
 
-Nothing is written to disk. `[cache] enabled = false` (or GENOMICS_MCP_CACHE_ENABLED=0)
-turns it off; restarting the server clears it. Metrics are aggregate counts only.
+`max_bytes` bounds values plus their keys and metadata. Nothing is written to disk.
+`[cache] enabled = false` (or GENOMICS_MCP_CACHE_ENABLED=0) turns it off; restarting the server
+clears it. Metrics are aggregate counts only.
 """
 
 from __future__ import annotations
 
+import email.utils
+import hashlib
 import json
 import time
 from collections import Counter, OrderedDict
@@ -22,15 +26,22 @@ from collections.abc import Callable, Hashable, Iterator, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit
+
+import httpx
 
 from genomics_mcp.config import CacheSettings
 
 BLOCK_BYTES = 64 * 1024
 _ENTRY_OVERHEAD = 256
-_SAFE_REQUEST_HEADERS = frozenset({"accept", "content-type", "user-agent", "accept-language"})
+# Request headers that may vary a response; all are part of the key. Any other header (auth,
+# cookies, API keys, Range, ...) makes the request uncacheable.
+_KEY_HEADERS = frozenset(
+    {"accept", "accept-encoding", "accept-language", "content-type", "user-agent"}
+)
+_TRANSPORT_HEADERS = frozenset({"host", "connection", "content-length"})
 _SECRET_PARAMS = frozenset(
     {"api_key", "apikey", "api-key", "key", "token", "access_token", "auth", "signature",
      "sig", "secret", "password", "credential", "expires"}
@@ -55,9 +66,46 @@ def object_identity(headers: Mapping[str, str], size: int | None) -> Identity | 
     return Identity(size, etag, headers.get("last-modified"))
 
 
-def lifetime(headers: Mapping[str, str], ttl_s: float) -> float:
-    """Seconds a response may be reused: 0 for no-store/no-cache/private/Set-Cookie/Vary *."""
+def plain_url(url: str) -> bool:
+    """No query string and no userinfo: never a signed or credentialed URL."""
+    p = urlsplit(url)
+    return not (p.query or p.username or p.password)
+
+
+def _secret_params(url: str) -> bool:
+    p = urlsplit(url)
+    if p.username or p.password:
+        return True
+    for name, _ in parse_qsl(p.query, keep_blank_values=True):
+        n = name.lower()
+        if n in _SECRET_PARAMS or n.startswith(_SECRET_PARAM_PREFIXES):
+            return True
+    return False
+
+
+def _http_date(value: str | None) -> datetime | None:
+    try:
+        return email.utils.parsedate_to_datetime(value) if value else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _seconds(value: str) -> float | None:
+    """HTTP delta-seconds: digits only (no signs, fractions, NaN or infinity)."""
+    value = value.strip()
+    return float(value) if value.isdigit() else None
+
+
+def lifetime(headers: Mapping[str, str], ttl_s: float, *, now: datetime | None = None) -> float:
+    """Remaining seconds a response may be reused, at most `ttl_s`.
+
+    0 for no-store/no-cache/private, Pragma no-cache, Set-Cookie and Vary *. Freshness comes
+    from s-maxage/max-age, else Expires - Date, else `ttl_s`. The response's current age
+    (the larger of `Age` and now - `Date`) is subtracted. Unparseable freshness information
+    fails closed (0)."""
     if "set-cookie" in headers or headers.get("vary", "").strip() == "*":
+        return 0.0
+    if "no-cache" in headers.get("pragma", "").lower():
         return 0.0
     directives: dict[str, str] = {}
     for part in headers.get("cache-control", "").lower().split(","):
@@ -65,13 +113,28 @@ def lifetime(headers: Mapping[str, str], ttl_s: float) -> float:
         directives[name] = value.strip('"')
     if directives.keys() & {"no-store", "no-cache", "private"}:
         return 0.0
+    now = now or datetime.now(UTC)
+    age = _seconds(headers.get("age", "0"))
+    date = _http_date(headers.get("date"))
+    if age is None or ("date" in headers and date is None):
+        return 0.0
+    if date is not None:
+        age = max(age, (now - date).total_seconds())
+    fresh: float | None = None
     for name in ("s-maxage", "max-age"):
         if name in directives:
-            try:
-                return max(0.0, min(ttl_s, float(directives[name])))
-            except ValueError:
+            fresh = _seconds(directives[name])
+            if fresh is None:
                 return 0.0
-    return ttl_s
+            break
+    if fresh is None and "expires" in headers:
+        expires = _http_date(headers.get("expires"))
+        if expires is None:
+            return 0.0
+        fresh = (expires - (date or now)).total_seconds()
+    if fresh is None:
+        fresh = ttl_s
+    return max(0.0, min(ttl_s, fresh - age))
 
 
 class MemoryCache:
@@ -108,7 +171,8 @@ class MemoryCache:
         return item is not None and item[2] > self._clock()
 
     def put(self, key: tuple, value: Any, size: int, ttl_s: float) -> bool:
-        size += _ENTRY_OVERHEAD
+        """Store `value` (`size` bytes of payload); the key is accounted for as well."""
+        size += _ENTRY_OVERHEAD + len(repr(key))
         if not self.enabled or ttl_s <= 0 or size > self.settings.max_bytes:
             return False
         if key in self._items:
@@ -158,8 +222,7 @@ class MemoryCache:
         A missing validator or no-store policy removes any earlier identity (bypass); a
         changed identity drops the old version's blocks. URLs with a query string or userinfo
         (signed or credentialed) are never recorded."""
-        p = urlsplit(url)
-        if not self.enabled or p.query or p.username or p.password:
+        if not self.enabled or not plain_url(url):
             return
         old = self._items.get(("object", url))
         if ident is None or ttl_s <= 0:
@@ -168,7 +231,8 @@ class MemoryCache:
             self._drop(("object", url), "invalidations")
             self.discard(lambda k: k[0] == "range" and k[1] == url)
         if ident is not None and ttl_s > 0:
-            self.put(("object", url), (ident, self._clock(), ttl_s), 0, ttl_s)
+            meta = len(ident.etag) + len(ident.last_modified or "")
+            self.put(("object", url), (ident, self._clock(), ttl_s), meta, ttl_s)
 
     def validated(self, url: str, since: float) -> tuple[Identity, float] | None:
         """(identity, block ttl) if a request at or after `since` observed one for `url`."""
@@ -185,55 +249,48 @@ class MemoryCache:
 # ------------------------------------------------------------------ API requests
 
 
-def cacheable_request(
-    source: str,
-    method: str,
-    url: str,
-    params: Mapping[str, Any] | None,
-    headers: Mapping[str, str],
-    body: Any = None,
-    *,
-    read_only: bool = False,
+def request_key(
+    source: str, request: httpx.Request, client: httpx.AsyncClient, *, read_only: bool = False
 ) -> tuple | None:
-    """Cache key for a public, credential-free, read-only request; None means bypass.
+    """Key for a public, credential-free, read-only request, from the request as it would be
+    sent (client headers and cookies merged in); None means bypass.
 
-    GET only, or POST when the caller declares a read-only GraphQL query. Requests with
-    credentials (auth/cookie/API-key headers, key/token/signature parameters or URL
-    userinfo), Range requests and private-file-derived queries are never cached."""
-    if _PRIVATE_QUERY.get():
+    GET only, or POST when the caller declares a read-only GraphQL query. Requests with any
+    header outside the representation headers (so any auth, cookie, API-key or Range header),
+    client-level auth, key/token/signature parameters or URL userinfo, and private-file-derived
+    queries are never cached. The key is a fixed-size digest."""
+    if _PRIVATE_QUERY.get() or client.auth is not None:
         return None
-    method = method.upper()
+    method = request.method.upper()
     if method == "POST":
-        query = body.get("query", "") if isinstance(body, dict) else ""
+        try:
+            query = json.loads(request.content).get("query")
+        except (ValueError, AttributeError):
+            return None
         if not read_only or not isinstance(query, str) or query.lstrip().startswith("mutation"):
             return None
     elif method != "GET":
         return None
-    hdrs = {k.lower(): str(v) for k, v in headers.items()}
-    if not hdrs.keys() <= _SAFE_REQUEST_HEADERS:
+    names = {k.lower() for k in request.headers}
+    if not names <= _KEY_HEADERS | _TRANSPORT_HEADERS or _secret_params(str(request.url)):
         return None
-    parts = urlsplit(url)
-    if parts.username or parts.password:
-        return None
-    pairs = [*parse_qsl(parts.query, keep_blank_values=True), *(params or {}).items()]
-    for name, _ in pairs:
-        n = str(name).lower()
-        if n in _SECRET_PARAMS or n.startswith(_SECRET_PARAM_PREFIXES):
-            return None
-    return (
-        "api",
-        source,
-        method,
-        url,
-        tuple(sorted((str(k), str(v)) for k, v in (params or {}).items())),
-        hdrs.get("accept"),
-        json.dumps(body, sort_keys=True, default=str) if body is not None else None,
+    headers = sorted(
+        (k.lower(), v) for k, v in request.headers.items() if k.lower() in _KEY_HEADERS
     )
+    material = repr((method, str(request.url), headers, request.content))
+    return ("api", source, hashlib.sha256(material.encode()).hexdigest())
 
 
-def storable_body(headers: Mapping[str, str], body: bytes, *, graphql: bool) -> bool:
-    """JSON must parse; a GraphQL response carrying `errors` is never cached as a success."""
-    if graphql or "json" in headers.get("content-type", ""):
+def storable(request: httpx.Request, status: int, headers: Mapping[str, str], body: bytes,
+             final_url: str, client: httpx.AsyncClient, *, graphql: bool) -> bool:  # fmt: skip
+    """Only a 200 that the endpoint's own format check would accept: JSON must parse when JSON
+    was asked for or declared, GraphQL `errors` and HTML pages are never stored, and a
+    redirect to a signed or credentialed URL is not shared. A client holding cookies after the
+    exchange (set by a redirect hop or a retried response) may have sent them: not stored."""
+    ctype = headers.get("content-type", "").lower()
+    if status != 200 or "html" in ctype or _secret_params(final_url) or client.cookies:
+        return False
+    if graphql or "json" in ctype or "json" in request.headers.get("accept", "").lower():
         try:
             data = json.loads(body)
         except ValueError:
@@ -250,6 +307,10 @@ class CachedResponse:
     headers: tuple[tuple[str, str], ...]
     body: bytes
     retrieved_at: datetime
+
+    @property
+    def nbytes(self) -> int:
+        return len(self.body) + len(self.url) + sum(len(k) + len(v) for k, v in self.headers)
 
 
 # ------------------------------------------------------------------ per-call state
@@ -279,8 +340,8 @@ class CallUse:
         parts = []
         if self.api_hits:
             parts.append(
-                f"{self.api_hits} upstream API response(s) reused; provenance keeps their "
-                "original retrieval time"
+                f"{self.api_hits} upstream API response(s) reused; provenance reports the "
+                "earliest upstream retrieval time per source"
             )
         if self.range_bytes:
             parts.append(
@@ -303,10 +364,11 @@ def track_call() -> Iterator[CallUse]:
         _CALL.reset(token)
 
 
-def note_hit(source: str, retrieved_at: datetime) -> None:
+def note_response(source: str, retrieved_at: datetime, *, hit: bool) -> None:
+    """Record when upstream produced a response used in this call (hit: its original time)."""
     use = _CALL.get()
     if use is not None:
-        use.api_hits += 1
+        use.api_hits += hit
         if source not in use.oldest or retrieved_at < use.oldest[source]:
             use.oldest[source] = retrieved_at
 
@@ -318,9 +380,10 @@ def note_range_bytes(n: int) -> None:
 
 
 def original_retrieval(source: str) -> datetime | None:
-    """Oldest original retrieval time of cached responses reused for `source` in this call.
+    """Earliest upstream retrieval time of the responses of `source` used so far in this call.
 
-    Provenance/evidence models built during the call default `retrieved_at` to it, so a hit
-    never looks like a fresh upstream request."""
+    Source-level, not per response: provenance/evidence models built during the call default
+    `retrieved_at` to it, so a reused response never looks fresh and cold/warm calls report
+    the same time for the same response."""
     use = _CALL.get()
     return use.oldest.get(source) if use is not None else None

@@ -2,18 +2,23 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
+import httpx
 import pytest
 
 from genomics_mcp.cache import (
     Identity,
     MemoryCache,
-    cacheable_request,
     lifetime,
     object_identity,
     private_query,
-    storable_body,
+    request_key,
+    storable,
 )
 from genomics_mcp.config import CacheSettings, load_settings
+
+DAY = "Mon, 28 Sep 2026"
 
 
 class Clock:
@@ -30,7 +35,7 @@ def cache(**kw) -> tuple[MemoryCache, Clock]:
 
 
 def test_lru_evicts_by_bytes_and_entries():
-    c, _ = cache(max_bytes=3 * (1000 + 256), max_entries=10)
+    c, _ = cache(max_bytes=3 * (1000 + 256 + len(repr(("api", 0)))), max_entries=10)
     for i in range(4):
         c.put(("api", i), b"x" * 1000, 1000, 60)
     assert c.get(("api", 0)) is None  # least recently used went first
@@ -76,10 +81,25 @@ def test_identity_needs_strong_etag_and_size():
         ({"cache-control": "max-age=bogus"}, 0),
         ({"set-cookie": "s=1"}, 0),
         ({"vary": "*"}, 0),
+        ({"pragma": "no-cache"}, 0),
+        ({"cache-control": "max-age=60", "age": "20"}, 40),
+        ({"cache-control": "max-age=60", "age": "120"}, 0),  # already stale upstream
+        ({"cache-control": "max-age=60", "age": "x"}, 0),
+        ({"cache-control": "max-age=NaN"}, 0),
+        ({"cache-control": "max-age=-5"}, 0),
+        ({"cache-control": "max-age=1e3"}, 0),
+        ({"cache-control": "max-age=60", "date": f"{DAY} 12:00:00 GMT"}, 60),
+        ({"cache-control": "max-age=60", "date": f"{DAY} 11:59:30 GMT"}, 30),  # generated 30 s ago
+        ({"cache-control": "max-age=60", "date": "garbage"}, 0),
+        ({"date": f"{DAY} 12:00:00 GMT", "expires": f"{DAY} 12:01:00 GMT"}, 60),
+        ({"date": f"{DAY} 12:00:00 GMT", "expires": "Sun, 27 Sep 2026 12:00:00 GMT"}, 0),
+        ({"date": f"{DAY} 09:00:00 GMT", "expires": f"{DAY} 10:00:00 GMT"}, 0),  # stale Date
+        ({"expires": "0"}, 0),
     ],
 )
 def test_cache_control_lifetime(headers, expected):
-    assert lifetime(headers, 300) == expected
+    now = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
+    assert lifetime(headers, 300, now=now) == expected
 
 
 def test_object_identity_change_invalidates_old_blocks_and_signed_urls_are_ignored():
@@ -99,47 +119,86 @@ def test_object_identity_change_invalidates_old_blocks_and_signed_urls_are_ignor
         assert c.validated(signed, since=0) is None
 
 
-def test_request_policy_refuses_credentials_ranges_writes_and_private_queries():
-    ok = cacheable_request("s", "GET", "https://h/x", {"q": "BRCA2"}, {"Accept": "a/json"})
-    assert ok is not None
-    assert cacheable_request("s", "GET", "https://h/x", {"q": "BRCA2"}, {"accept": "a/json"}) == ok
+def key(method="GET", url="https://h/x", *, client=None, read_only=False, **kw):
+    client = client or httpx.AsyncClient(trust_env=False)
+    return request_key("s", client.build_request(method, url, **kw), client, read_only=read_only)
+
+
+def test_request_key_uses_the_request_as_sent():
+    ok = key(params={"q": "BRCA2"}, headers={"Accept": "a/json"})
+    assert ok is not None and len(repr(ok)) < 200  # fixed-size digest, whatever the URL
+    assert key(params={"q": "BRCA2"}, headers={"accept": "a/json"}) == ok
+    assert key(params={"q": "BRCA1"}, headers={"accept": "a/json"}) != ok
+    assert key(headers={"Accept-Language": "en"}) != key(headers={"Accept-Language": "fr"})
     refused = [
-        ("GET", "https://h/x", {"api_key": "k"}, {}, None, False),
-        ("GET", "https://h/x?token=t", None, {}, None, False),
-        ("GET", "https://h/x?X-Amz-Signature=s", None, {}, None, False),
-        ("GET", "https://u:p@h/x", None, {}, None, False),
-        ("GET", "https://h/x", None, {"Authorization": "Bearer t"}, None, False),
-        ("GET", "https://h/x", None, {"api-key": "k"}, None, False),
-        ("GET", "https://h/x", None, {"Range": "bytes=0-9"}, None, False),
-        ("HEAD", "https://h/x", None, {}, None, False),
-        ("POST", "https://h/g", None, {}, {"query": "{ a }"}, False),
-        ("POST", "https://h/g", None, {}, {"query": "mutation { a }"}, True),
+        {"params": {"api_key": "k"}},
+        {"url": "https://h/x?token=t"},
+        {"url": "https://h/x?X-Amz-Signature=s"},
+        {"url": "https://u:p@h/x"},
+        {"headers": {"Authorization": "Bearer synthetic"}},
+        {"headers": {"api-key": "synthetic"}},
+        {"headers": {"Range": "bytes=0-9"}},
+        {"headers": {"X-Custom": "1"}},
+        {"method": "HEAD"},
+        {"method": "POST", "json": {"query": "{ a }"}},
+        {"method": "POST", "json": {"query": "mutation { a }"}, "read_only": True},
+        {"method": "POST", "content": b"not json", "read_only": True},
     ]
-    for method, url, params, headers, body, read_only in refused:
-        key = cacheable_request("s", method, url, params, headers, body, read_only=read_only)
-        assert key is None, (method, url, params, headers)
-    assert cacheable_request(
-        "s", "POST", "https://h/g", None, {}, {"query": "{ a }"}, read_only=True
-    )
+    for kw in refused:
+        assert key(**kw) is None, kw
+    assert key("POST", "https://h/g", json={"query": "{ a }"}, read_only=True) is not None
     with private_query(True):
-        assert cacheable_request("s", "GET", "https://h/x", None, {}) is None
+        assert key() is None
     with private_query(False):
-        assert cacheable_request("s", "GET", "https://h/x", None, {}) is not None
+        assert key() is not None
 
 
-def test_graphql_errors_and_invalid_json_are_not_storable():
-    js = {"content-type": "application/json"}
-    assert storable_body(js, b'{"data": {"a": 1}}', graphql=True)
-    assert not storable_body(js, b'{"data": null, "errors": [{"message": "x"}]}', graphql=True)
-    assert not storable_body(js, b'{"data": {"a": 1}, "errors": [{"m": 1}]}', graphql=True)
-    assert not storable_body(js, b'{"truncated": ', graphql=False)
-    assert storable_body({"content-type": "text/xml"}, b"<a/>", graphql=False)
+def test_client_credentials_and_cookies_make_requests_uncacheable():
+    for client in (
+        httpx.AsyncClient(headers={"Authorization": "Bearer synthetic"}),
+        httpx.AsyncClient(auth=("user", "synthetic")),
+        httpx.AsyncClient(cookies={"session": "synthetic"}),
+    ):
+        assert key(client=client) is None
+
+
+def test_only_accepted_formats_are_storable():
+    def ok(
+        body, ctype="application/json", status=200, accept="*/*", final="https://h/x", gql=False
+    ):
+        req = httpx.Request("GET", "https://h/x", headers={"Accept": accept})
+        client = httpx.AsyncClient()
+        return storable(req, status, {"content-type": ctype}, body, final, client, graphql=gql)
+
+    assert ok(b'{"data": {"a": 1}}', gql=True)
+    assert not ok(b'{"data": null, "errors": [{"message": "x"}]}', gql=True)
+    assert not ok(b'{"data": {"a": 1}, "errors": [{"m": 1}]}', gql=True)
+    assert not ok(b'{"truncated": ')
+    assert not ok(b"<html>maintenance</html>", ctype="text/html")
+    assert not ok(b"maintenance", ctype="text/plain", accept="application/json")
+    assert not ok(b"{}", status=203)
+    assert not ok(b"{}", final="https://h/x?X-Amz-Signature=s")
+    assert ok(b"<a/>", ctype="text/xml", accept="application/xml")
+    req = httpx.Request("GET", "https://h/x")
+    jar = httpx.AsyncClient(cookies={"s": "synthetic"})  # cookie learned during the exchange
+    assert not storable(req, 200, {}, b"x", "https://h/x", jar, graphql=False)
+
+
+def test_keys_and_metadata_count_against_the_byte_bound():
+    c, _ = cache(max_bytes=1024)
+    assert c.put(("api", "x" * 1_000_000), b"x", 1, 300) is False
+    assert c.metrics()["bytes"] == 0
+    c.put(("api", "k"), b"x" * 100, 100, 300)
+    assert c.metrics()["bytes"] >= 100 + len(repr(("api", "k")))
+    c.observe("https://example.org/f", Identity(32, '"' + "x" * 1_000_000 + '"'), 300)
+    assert c.validated("https://example.org/f", 0) is None and c.metrics()["bytes"] <= 1024
 
 
 def test_metrics_are_aggregate_only():
     c, _ = cache()
     secret_url = "https://h/x?q=PRIVATE_VALUE"
     c.put(("api", "s", "GET", secret_url), b"PRIVATE_BODY", 12, 60)
+    assert c.metrics()["entries"] == 1
     text = repr(c.metrics())
     assert "PRIVATE" not in text and "https://" not in text
 

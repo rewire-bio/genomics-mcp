@@ -11,7 +11,7 @@ no ambient credentials of any kind.
 
 Policies marked `cacheable` (public metadata APIs only) reuse successful credential-free GET
 responses from the server's `MemoryCache` (attached per call by the discovery handlers); see
-`genomics_mcp.cache.cacheable_request`.
+`genomics_mcp.cache.request_key`.
 """
 
 from __future__ import annotations
@@ -47,10 +47,10 @@ from genomics_mcp.archives._common.workspace import open_temp, private_dir  # no
 from genomics_mcp.cache import (
     CachedResponse,
     MemoryCache,
-    cacheable_request,
     lifetime,
-    note_hit,
-    storable_body,
+    note_response,
+    request_key,
+    storable,
 )
 from genomics_mcp.security import check_network_destination
 
@@ -60,6 +60,7 @@ DEFAULT_MAX_BODY = 8 * 1024 * 1024
 MAX_REDIRECTS = 5
 _RETRY_STATUS = {429, 500, 502, 503, 504}
 _VERSION_HEADERS = ("ega-api-version", "x-datasets-version", "x-ncbi-total-count", "etag")
+_BODY_HEADERS = frozenset({"content-encoding", "content-length", "transfer-encoding"})
 
 
 def make_client(*, timeout_s: float = DEFAULT_TIMEOUT_S) -> httpx.AsyncClient:
@@ -271,9 +272,14 @@ class SourceHttp:
                 details={"url": redact_url(url)},
             )
         limit = self.policy.max_body_bytes if max_body is None else max_body
-        key = self._cache_key(method, url, params, headers, data)
-        if key is not None and (hit := self._cached(key, url, ok, limit, allowed_hosts)):
-            return hit
+        req = self._cacheable(method, url, params, headers, data)
+        key = None
+        if req is not None and self.cache is not None:
+            key = request_key(self.policy.name, req, self.client)
+            if key is None:
+                self.cache.note("api_bypass")
+            elif hit := self._cached(key, url, ok, limit, allowed_hosts):
+                return hit
         timeout_s = timeout_s or self.policy.timeout_s
         deadline = self._clock() + timeout_s
         try:
@@ -295,26 +301,31 @@ class SourceHttp:
                 source=self.policy.name,
                 details={"url": redact_url(url)},
             ) from exc
-        if key is not None and self.cache is not None and result.status == 200:
-            ttl = lifetime(result.headers, self.cache.settings.ttl_s)
-            if storable_body(result.headers, result.body, graphql=False):
-                value = CachedResponse(
-                    result.status,
-                    result.url,
-                    tuple(result.headers.multi_items()),
-                    result.body,
-                    datetime.now(UTC),
-                )
-                self.cache.put(key, value, len(result.body), ttl)
+        now = datetime.now(UTC)
+        note_response(self.policy.name, now, hit=False)
+        if key is not None and req is not None:
+            self._store(key, req, result, now)
         return result
 
-    def _cache_key(self, method, url, params, headers, data) -> tuple | None:
+    def _store(self, key: tuple, req: httpx.Request, result: HttpResult, now: datetime) -> None:
+        assert self.cache is not None
+        if not storable(
+            req, result.status, result.headers, result.body, result.url, self.client, graphql=False
+        ):
+            return
+        kept = tuple(
+            (k, v) for k, v in result.headers.multi_items() if k.lower() not in _BODY_HEADERS
+        )
+        value = CachedResponse(result.status, result.url, kept, result.body, now)
+        self.cache.put(
+            key, value, value.nbytes, lifetime(result.headers, self.cache.settings.ttl_s)
+        )
+
+    def _cacheable(self, method, url, params, headers, data) -> httpx.Request | None:
+        """The request as it would be sent, if this helper may use the cache at all."""
         if self.cache is None or not self.cache.enabled or not self.policy.cacheable or data:
             return None
-        key = cacheable_request(self.policy.name, method, url, params, headers or {})
-        if key is None:
-            self.cache.note("api_bypass")
-        return key
+        return self.client.build_request(method, url, params=params, headers=headers or {})
 
     def _cached(self, key, url, ok, limit, allowed_hosts) -> HttpResult | None:
         """A stored response, if it still fits this call's status, byte and host policy."""
@@ -324,7 +335,7 @@ class SourceHttp:
             return None
         self.check_url(url, allowed_hosts=allowed_hosts)
         self.check_url(hit.url, allowed_hosts=allowed_hosts)
-        note_hit(self.policy.name, hit.retrieved_at)
+        note_response(self.policy.name, hit.retrieved_at, hit=True)
         return HttpResult(hit.status, hit.url, httpx.Headers(list(hit.headers)), hit.body)
 
     async def _request(

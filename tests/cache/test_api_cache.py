@@ -6,6 +6,7 @@ Upstream is a counting mock transport serving recorded responses; the cache is t
 from __future__ import annotations
 
 import json
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -87,6 +88,10 @@ async def test_archive_response_is_reused_with_its_original_retrieval_time(tmp_p
         httpx.Response(200, json={**bench.ENCODE_FILE}, headers={"set-cookie": "s=1"}),
         httpx.Response(404, json={"status": "error"}),
         httpx.Response(200, content=b'{"accession": "ENCFF792Q', headers=JSON),
+        httpx.Response(200, text="<html>maintenance</html>", headers={"content-type": "text/html"}),
+        httpx.Response(
+            200, json={**bench.ENCODE_FILE}, headers={"cache-control": "max-age=60", "age": "90"}
+        ),
     ],
 )
 async def test_uncacheable_or_failed_archive_responses_are_refetched(tmp_path, response):
@@ -133,21 +138,32 @@ async def test_archive_hits_obey_current_host_policy_and_byte_budget():
     assert len(up.requests) == 6
 
 
-async def test_reference_lookup_is_reused_and_keeps_evidence_time(tmp_path):
+@pytest.mark.parametrize(
+    ("op", "args"),
+    [
+        ("lookup_protein", {"protein": "P51587", "sources": ["uniprot"]}),  # one request
+        ("resolve_identifier", {"identifier": "FANCD1", "sources": ["hgnc"]}),  # several
+    ],
+)
+async def test_reference_lookup_is_reused_with_upstream_retrieval_time(tmp_path, op, args):
     up = Upstream()
     svc = service(tmp_path, up)
-    args = {"identifier": "FANCD1", "sources": ["hgnc"]}
-    first = await svc.call("resolve_identifier", args)
+    first = await svc.call(op, args)
     n = len(up.requests)
-    second = await svc.call("resolve_identifier", args)
+    before_second = datetime.now(UTC)
+    second = await svc.call(op, args)
     assert n > 0 and len(up.requests) == n
     assert bench._scientific(second.data) == bench._scientific(first.data)
-    (r1,), (r2,) = first.data["records"], second.data["records"]
-    t1, t2 = r1["provenance"]["retrieved_at"], r2["provenance"]["retrieved_at"]
-    assert t2 < t1  # the reused evidence keeps its original retrieval time
-    assert len(second.provenance) == len(first.provenance) > 0
-    for a, b in zip(first.provenance, second.provenance, strict=True):
-        assert b.retrieved_at <= a.retrieved_at
+    times = [
+        [datetime.fromisoformat(r["provenance"]["retrieved_at"]) for r in res.data["records"]]
+        for res in (first, second)
+    ]
+    for t1, t2 in zip(*times, strict=True):
+        # Source-level time: the earliest upstream response of that source used by the call.
+        # The warm call used cold-call responses only, so its time is from the cold call.
+        assert t1 <= t2 < before_second
+        if op == "lookup_protein":
+            assert t1 == t2  # the same single response, reported identically
     assert any(w.startswith("cache:") for w in second.warnings)
 
 
@@ -224,3 +240,122 @@ async def test_private_file_derived_lookups_are_never_cached(tmp_path):
             out = await facade.lookup_variant(ctx, spec, egress=egress, sources=["gnomad"])
             assert out.data["records"][0]["source"] == "gnomad"
         assert up.count(GNOMAD) - before == expected
+
+
+def ref_http(up: Upstream, client: httpx.AsyncClient | None = None, **kw) -> ReferenceHttp:
+    return ReferenceHttp(
+        client or up.client(), source="uniprot", limiter=RateLimiter(100, 1.0),
+        allowed_hosts=["rest.uniprot.org"], cache=MemoryCache(CacheSettings()), **kw,
+    )  # fmt: skip
+
+
+UNIPROT = "https://rest.uniprot.org/uniprotkb/P51587.json"
+
+
+async def test_client_credentials_and_learned_cookies_are_never_shared():
+    up = Upstream()
+    for client in (
+        httpx.AsyncClient(transport=httpx.MockTransport(up), headers={"Authorization": "Bearer synthetic"}),
+        httpx.AsyncClient(transport=httpx.MockTransport(up), auth=("user", "synthetic")),
+    ):  # fmt: skip
+        http = ref_http(up, client)
+        before = len(up.requests)
+        for _ in range(2):
+            await http.request("GET", UNIPROT, operation="t")
+        assert len(up.requests) - before == 2 and http.cache.metrics()["entries"] == 0
+
+    # A long-lived client that is sent a cookie stops using the cache from then on.
+    def set_cookie(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"n": 1}, headers={"set-cookie": "session=synthetic"})
+
+    up = Upstream({"https://rest.uniprot.org/start": set_cookie})
+    http = ref_http(up)
+    await http.request("GET", "https://rest.uniprot.org/start", operation="t")
+    for _ in range(2):
+        await http.request("GET", UNIPROT, operation="t")
+    assert up.count(UNIPROT) == 2 and http.cache.metrics()["entries"] == 0
+    assert "Cookie" in up.requests[-1].headers
+
+
+async def test_representation_headers_are_part_of_the_key():
+    def by_language(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"lang": request.headers.get("accept-language")})
+
+    up = Upstream({UNIPROT: by_language})
+    http = ref_http(up)
+    for lang in ("en", "fr", "en", "fr"):
+        res = await http.request("GET", UNIPROT, operation="t", headers={"Accept-Language": lang})
+        assert res.json() == {"lang": lang}
+    assert up.count(UNIPROT) == 2
+
+
+async def test_cache_hits_obey_the_current_deadline():
+    up = Upstream()
+    http = ref_http(up)
+    await http.request("GET", UNIPROT, operation="t")
+    with pytest.raises(SourceFailure) as exc:
+        await http.request("GET", UNIPROT, operation="t", deadline=time.monotonic() - 1)
+    assert exc.value.error.kind == "timeout" and up.count(UNIPROT) == 1
+
+
+async def test_redirect_to_a_signed_url_is_not_stored():
+    signed = "https://api.example.org/z?X-Amz-Signature=synthetic"
+    up = Upstream({
+        "https://api.example.org/y": lambda r: httpx.Response(302, headers={"location": signed}),
+        "https://api.example.org/z": lambda r: httpx.Response(200, json={"n": 1}),
+    })  # fmt: skip
+    h = ArchiveHttp(
+        up.client(),
+        SourcePolicy("demo", frozenset({"api.example.org"}), min_interval_s=0, cacheable=True),
+    )
+    h.cache = MemoryCache(CacheSettings())
+    for _ in range(2):
+        assert (await h.request("GET", "https://api.example.org/y")).json() == {"n": 1}
+    assert len(up.requests) == 4 and h.cache.metrics()["entries"] == 0
+
+
+def cookie_redirect(request: httpx.Request) -> httpx.Response:
+    if request.url.path == "/public":
+        return httpx.Response(302, headers={"location": "/data", "set-cookie": "s=synthetic"})
+    return httpx.Response(200, json={"cookie_sent": "cookie" in request.headers})
+
+
+def cookie_retry(request: httpx.Request) -> httpx.Response:
+    if "cookie" not in request.headers:
+        return httpx.Response(429, headers={"set-cookie": "s=synthetic", "retry-after": "0"})
+    return httpx.Response(200, json={"cookie_sent": True})
+
+
+@pytest.mark.parametrize(
+    ("kind", "handler"),  # the reference helper never follows redirects
+    [("archive", cookie_redirect), ("archive", cookie_retry), ("reference", cookie_retry)],
+)
+async def test_cookie_learned_during_the_exchange_is_never_shared(kind, handler):
+    cache = MemoryCache(CacheSettings())
+    seen: list[httpx.Request] = []
+
+    def upstream(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return handler(request)
+
+    url = (
+        "https://api.example.org/public"
+        if handler is cookie_redirect
+        else "https://api.example.org/data"
+    )
+    for _ in range(2):  # a fresh client per call, as the archive handlers use
+        async with httpx.AsyncClient(transport=httpx.MockTransport(upstream)) as client:
+            if kind == "archive":
+                h = ArchiveHttp(
+                    client,
+                    SourcePolicy(
+                        "demo", frozenset({"api.example.org"}), min_interval_s=0, cacheable=True
+                    ),
+                )
+                h.cache = cache
+                assert (await h.request("GET", url)).json()["cookie_sent"] is True
+            else:
+                r = ReferenceHttp(client, source="demo", limiter=RateLimiter(100, 1.0),
+                                  allowed_hosts=["api.example.org"], cache=cache)  # fmt: skip
+                assert (await r.request("GET", url, operation="t")).json()["cookie_sent"] is True
+    assert cache.metrics()["entries"] == 0 and len(seen) == 4
