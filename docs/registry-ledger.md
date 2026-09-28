@@ -9,12 +9,15 @@ Updated 2026-09-28. Machine-readable copy: [registry/ledger.json](../registry/le
 | GitHub release | Published 2026-09-25 | [Release](https://github.com/rewire-bio/genomics-mcp/releases/tag/v0.1.0); all seven assets downloaded anonymously and checksums verified. |
 | GHCR container | Published 2026-09-25 | Anonymous image pull and MCP smoke test passed. Organisation package restriction restored after publication. |
 | Official MCP Registry | Published 2026-09-25 | [Active v0.1.0 record](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/0.1.0), rechecked 2026-09-28. OCI and MCPB; no PyPI claim. |
-| GitHub MCP Registry | Not verified | Check for ingestion after official registry publication. |
+| GitHub MCP Registry | Not listed when checked 2026-09-28 | [Search](https://github.com/mcp?search=genomics) returned no MCPs. Official registry publication does not establish inclusion here. |
 | BioContextAI | Submitted 2026-09-25 | [PR #73](https://github.com/biocontext-ai/registry/pull/73), awaiting review. |
 | Docker MCP Catalog | Submitted 2026-09-25 | [PR #5242](https://github.com/docker/mcp-registry/pull/5242), awaiting review. |
-| Glama | Existing public listing observed 2026-09-25 | [Listing](https://glama.ai/mcp/servers/rewire-bio/genomics-mcp) is claimed; maintainer access verified 2026-09-28. Refresh pending the updated product README. No manual submission date is claimed. |
+| Glama | Existing public listing observed 2026-09-25 | [Listing](https://glama.ai/mcp/servers/rewire-bio/genomics-mcp) is claimed; maintainer access verified 2026-09-28. Name and description saved; repository sync confirmed the published README at `d782719` on 2026-09-28. No manual initial submission date or fresh evaluation is claimed. |
+| LobeHub | Existing public listing observed 2026-09-28 | [Listing](https://lobehub.com/mcp/rewire-bio-genomics-mcp) still shows old development documentation and Unvalidated status. One metadata refresh attempted; updated content not confirmed. |
 | Awesome MCP Servers | Submitted 2026-09-25 | [PR #15126](https://github.com/punkpeye/awesome-mcp-servers/pull/15126), awaiting review. |
 | mcpservers.org | Free form prepared | Needs a maintainer-selected personal contact email. Not submitted. |
+| MCP Market | Free queue prepared | [Form](https://mcpmarket.com/submit); contact email confirmation pending. Not submitted. |
+| Cline Marketplace | Deferred pending client test | [Submission requirements](https://github.com/cline/mcp-marketplace) include successful Cline installation and a 400x400 logo. Cline client test not performed. |
 | Smithery | Tested release bundle ready | Web sign-in complete. Needs separate CLI authorization and an owned namespace to upload the released bundle. |
 | PyPI | Workflow ready; not published | Needs a personal account and trusted publisher configuration; see [release instructions](release.md). |
 | PulseMCP | Deferred | New submissions paused when checked 2026-09-24. |
@@ -38,3 +41,7 @@ Release source: `0487de1b7867c652bcab12cf6a4cd110115a45d4`.
 - Glama metadata passed its live schema. The existing listing was observed directly; no claim is made that its evaluation covers v0.1.0.
 
 Each route's dates and gates are recorded separately in the JSON ledger. Account permissions, external review and paid or paused routes remain explicit.
+
+## Promotion
+
+A disclosed [r/mcp showcase](https://www.reddit.com/r/mcp/comments/1ws8t60/genomics_mcp_fetch_genomic_reads_variants_and/) was published and its title, full body and showcase flair verified on 2026-09-28. It links the released project and real-data demonstrations, states the tested platforms and discloses Claude Code implementation. No removal notice was observed. No post was made in r/bioinformatics, which prohibits tool promotion.

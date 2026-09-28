@@ -80,12 +80,15 @@
     {
       "route": "github_mcp_registry",
       "artifact": "https://github.com/mcp",
-      "how": "Populated from the official MCP Registry (GitHub blog, 'Meet the GitHub MCP Registry'). No separate form found.",
+      "how": "Official MCP Registry publication complete; GitHub discovery checked separately.",
       "prepared": "2026-09-25",
       "submitted": null,
       "published": null,
       "approved": null,
-      "gate": "Official registry publication; then check whether the server appears on github.com/mcp."
+      "gate": "Official registry version is active, but GitHub MCP Registry search for genomics returned no MCPs on 2026-09-28. No separate eligible submission form found. Automatic ingestion is not assumed.",
+      "state": "deferred",
+      "last_verified": "2026-09-28",
+      "evidence": "https://github.com/mcp?search=genomics"
     },
     {
       "route": "biocontext_ai",
@@ -117,15 +120,18 @@
       "route": "glama",
       "artifact": "https://glama.ai/mcp/servers/rewire-bio/genomics-mcp",
       "how": "Existing public listing; glama.json maintainer identity verified. No manual initial submission date claimed.",
-      "validated": "2026-09-25: glama.json passes https://glama.ai/mcp/schemas/server.json.",
+      "validated": "Maintainer ownership verified. Listing name and description saved, then repository sync confirmed the published product README at d782719 on 2026-09-28. No claim that the evaluation covers v0.1.0.",
       "prepared": "2026-09-25",
       "submitted": null,
       "published": null,
       "approved": null,
       "state": "observed_existing_listing",
-      "gate": "Maintainer access now recognized after the user authorized GitHub and approved free account terms. Repository is synchronized to45a575d. Refresh again after product README update.",
+      "gate": null,
       "observed_existing_listing": "2026-09-25",
-      "claimed": "2026-09-28"
+      "claimed": "2026-09-28",
+      "last_verified": "2026-09-28",
+      "refreshed": "2026-09-28",
+      "synced_commit": "d7827194669202d555f81c9e389f80bd61b03157"
     },
     {
       "route": "punkpeye_awesome_mcp_servers",
@@ -159,8 +165,8 @@
       "submitted": null,
       "published": null,
       "approved": null,
-      "state": "needs_account_setup",
-      "gate": "User completed GitHub sign-in. Local MCPB publishing needs separate CLI authorization to access the Smithery API key; explicit confirmation requested. Public image and verified release bundle are ready. No paid plan or hosted endpoint."
+      "state": "needs_permission",
+      "gate": "Web sign-in is complete. Explicit confirmation is pending for the official CLI to access the account API key, followed by selection of an owned namespace. The unapproved CLI login attempt expired without publication; regenerate only after confirmation."
     },
     {
       "route": "pulsemcp",
@@ -171,7 +177,51 @@
       "route": "mcp_so",
       "state": "deferred",
       "gate": "Listing requires a $39 payment; outside the approved unpaid launch."
+    },
+    {
+      "route": "lobehub",
+      "artifact": "https://lobehub.com/mcp/rewire-bio-genomics-mcp",
+      "state": "observed_existing_listing",
+      "observed_existing_listing": "2026-09-28",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "last_verified": "2026-09-28",
+      "refresh_attempted": "2026-09-28",
+      "how": "Existing public auto-indexed listing observed; Refresh Metadata requested once through the public page. No manual initial submission date claimed.",
+      "gate": "Listing still shows an old development README and Unvalidated status. No success receipt or updated content confirmed after refresh; do not claim it is current."
+    },
+    {
+      "route": "mcp_market",
+      "artifact": "https://mcpmarket.com/submit",
+      "state": "needs_contact_email",
+      "prepared": "2026-09-28",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "how": "Free queue selected and public GitHub repository entered; advertised review 4\u20136 weeks.",
+      "gate": "Contact email confirmation pending. No submission or payment made."
+    },
+    {
+      "route": "cline_marketplace",
+      "artifact": "https://github.com/cline/mcp-marketplace",
+      "state": "deferred",
+      "last_verified": "2026-09-28",
+      "submitted": null,
+      "published": null,
+      "approved": null,
+      "how": "Official submission instructions require an issue, 400x400 PNG logo and successful installation by Cline from the README or llms-install.md.",
+      "gate": "Cline-specific installation test not performed; Cline CLI was not present. Protocol and container checks do not establish this client-specific acceptance."
     }
   ],
-  "release_commit": "0487de1b7867c652bcab12cf6a4cd110115a45d4"
+  "release_commit": "0487de1b7867c652bcab12cf6a4cd110115a45d4",
+  "promotion": [
+    {
+      "channel": "reddit_r_mcp",
+      "published": "2026-09-28",
+      "url": "https://www.reddit.com/r/mcp/comments/1ws8t60/genomics_mcp_fetch_genomic_reads_variants_and/",
+      "flair": "showcase",
+      "verified": "Post title, complete body and showcase flair visible at its permalink. No removal notice observed. Affiliation and Claude Code implementation disclosed. No post made in r/bioinformatics, whose rules prohibit tool promotion."
+    }
+  ]
 }
