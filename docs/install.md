@@ -44,7 +44,7 @@ git clone https://github.com/rewire-bio/genomics-mcp
 cd genomics-mcp
 git checkout v0.1.0
 uv sync --locked --no-dev
-uv run genomics-mcp --check-config
+uv run --no-dev genomics-mcp --check-config
 ```
 
 ## uvx
@@ -85,7 +85,7 @@ docker run --rm -i \
 ```
 
 - Runs as the non-root user `genomics` (uid 10001). The default command is `--transport stdio`.
-- `/data` is the only allowed local input root. Mount it read-only. Do not mount your home directory.
+- `/data` is the only allowed local input root. The host folder must already exist and be readable by the container user (uid 10001, or the `--user` you pass); Docker does not create bind-mount sources. Mount it read-only. Do not mount your home directory.
 - `/work` is the workspace (downloads, indexes, cache), limited to 10 GiB by `/etc/genomics-mcp/config.toml`. A named volume works as-is. For a host directory on Linux, add `--user "$(id -u):$(id -g)"` so the container can write to it.
 - Optional hardening that the CI smoke test uses: `--read-only --tmpfs /tmp:rw,noexec,nosuid,size=256m --cap-drop ALL --security-opt no-new-privileges`.
 - No cloud credentials are in the image. Pass private S3 keys only as explicitly named variables for a `[storage.profiles.<name>]` entry in your own config file.
