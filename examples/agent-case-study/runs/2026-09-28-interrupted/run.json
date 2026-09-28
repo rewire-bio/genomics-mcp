@@ -1,0 +1,50 @@
+{
+  "completion": "interrupted: no final result event",
+  "session_id": "4bcb9083-4945-491a-8361-d535ed2dbf93",
+  "model_requested": "opus",
+  "models_used": [
+    "claude-opus-5-5",
+    "claude-opus-5"
+  ],
+  "model_fallbacks": [
+    {
+      "type": "model_fallback",
+      "trigger": "refusal",
+      "category": "bio",
+      "original_model": "claude-opus-5-5",
+      "fallback_model": "claude-opus-5"
+    }
+  ],
+  "claude_code_version": "2.1.283",
+  "mcp_servers": [
+    {
+      "name": "genomics",
+      "status": "connected"
+    }
+  ],
+  "started_utc": "2026-09-28T09:10:36+00:00",
+  "finished_utc": null,
+  "elapsed_seconds": null,
+  "exit_code": null,
+  "num_turns": null,
+  "usage_tokens": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_read_input_tokens": null,
+    "cache_creation_input_tokens": null
+  },
+  "mcp_calls": 9,
+  "mcp_calls_without_result": 0,
+  "mcp_calls_failed": 2,
+  "mcp_calls_partial": 0,
+  "calls_by_tool": {
+    "compare_samples": 3,
+    "lookup_gene": 2,
+    "normalize_variant": 4
+  },
+  "signal_measurements": 38,
+  "work_dir_bytes_after": null,
+  "raw_log_sha256": "97483dc19c44c3fec1aa64392022369b7ce936892e1308f5f6031a4c64728a90",
+  "raw_log_bytes": 336373,
+  "raw_log_note": "unmodified local stream-json log; not published (contains hidden thinking-token events, request IDs and local paths)"
+}

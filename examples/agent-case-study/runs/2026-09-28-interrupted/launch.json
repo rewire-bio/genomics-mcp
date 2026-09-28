@@ -1,0 +1,45 @@
+{
+  "session_id": "4bcb9083-4945-491a-8361-d535ed2dbf93",
+  "started_utc": "2026-09-28T09:10:36+00:00",
+  "model_requested": "opus",
+  "claude_args": [
+    "--print",
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--session-id",
+    "4bcb9083-4945-491a-8361-d535ed2dbf93",
+    "--model",
+    "opus",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "--tools",
+    "",
+    "--allowedTools",
+    "mcp__genomics",
+    "--no-session-persistence",
+    "--setting-sources",
+    "project"
+  ],
+  "server_command": [
+    "genomics-mcp"
+  ],
+  "server_config": "genomics-mcp.toml",
+  "env_passed": [
+    "AWS_CONFIG_FILE",
+    "AWS_EC2_METADATA_DISABLED",
+    "AWS_SDK_LOAD_CONFIG",
+    "AWS_SHARED_CREDENTIALS_FILE",
+    "BOTO_CONFIG",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "LOGNAME",
+    "PATH",
+    "SHELL",
+    "TERM",
+    "TMPDIR",
+    "USER"
+  ]
+}
