@@ -1,0 +1,476 @@
+{
+ "anchors": {
+  "rs7606173": {
+   "vcf_pos": 60498316,
+   "source": "ncbi_variation (dbSNP build 157) via normalize_variant; multi-allelic G>A/C/T, all candidates at one position"
+  },
+  "rs6706648": {
+   "vcf_pos": 60494905,
+   "source": "ncbi_variation (dbSNP build 157) via normalize_variant; multi-allelic C>G/T, all candidates at one position"
+  },
+  "rs6738440": {
+   "vcf_pos": 60495106,
+   "source": "ncbi_variation (dbSNP build 157) via normalize_variant; SPDI NC_000002.12:60495105:A:G; REF not checked (ensembl and ncbi_nuccore timed out)"
+  },
+  "rs1427407": {
+   "vcf_pos": 60490908,
+   "source": "ncbi_variation (dbSNP build 157) via normalize_variant; multi-allelic T>C/G, all candidates at one position"
+  }
+ },
+ "tss": {
+  "BCL11A": {
+   "transcript": "ENST00000642384.2",
+   "strand": -1,
+   "tss_0based": 60553653,
+   "source": "ensembl REST release 116 via lookup_gene; canonical and MANE Select; transcript end 60553654 minus 1"
+  },
+  "GAPDH": {
+   "transcript": "ENST00000229239.10",
+   "strand": 1,
+   "tss_0based": 6534516,
+   "source": "ensembl REST release 116 via lookup_gene; canonical and MANE Select; transcript start"
+  }
+ },
+ "windows": {
+  "E55": {
+   "contig": "chr2",
+   "start": 60497815,
+   "end": 60498815
+  },
+  "E58": {
+   "contig": "chr2",
+   "start": 60494504,
+   "end": 60495504
+  },
+  "E62": {
+   "contig": "chr2",
+   "start": 60490407,
+   "end": 60491407
+  },
+  "BG_up": {
+   "contig": "chr2",
+   "start": 60508315,
+   "end": 60518315
+  },
+  "BG_down": {
+   "contig": "chr2",
+   "start": 60470907,
+   "end": 60480907
+  },
+  "P": {
+   "contig": "chr2",
+   "start": 60553153,
+   "end": 60554153
+  },
+  "G": {
+   "contig": "chr12",
+   "start": 6534016,
+   "end": 6535016
+  }
+ },
+ "files": [
+  {
+   "file": "ENCFF648LHT",
+   "experiment": "ENCSR098PTC",
+   "label": "EPO culture day 0",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.1017276043817401,
+    "E58": 0.03655854641646147,
+    "E62": 0.081342021971941,
+    "BG_up": 0.09981782517395914,
+    "BG_down": 0.05308612158112228,
+    "P": 2.667924266695976,
+    "G": 2.9588830634355543
+   }
+  },
+  {
+   "file": "ENCFF275EWP",
+   "experiment": "ENCSR098PTC",
+   "label": "EPO culture day 0",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 0.08018202155828476,
+    "E58": 0.03539374418929219,
+    "E62": 0.108969637747854,
+    "BG_up": 0.09451537254918367,
+    "BG_down": 0.0635024249668233,
+    "P": 1.7983270496428012,
+    "G": 1.8449502627253533
+   }
+  },
+  {
+   "file": "ENCFF644AXQ",
+   "experiment": "ENCSR148VUP",
+   "label": "EPO culture day 4",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.4965295668691397,
+    "E58": 0.14934232990443708,
+    "E62": 0.32188170838728547,
+    "BG_up": 0.08882443613372742,
+    "BG_down": 0.05543756420947611,
+    "P": 1.8184404938519,
+    "G": 4.02629337143898
+   }
+  },
+  {
+   "file": "ENCFF284MYJ",
+   "experiment": "ENCSR148VUP",
+   "label": "EPO culture day 4",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 0.6922963909804821,
+    "E58": 0.3746801892369986,
+    "E62": 0.5430965255405754,
+    "BG_up": 0.07836478740070016,
+    "BG_down": 0.050829209138639274,
+    "P": 2.2307459523528816,
+    "G": 5.116195534467697
+   }
+  },
+  {
+   "file": "ENCFF633NER",
+   "experiment": "ENCSR564JUY",
+   "label": "EPO culture day 6",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 1.3700117963552474,
+    "E58": 0.8758673620820046,
+    "E62": 0.9254607259277254,
+    "BG_up": 0.09029432783275843,
+    "BG_down": 0.07920823944229632,
+    "P": 1.789829987153411,
+    "G": 4.608875833749771
+   }
+  },
+  {
+   "file": "ENCFF434ACR",
+   "experiment": "ENCSR564JUY",
+   "label": "EPO culture day 6",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 1.4478924903273582,
+    "E58": 0.9157111086249351,
+    "E62": 0.9139497090131045,
+    "BG_up": 0.09445062422705815,
+    "BG_down": 0.1076064663629979,
+    "P": 1.4095907240509986,
+    "G": 3.395281455874443
+   }
+  },
+  {
+   "file": "ENCFF141GMK",
+   "experiment": "ENCSR845CFB",
+   "label": "EPO culture day 8",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 2.6765867501497267,
+    "E58": 1.169574056327343,
+    "E62": 1.4832679538950324,
+    "BG_up": 0.06898491541855037,
+    "BG_down": 0.09854556237086654,
+    "P": 1.3089501006156206,
+    "G": 3.2926248766183854
+   }
+  },
+  {
+   "file": "ENCFF814GPA",
+   "experiment": "ENCSR845CFB",
+   "label": "EPO culture day 8",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 3.131937365680933,
+    "E58": 1.456482793301344,
+    "E62": 1.5115924578905107,
+    "BG_up": 0.07880212963931263,
+    "BG_down": 0.10784220246672631,
+    "P": 1.5957549624741076,
+    "G": 3.962686476349831
+   }
+  },
+  {
+   "file": "ENCFF774LKB",
+   "experiment": "ENCSR845CFB",
+   "label": "EPO culture day 8",
+   "biological_replicate": 3,
+   "mean": {
+    "E55": 4.046009455621243,
+    "E58": 1.4236896945238113,
+    "E62": 1.5526187573224306,
+    "BG_up": 0.07943924652785063,
+    "BG_down": 0.10738770549651236,
+    "P": 1.6056040392518043,
+    "G": 3.873287312269211
+   }
+  },
+  {
+   "file": "ENCFF746ODB",
+   "experiment": "ENCSR420NOA",
+   "label": "EPO culture day 11",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.8016643208265305,
+    "E58": 0.3307315929532051,
+    "E62": 0.5709749580398202,
+    "BG_up": 0.0690760539183393,
+    "BG_down": 0.08115052357949316,
+    "P": 0.19928080209344626,
+    "G": 0.6829240776896477
+   }
+  },
+  {
+   "file": "ENCFF878PBI",
+   "experiment": "ENCSR420NOA",
+   "label": "EPO culture day 11",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 1.9875196918845177,
+    "E58": 0.7565685600936413,
+    "E62": 0.9582594863176346,
+    "BG_up": 0.06894894395023585,
+    "BG_down": 0.09904985515326262,
+    "P": 0.665530960187316,
+    "G": 2.1779332369565965
+   }
+  },
+  {
+   "file": "ENCFF384JNG",
+   "experiment": "ENCSR420NOA",
+   "label": "EPO culture day 11",
+   "biological_replicate": 3,
+   "mean": {
+    "E55": 1.94415823135525,
+    "E58": 1.0806607269644737,
+    "E62": 1.0314801679700614,
+    "BG_up": 0.06109150585345924,
+    "BG_down": 0.10279130662232637,
+    "P": 0.4939727784246206,
+    "G": 1.7857274955511093
+   }
+  },
+  {
+   "file": "ENCFF271NTU",
+   "experiment": "ENCSR855FOP",
+   "label": "EPO culture day 13",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 1.1915444418787957,
+    "E58": 0.628984040260315,
+    "E62": 0.5894711396172643,
+    "BG_up": 0.07558945635519922,
+    "BG_down": 0.09100760285444558,
+    "P": 0.15192133285850287,
+    "G": 0.7467400895655155
+   }
+  },
+  {
+   "file": "ENCFF462KEZ",
+   "experiment": "ENCSR855FOP",
+   "label": "EPO culture day 13",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 1.6744590348005295,
+    "E58": 0.9972835114002228,
+    "E62": 1.0753217138648032,
+    "BG_up": 0.08868805735185742,
+    "BG_down": 0.14173604196086526,
+    "P": 0.38344067902863027,
+    "G": 1.171160287618637
+   }
+  },
+  {
+   "file": "ENCFF322YXK",
+   "experiment": "ENCSR937UWI",
+   "label": "EPO culture day 15",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 1.723445815294981,
+    "E58": 0.8292400559186935,
+    "E62": 1.2059808525294065,
+    "BG_up": 0.08309921318991109,
+    "BG_down": 0.10515767973251641,
+    "P": 0.30689160434901713,
+    "G": 1.4009909586906433
+   }
+  },
+  {
+   "file": "ENCFF404BKX",
+   "experiment": "ENCSR937UWI",
+   "label": "EPO culture day 15",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 3.3854275166988375,
+    "E58": 1.2624417514801025,
+    "E62": 1.6442744879722595,
+    "BG_up": 0.0760261573754251,
+    "BG_down": 0.11089331129714847,
+    "P": 0.46081756229698656,
+    "G": 1.9558925958871842
+   }
+  },
+  {
+   "file": "ENCFF841CYA",
+   "experiment": "ENCSR362JSZ",
+   "label": "EPO culture day 17",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 1.074771709740162,
+    "E58": 0.5217754639983178,
+    "E62": 0.670537039488554,
+    "BG_up": 0.06119366676360369,
+    "BG_down": 0.07161941607389599,
+    "P": 0.3434522749632597,
+    "G": 1.32018359208107
+   }
+  },
+  {
+   "file": "ENCFF694WKV",
+   "experiment": "ENCSR362JSZ",
+   "label": "EPO culture day 17",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 1.0382754804193974,
+    "E58": 0.5057291307449341,
+    "E62": 0.7094575281441212,
+    "BG_up": 0.06722030922025442,
+    "BG_down": 0.07315040332563222,
+    "P": 0.29002794210612776,
+    "G": 0.9571813473701477
+   }
+  },
+  {
+   "file": "ENCFF028ZFZ",
+   "experiment": "ENCSR493IAY",
+   "label": "EPO culture day 18",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.5713056157529354,
+    "E58": 0.3936477569937706,
+    "E62": 0.4712599732130766,
+    "BG_up": 0.06061525994166732,
+    "BG_down": 0.06550949727930129,
+    "P": 0.3630372677147388,
+    "G": 1.037249329328537
+   }
+  },
+  {
+   "file": "ENCFF338HAQ",
+   "experiment": "ENCSR115YPI",
+   "label": "EPO culture day 20",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.314160166233778,
+    "E58": 0.21542412745952605,
+    "E62": 0.23345030594617128,
+    "BG_up": 0.06008111631125212,
+    "BG_down": 0.06858936129622162,
+    "P": 0.34841985842585566,
+    "G": 0.786393728852272
+   }
+  },
+  {
+   "file": "ENCFF972GVB",
+   "experiment": "ENCSR000EKS",
+   "label": "K562",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.0676031993702054,
+    "E58": 0.056983551394194365,
+    "E62": 0.035076868396485224,
+    "BG_up": 0.050517277079168706,
+    "BG_down": 0.052641821988206355,
+    "P": 0.09068915827572346,
+    "G": 1.1125012863874435
+   }
+  },
+  {
+   "file": "ENCFF428XFI",
+   "experiment": "ENCSR000EMT",
+   "label": "GM12878",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.11642304934561253,
+    "E58": 0.032302348017692564,
+    "E62": 0.07209711630642414,
+    "BG_up": 0.1413452812358737,
+    "BG_down": 0.04328068261295557,
+    "P": 0.6088548810333013,
+    "G": 2.7611357617378234
+   }
+  },
+  {
+   "file": "ENCFF960FMM",
+   "experiment": "ENCSR000EMT",
+   "label": "GM12878",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 0.13628065135329961,
+    "E58": 0.02323642033338547,
+    "E62": 0.06449670592695475,
+    "BG_up": 0.2714461602382362,
+    "BG_down": 0.051226483592018486,
+    "P": 0.2876806506216526,
+    "G": 1.5820484157204628
+   }
+  },
+  {
+   "file": "ENCFF546MZK",
+   "experiment": "ENCSR149XIL",
+   "label": "HepG2",
+   "biological_replicate": 1,
+   "mean": {
+    "E55": 0.0566667890176177,
+    "E58": 0.03922940889000893,
+    "E62": 0.05469407745823264,
+    "BG_up": 0.06679047015495598,
+    "BG_down": 0.16570700353421272,
+    "P": 0.1341206355765462,
+    "G": 1.63624607026577
+   }
+  },
+  {
+   "file": "ENCFF113VII",
+   "experiment": "ENCSR149XIL",
+   "label": "HepG2",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 0.056335533391684296,
+    "E58": 0.043204703144729135,
+    "E62": 0.041748663473874334,
+    "BG_up": 0.0633827706053853,
+    "BG_down": 0.17686174692586065,
+    "P": 0.13168958877399564,
+    "G": 1.7852220332622528
+   }
+  },
+  {
+   "file": "ENCFF389PZY",
+   "experiment": "ENCSR000EPK",
+   "label": "CD14-positive monocyte",
+   "biological_replicate": 2,
+   "mean": {
+    "E55": 0.11660463105887174,
+    "E58": 0.032125224858522414,
+    "E62": 0.1392312427125871,
+    "BG_up": 0.6001600616499781,
+    "BG_down": 0.0804349249534309,
+    "P": 0.9234955516755581,
+    "G": 2.6107386062145235
+   }
+  }
+ ],
+ "contrast_calls": {
+  "lineage_separated_E58_over_G": true,
+  "lineage_separated_max_over_G": true,
+  "gm12878_promoter_accessible": null,
+  "gm12878_E58_accessible": false,
+  "first_day_all_reps_above_day0_E58_over_G": 4,
+  "highest_element_late_erythroid": "E55"
+ },
+ "calls": {
+  "total": 29,
+  "failed": 4,
+  "retried": 4
+ }
+}

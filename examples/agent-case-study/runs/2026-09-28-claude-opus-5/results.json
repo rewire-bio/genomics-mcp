@@ -1,0 +1,3126 @@
+{
+ "schema": "genomics-mcp/agent-case-study/results@1",
+ "generated_utc": "2026-09-28T15:20:53+00:00",
+ "method": "pyBigWig 0.3.26 stats(type='mean', exact=True) over HTTPS range requests; independent of the MCP server",
+ "coordinates": {
+  "reference": {
+   "source": "Ensembl REST (rest.ensembl.org), independent of the MCP server",
+   "assembly": "GRCh38.p14",
+   "assembly_accession": "GCA_000001405.29",
+   "vcf_pos": {
+    "rs7606173": 60498316,
+    "rs6706648": 60494905,
+    "rs6738440": 60495106,
+    "rs1427407": 60490908
+   },
+   "tss": {
+    "BCL11A": {
+     "transcript": "ENST00000642384.2",
+     "strand": -1,
+     "contig": "2",
+     "tss_0based": 60553653
+    },
+    "GAPDH": {
+     "transcript": "ENST00000229239.10",
+     "strand": 1,
+     "contig": "12",
+     "tss_0based": 6534516
+    }
+   }
+  },
+  "windows": {
+   "E55": {
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815
+   },
+   "E58": {
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504
+   },
+   "E62": {
+    "contig": "chr2",
+    "start": 60490407,
+    "end": 60491407
+   },
+   "BG_up": {
+    "contig": "chr2",
+    "start": 60508315,
+    "end": 60518315
+   },
+   "BG_down": {
+    "contig": "chr2",
+    "start": 60470907,
+    "end": 60480907
+   },
+   "P": {
+    "contig": "chr2",
+    "start": 60553153,
+    "end": 60554153
+   },
+   "G": {
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016
+   }
+  }
+ },
+ "files": [
+  {
+   "file": "ENCFF648LHT",
+   "experiment": "ENCSR098PTC",
+   "label": "EPO culture day 0",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.1017276043817401,
+    "E58": 0.03655854641646147,
+    "E62": 0.081342021971941,
+    "BG_up": 0.09981782517395914,
+    "BG_down": 0.05308612158112228,
+    "P": 2.667924266695976,
+    "G": 2.9588830634355543
+   },
+   "metrics": {
+    "B": 0.07645197337754071,
+    "E55_over_B": 1.3306079606262275,
+    "E55_over_G": 0.0343804071336379,
+    "E58_over_B": 0.4781897026506482,
+    "E58_over_G": 0.012355522551139076,
+    "E62_over_B": 1.063962359352739,
+    "E62_over_G": 0.027490786296060957,
+    "P_over_B": 34.89673515058974,
+    "max_over_G": 0.0343804071336379,
+    "max_over_B": 1.3306079606262275
+   }
+  },
+  {
+   "file": "ENCFF275EWP",
+   "experiment": "ENCSR098PTC",
+   "label": "EPO culture day 0",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.08018202155828476,
+    "E58": 0.03539374418929219,
+    "E62": 0.108969637747854,
+    "BG_up": 0.09451537254918367,
+    "BG_down": 0.0635024249668233,
+    "P": 1.7983270496428012,
+    "G": 1.8449502627253533
+   },
+   "metrics": {
+    "B": 0.07900889875800349,
+    "E55_over_B": 1.0148479831857222,
+    "E55_over_G": 0.04346026187168872,
+    "E58_over_B": 0.447971617699669,
+    "E58_over_G": 0.019184118349623525,
+    "E62_over_B": 1.3792071457876829,
+    "E62_over_G": 0.059063726513084676,
+    "P_over_B": 22.76106967584627,
+    "max_over_G": 0.059063726513084676,
+    "max_over_B": 1.3792071457876829
+   }
+  },
+  {
+   "file": "ENCFF644AXQ",
+   "experiment": "ENCSR148VUP",
+   "label": "EPO culture day 4",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.4965295668691397,
+    "E58": 0.14934232990443708,
+    "E62": 0.32188170838728547,
+    "BG_up": 0.08882443613372742,
+    "BG_down": 0.05543756420947611,
+    "P": 1.8184404938519,
+    "G": 4.02629337143898
+   },
+   "metrics": {
+    "B": 0.07213100017160176,
+    "E55_over_B": 6.883719422826265,
+    "E55_over_G": 0.12332175553608062,
+    "E58_over_B": 2.07043198554224,
+    "E58_over_G": 0.037091765583654616,
+    "E62_over_B": 4.462460074330308,
+    "E62_over_G": 0.07994492171648344,
+    "P_over_B": 25.210249262117216,
+    "max_over_G": 0.12332175553608062,
+    "max_over_B": 6.883719422826265
+   }
+  },
+  {
+   "file": "ENCFF284MYJ",
+   "experiment": "ENCSR148VUP",
+   "label": "EPO culture day 4",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.6922963909804821,
+    "E58": 0.3746801892369986,
+    "E62": 0.5430965255405754,
+    "BG_up": 0.07836478740070016,
+    "BG_down": 0.050829209138639274,
+    "P": 2.2307459523528816,
+    "G": 5.116195534467697
+   },
+   "metrics": {
+    "B": 0.06459699826966972,
+    "E55_over_B": 10.717160387087779,
+    "E55_over_G": 0.1353146857496936,
+    "E58_over_B": 5.800272447224881,
+    "E58_over_G": 0.07323414179790166,
+    "E62_over_B": 8.407457623237208,
+    "E62_over_G": 0.10615241772558262,
+    "P_over_B": 34.533275726533034,
+    "max_over_G": 0.1353146857496936,
+    "max_over_B": 10.717160387087779
+   }
+  },
+  {
+   "file": "ENCFF633NER",
+   "experiment": "ENCSR564JUY",
+   "label": "EPO culture day 6",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 1.3700117963552474,
+    "E58": 0.8758673620820046,
+    "E62": 0.9254607259277254,
+    "BG_up": 0.09029432783275843,
+    "BG_down": 0.07920823944229632,
+    "P": 1.789829987153411,
+    "G": 4.608875833749771
+   },
+   "metrics": {
+    "B": 0.08475128363752737,
+    "E55_over_B": 16.165086091375898,
+    "E55_over_G": 0.2972550890442646,
+    "E58_over_B": 10.334561607680188,
+    "E58_over_G": 0.19003926199708462,
+    "E62_over_B": 10.919725179453646,
+    "E62_over_G": 0.2007996655389982,
+    "P_over_B": 21.118618035430966,
+    "max_over_G": 0.2972550890442646,
+    "max_over_B": 16.165086091375898
+   }
+  },
+  {
+   "file": "ENCFF434ACR",
+   "experiment": "ENCSR564JUY",
+   "label": "EPO culture day 6",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 1.4478924903273582,
+    "E58": 0.9157111086249351,
+    "E62": 0.9139497090131045,
+    "BG_up": 0.09445062422705815,
+    "BG_down": 0.1076064663629979,
+    "P": 1.4095907240509986,
+    "G": 3.395281455874443
+   },
+   "metrics": {
+    "B": 0.10102854529502803,
+    "E55_over_B": 14.331518741551296,
+    "E55_over_G": 0.42644255244944296,
+    "E58_over_B": 9.06388492431357,
+    "E58_over_G": 0.2697010897404666,
+    "E62_over_B": 9.046450251700131,
+    "E62_over_G": 0.2691823110663796,
+    "P_over_B": 13.952400481810853,
+    "max_over_G": 0.42644255244944296,
+    "max_over_B": 14.331518741551296
+   }
+  },
+  {
+   "file": "ENCFF141GMK",
+   "experiment": "ENCSR845CFB",
+   "label": "EPO culture day 8",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 2.6765867501497267,
+    "E58": 1.169574056327343,
+    "E62": 1.4832679538950324,
+    "BG_up": 0.06898491541855037,
+    "BG_down": 0.09854556237086654,
+    "P": 1.3089501006156206,
+    "G": 3.2926248766183854
+   },
+   "metrics": {
+    "B": 0.08376523889470845,
+    "E55_over_B": 31.953430629072198,
+    "E55_over_G": 0.8129036408479831,
+    "E58_over_B": 13.962522781048575,
+    "E58_over_G": 0.3552102350415718,
+    "E62_over_B": 17.70744014422828,
+    "E62_over_G": 0.45048191320791714,
+    "P_over_B": 15.626411598502687,
+    "max_over_G": 0.8129036408479831,
+    "max_over_B": 31.953430629072198
+   }
+  },
+  {
+   "file": "ENCFF814GPA",
+   "experiment": "ENCSR845CFB",
+   "label": "EPO culture day 8",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 3.131937365680933,
+    "E58": 1.456482793301344,
+    "E62": 1.5115924578905107,
+    "BG_up": 0.07880212963931263,
+    "BG_down": 0.10784220246672631,
+    "P": 1.5957549624741076,
+    "G": 3.962686476349831
+   },
+   "metrics": {
+    "B": 0.09332216605301946,
+    "E55_over_B": 33.560487268389956,
+    "E55_over_G": 0.7903570934448162,
+    "E58_over_B": 15.607040158860727,
+    "E58_over_G": 0.36754933855957267,
+    "E62_over_B": 16.19757150762793,
+    "E62_over_G": 0.3814564858744241,
+    "P_over_B": 17.099420533890154,
+    "max_over_G": 0.7903570934448162,
+    "max_over_B": 33.560487268389956
+   }
+  },
+  {
+   "file": "ENCFF774LKB",
+   "experiment": "ENCSR845CFB",
+   "label": "EPO culture day 8",
+   "group": "erythroid_time_course",
+   "biological_replicate": 3,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 4.046009455621243,
+    "E58": 1.4236896945238113,
+    "E62": 1.5526187573224306,
+    "BG_up": 0.07943924652785063,
+    "BG_down": 0.10738770549651236,
+    "P": 1.6056040392518043,
+    "G": 3.873287312269211
+   },
+   "metrics": {
+    "B": 0.0934134760121815,
+    "E55_over_B": 43.312909746486966,
+    "E55_over_G": 1.0445931658116114,
+    "E58_over_B": 15.24073137304254,
+    "E58_over_G": 0.36756625051130687,
+    "E62_over_B": 16.62092905224898,
+    "E62_over_G": 0.40085297891645705,
+    "P_over_B": 17.188141452336353,
+    "max_over_G": 1.0445931658116114,
+    "max_over_B": 43.312909746486966
+   }
+  },
+  {
+   "file": "ENCFF746ODB",
+   "experiment": "ENCSR420NOA",
+   "label": "EPO culture day 11",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [
+    "extremely low spot score"
+   ],
+   "means": {
+    "E55": 0.8016643208265305,
+    "E58": 0.3307315929532051,
+    "E62": 0.5709749580398202,
+    "BG_up": 0.0690760539183393,
+    "BG_down": 0.08115052357949316,
+    "P": 0.19928080209344626,
+    "G": 0.6829240776896477
+   },
+   "metrics": {
+    "B": 0.07511328874891623,
+    "E55_over_B": 10.672736265167156,
+    "E55_over_G": 1.1738703422766767,
+    "E58_over_B": 4.4031036113829725,
+    "E58_over_G": 0.4842874980657877,
+    "E62_over_B": 7.601517222184716,
+    "E62_over_G": 0.8360738428954583,
+    "P_over_B": 2.653069855050403,
+    "max_over_G": 1.1738703422766767,
+    "max_over_B": 10.672736265167156
+   }
+  },
+  {
+   "file": "ENCFF878PBI",
+   "experiment": "ENCSR420NOA",
+   "label": "EPO culture day 11",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [
+    "extremely low spot score"
+   ],
+   "means": {
+    "E55": 1.9875196918845177,
+    "E58": 0.7565685600936413,
+    "E62": 0.9582594863176346,
+    "BG_up": 0.06894894395023585,
+    "BG_down": 0.09904985515326262,
+    "P": 0.665530960187316,
+    "G": 2.1779332369565965
+   },
+   "metrics": {
+    "B": 0.08399939955174923,
+    "E55_over_B": 23.661117847158813,
+    "E55_over_G": 0.9125714499227905,
+    "E58_over_B": 9.006832955127788,
+    "E58_over_G": 0.34737913323314545,
+    "E62_over_B": 11.40793257369992,
+    "E62_over_G": 0.4399857029854086,
+    "P_over_B": 7.923044256730722,
+    "max_over_G": 0.9125714499227905,
+    "max_over_B": 23.661117847158813
+   }
+  },
+  {
+   "file": "ENCFF384JNG",
+   "experiment": "ENCSR420NOA",
+   "label": "EPO culture day 11",
+   "group": "erythroid_time_course",
+   "biological_replicate": 3,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [
+    "extremely low spot score"
+   ],
+   "means": {
+    "E55": 1.94415823135525,
+    "E58": 1.0806607269644737,
+    "E62": 1.0314801679700614,
+    "BG_up": 0.06109150585345924,
+    "BG_down": 0.10279130662232637,
+    "P": 0.4939727784246206,
+    "G": 1.7857274955511093
+   },
+   "metrics": {
+    "B": 0.08194140623789281,
+    "E55_over_B": 23.726200471968436,
+    "E55_over_G": 1.0887205557392428,
+    "E58_over_B": 13.188213097381958,
+    "E58_over_G": 0.605165530382877,
+    "E62_over_B": 12.58802131092871,
+    "E62_over_G": 0.5776246210801201,
+    "P_over_B": 6.0283658909943005,
+    "max_over_G": 1.0887205557392428,
+    "max_over_B": 23.726200471968436
+   }
+  },
+  {
+   "file": "ENCFF271NTU",
+   "experiment": "ENCSR855FOP",
+   "label": "EPO culture day 13",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [
+    "extremely low spot score"
+   ],
+   "means": {
+    "E55": 1.1915444418787957,
+    "E58": 0.628984040260315,
+    "E62": 0.5894711396172643,
+    "BG_up": 0.07558945635519922,
+    "BG_down": 0.09100760285444558,
+    "P": 0.15192133285850287,
+    "G": 0.7467400895655155
+   },
+   "metrics": {
+    "B": 0.0832985296048224,
+    "E55_over_B": 14.304507504893744,
+    "E55_over_G": 1.5956615407806563,
+    "E58_over_B": 7.550962102744022,
+    "E58_over_G": 0.8423065120640356,
+    "E62_over_B": 7.076609184024997,
+    "E62_over_G": 0.7893926519470023,
+    "P_over_B": 1.823817702175954,
+    "max_over_G": 1.5956615407806563,
+    "max_over_B": 14.304507504893744
+   }
+  },
+  {
+   "file": "ENCFF462KEZ",
+   "experiment": "ENCSR855FOP",
+   "label": "EPO culture day 13",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [
+    "extremely low spot score"
+   ],
+   "means": {
+    "E55": 1.6744590348005295,
+    "E58": 0.9972835114002228,
+    "E62": 1.0753217138648032,
+    "BG_up": 0.08868805735185742,
+    "BG_down": 0.14173604196086526,
+    "P": 0.38344067902863027,
+    "G": 1.171160287618637
+   },
+   "metrics": {
+    "B": 0.11521204965636134,
+    "E55_over_B": 14.533714483813766,
+    "E55_over_G": 1.42974369307319,
+    "E58_over_B": 8.656069520287009,
+    "E58_over_G": 0.8515346037117051,
+    "E62_over_B": 9.333413623593408,
+    "E62_over_G": 0.9181678419538064,
+    "P_over_B": 3.32813000178631,
+    "max_over_G": 1.42974369307319,
+    "max_over_B": 14.533714483813766
+   }
+  },
+  {
+   "file": "ENCFF322YXK",
+   "experiment": "ENCSR937UWI",
+   "label": "EPO culture day 15",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 1.723445815294981,
+    "E58": 0.8292400559186935,
+    "E62": 1.2059808525294065,
+    "BG_up": 0.08309921318991109,
+    "BG_down": 0.10515767973251641,
+    "P": 0.30689160434901713,
+    "G": 1.4009909586906433
+   },
+   "metrics": {
+    "B": 0.09412844646121375,
+    "E55_over_B": 18.309510887392985,
+    "E55_over_G": 1.2301619825624728,
+    "E58_over_B": 8.809664741044966,
+    "E58_over_G": 0.5918953657586026,
+    "E62_over_B": 12.812076453703492,
+    "E62_over_G": 0.8608055926759928,
+    "P_over_B": 3.2603491918404695,
+    "max_over_G": 1.2301619825624728,
+    "max_over_B": 18.309510887392985
+   }
+  },
+  {
+   "file": "ENCFF404BKX",
+   "experiment": "ENCSR937UWI",
+   "label": "EPO culture day 15",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 3.3854275166988375,
+    "E58": 1.2624417514801025,
+    "E62": 1.6442744879722595,
+    "BG_up": 0.0760261573754251,
+    "BG_down": 0.11089331129714847,
+    "P": 0.46081756229698656,
+    "G": 1.9558925958871842
+   },
+   "metrics": {
+    "B": 0.09345973433628679,
+    "E55_over_B": 36.22338048295101,
+    "E55_over_G": 1.7308862070533186,
+    "E58_over_B": 13.507867965230727,
+    "E58_over_G": 0.6454555603588573,
+    "E62_over_B": 17.593399977532908,
+    "E62_over_G": 0.8406772904758729,
+    "P_over_B": 4.930653458085735,
+    "max_over_G": 1.7308862070533186,
+    "max_over_B": 36.22338048295101
+   }
+  },
+  {
+   "file": "ENCFF841CYA",
+   "experiment": "ENCSR362JSZ",
+   "label": "EPO culture day 17",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 1.074771709740162,
+    "E58": 0.5217754639983178,
+    "E62": 0.670537039488554,
+    "BG_up": 0.06119366676360369,
+    "BG_down": 0.07161941607389599,
+    "P": 0.3434522749632597,
+    "G": 1.32018359208107
+   },
+   "metrics": {
+    "B": 0.06640654141874984,
+    "E55_over_B": 16.184726485946772,
+    "E55_over_G": 0.8141077621226503,
+    "E58_over_B": 7.857290153210641,
+    "E58_over_G": 0.39522947196746894,
+    "E62_over_B": 10.097454635684857,
+    "E62_over_G": 0.5079119627835653,
+    "P_over_B": 5.17196450267603,
+    "max_over_G": 0.8141077621226503,
+    "max_over_B": 16.184726485946772
+   }
+  },
+  {
+   "file": "ENCFF694WKV",
+   "experiment": "ENCSR362JSZ",
+   "label": "EPO culture day 17",
+   "group": "erythroid_time_course",
+   "biological_replicate": 2,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 1.0382754804193974,
+    "E58": 0.5057291307449341,
+    "E62": 0.7094575281441212,
+    "BG_up": 0.06722030922025442,
+    "BG_down": 0.07315040332563222,
+    "P": 0.29002794210612776,
+    "G": 0.9571813473701477
+   },
+   "metrics": {
+    "B": 0.07018535627294331,
+    "E55_over_B": 14.793334899970525,
+    "E55_over_G": 1.084721806658744,
+    "E58_over_B": 7.205621765004766,
+    "E58_over_G": 0.5283524716966362,
+    "E62_over_B": 10.108341195635129,
+    "E62_over_G": 0.7411944769853207,
+    "P_over_B": 4.132314167904773,
+    "max_over_G": 1.084721806658744,
+    "max_over_B": 14.793334899970525
+   }
+  },
+  {
+   "file": "ENCFF028ZFZ",
+   "experiment": "ENCSR493IAY",
+   "label": "EPO culture day 18",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [
+    "unreplicated experiment"
+   ],
+   "means": {
+    "E55": 0.5713056157529354,
+    "E58": 0.3936477569937706,
+    "E62": 0.4712599732130766,
+    "BG_up": 0.06061525994166732,
+    "BG_down": 0.06550949727930129,
+    "P": 0.3630372677147388,
+    "G": 1.037249329328537
+   },
+   "metrics": {
+    "B": 0.0630623786104843,
+    "E55_over_B": 9.059373089646735,
+    "E55_over_G": 0.5507890914933344,
+    "E58_over_B": 6.242196467488232,
+    "E58_over_G": 0.37951121862724974,
+    "E62_over_B": 7.472917825125109,
+    "E62_over_G": 0.4543362525171712,
+    "P_over_B": 5.7567962977911336,
+    "max_over_G": 0.5507890914933344,
+    "max_over_B": 9.059373089646735
+   }
+  },
+  {
+   "file": "ENCFF338HAQ",
+   "experiment": "ENCSR115YPI",
+   "label": "EPO culture day 20",
+   "group": "erythroid_time_course",
+   "biological_replicate": 1,
+   "donor": "ENCDO937OUY",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [
+    "extremely low spot score",
+    "unreplicated experiment"
+   ],
+   "means": {
+    "E55": 0.314160166233778,
+    "E58": 0.21542412745952605,
+    "E62": 0.23345030594617128,
+    "BG_up": 0.06008111631125212,
+    "BG_down": 0.06858936129622162,
+    "P": 0.34841985842585566,
+    "G": 0.786393728852272
+   },
+   "metrics": {
+    "B": 0.06433523880373687,
+    "E55_over_B": 4.883174012801367,
+    "E55_over_G": 0.39949475015815467,
+    "E58_over_B": 3.3484623895887875,
+    "E58_over_G": 0.2739392743809565,
+    "E62_over_B": 3.6286537562772123,
+    "E62_over_G": 0.2968618611530485,
+    "P_over_B": 5.415692315820205,
+    "max_over_G": 0.39949475015815467,
+    "max_over_B": 4.883174012801367
+   }
+  },
+  {
+   "file": "ENCFF972GVB",
+   "experiment": "ENCSR000EKS",
+   "label": "K562",
+   "group": "reference_cell_types",
+   "biological_replicate": 1,
+   "donor": "ENCDO000AAD",
+   "lab": "Gregory Crawford, Duke",
+   "pipeline": "ENCODE4 v3.0.0 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.0676031993702054,
+    "E58": 0.056983551394194365,
+    "E62": 0.035076868396485224,
+    "BG_up": 0.050517277079168706,
+    "BG_down": 0.052641821988206355,
+    "P": 0.09068915827572346,
+    "G": 1.1125012863874435
+   },
+   "metrics": {
+    "B": 0.05157954953368753,
+    "E55_over_B": 1.310658972041866,
+    "E55_over_G": 0.0607668505172961,
+    "E58_over_B": 1.1047702414883904,
+    "E58_over_G": 0.05122111056539406,
+    "E62_over_B": 0.6800537948392879,
+    "E62_over_G": 0.03152973288722044,
+    "P_over_B": 1.75823866426931,
+    "max_over_G": 0.0607668505172961,
+    "max_over_B": 1.310658972041866
+   }
+  },
+  {
+   "file": "ENCFF428XFI",
+   "experiment": "ENCSR000EMT",
+   "label": "GM12878",
+   "group": "reference_cell_types",
+   "biological_replicate": 1,
+   "donor": "ENCDO000AAK",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.11642304934561253,
+    "E58": 0.032302348017692564,
+    "E62": 0.07209711630642414,
+    "BG_up": 0.1413452812358737,
+    "BG_down": 0.04328068261295557,
+    "P": 0.6088548810333013,
+    "G": 2.7611357617378234
+   },
+   "metrics": {
+    "B": 0.09231298192441463,
+    "E55_over_B": 1.2611774305041852,
+    "E55_over_G": 0.04216491306183994,
+    "E58_over_B": 0.34992205152837064,
+    "E58_over_G": 0.011698935077847052,
+    "E62_over_B": 0.7810073383335928,
+    "E62_over_G": 0.026111398543129636,
+    "P_over_B": 6.595549925273007,
+    "max_over_G": 0.04216491306183994,
+    "max_over_B": 1.2611774305041852
+   }
+  },
+  {
+   "file": "ENCFF960FMM",
+   "experiment": "ENCSR000EMT",
+   "label": "GM12878",
+   "group": "reference_cell_types",
+   "biological_replicate": 2,
+   "donor": "ENCDO000AAK",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.13628065135329961,
+    "E58": 0.02323642033338547,
+    "E62": 0.06449670592695475,
+    "BG_up": 0.2714461602382362,
+    "BG_down": 0.051226483592018486,
+    "P": 0.2876806506216526,
+    "G": 1.5820484157204628
+   },
+   "metrics": {
+    "B": 0.16133632191512734,
+    "E55_over_B": 0.8446991336829377,
+    "E55_over_G": 0.08614189679602036,
+    "E58_over_B": 0.14402473080803982,
+    "E58_over_G": 0.014687553239515512,
+    "E62_over_B": 0.3997655652574249,
+    "E62_over_G": 0.04076784584217862,
+    "P_over_B": 1.7831114978125633,
+    "max_over_G": 0.08614189679602036,
+    "max_over_B": 0.8446991336829377
+   }
+  },
+  {
+   "file": "ENCFF546MZK",
+   "experiment": "ENCSR149XIL",
+   "label": "HepG2",
+   "group": "reference_cell_types",
+   "biological_replicate": 1,
+   "donor": "ENCDO000AAC",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.0566667890176177,
+    "E58": 0.03922940889000893,
+    "E62": 0.05469407745823264,
+    "BG_up": 0.06679047015495598,
+    "BG_down": 0.16570700353421272,
+    "P": 0.1341206355765462,
+    "G": 1.63624607026577
+   },
+   "metrics": {
+    "B": 0.11624873684458435,
+    "E55_over_B": 0.4874615462994394,
+    "E55_over_G": 0.03463219258238677,
+    "E58_over_B": 0.3374609475753327,
+    "E58_over_G": 0.023975250179599835,
+    "E62_over_B": 0.47049180010750935,
+    "E62_over_G": 0.03342656000961326,
+    "P_over_B": 1.153738433784921,
+    "max_over_G": 0.03463219258238677,
+    "max_over_B": 0.4874615462994394
+   }
+  },
+  {
+   "file": "ENCFF113VII",
+   "experiment": "ENCSR149XIL",
+   "label": "HepG2",
+   "group": "reference_cell_types",
+   "biological_replicate": 2,
+   "donor": "ENCDO000AAC",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.056335533391684296,
+    "E58": 0.043204703144729135,
+    "E62": 0.041748663473874334,
+    "BG_up": 0.0633827706053853,
+    "BG_down": 0.17686174692586065,
+    "P": 0.13168958877399564,
+    "G": 1.7852220332622528
+   },
+   "metrics": {
+    "B": 0.12012225876562298,
+    "E55_over_B": 0.4689849655724806,
+    "E55_over_G": 0.03155659763437867,
+    "E58_over_B": 0.3596727499857305,
+    "E58_over_G": 0.024201305126051106,
+    "E62_over_B": 0.3475514355364596,
+    "E62_over_G": 0.02338569807901389,
+    "P_over_B": 1.0962963078386854,
+    "max_over_G": 0.03155659763437867,
+    "max_over_B": 0.4689849655724806
+   }
+  },
+  {
+   "file": "ENCFF389PZY",
+   "experiment": "ENCSR000EPK",
+   "label": "CD14-positive monocyte",
+   "group": "reference_cell_types",
+   "biological_replicate": 2,
+   "donor": "ENCDO265AAA",
+   "lab": "John Stamatoyannopoulos, UW",
+   "pipeline": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+   "audit_flags": [],
+   "means": {
+    "E55": 0.11660463105887174,
+    "E58": 0.032125224858522414,
+    "E62": 0.1392312427125871,
+    "BG_up": 0.6001600616499781,
+    "BG_down": 0.0804349249534309,
+    "P": 0.9234955516755581,
+    "G": 2.6107386062145235
+   },
+   "metrics": {
+    "B": 0.3402974933017045,
+    "E55_over_B": 0.3426549808743116,
+    "E55_over_G": 0.044663464500547694,
+    "E58_over_B": 0.09440335439097841,
+    "E58_over_G": 0.012305033059247102,
+    "E62_over_B": 0.4091456606444821,
+    "E62_over_G": 0.05333021175737979,
+    "P_over_B": 2.7137888754790085,
+    "max_over_G": 0.05333021175737979,
+    "max_over_B": 0.4091456606444821
+   }
+  }
+ ],
+ "other_agent_intervals": [],
+ "replay_read_seconds": 113.2,
+ "replay_errors": [
+  {
+   "url": "https://rest.ensembl.org/variation/human/rs1427407",
+   "attempt": 1,
+   "error": "HTTPError"
+  }
+ ],
+ "contrasts": {
+  "lineage": {
+   "E58_over_G": {
+    "late_erythroid": {
+     "n": 11,
+     "n_missing": 0,
+     "mean": 0.5404596945679384,
+     "min": 0.2739392743809565,
+     "max": 0.8515346037117051
+    },
+    "non_erythroid": {
+     "n": 5,
+     "n_missing": 0,
+     "mean": 0.01737361533645212,
+     "min": 0.011698935077847052,
+     "max": 0.024201305126051106
+    },
+    "separated": true
+   },
+   "max_over_G": {
+    "late_erythroid": {
+     "n": 11,
+     "n_missing": 0,
+     "mean": 1.0918844710764755,
+     "min": 0.39949475015815467,
+     "max": 1.7308862070533186
+    },
+    "non_erythroid": {
+     "n": 5,
+     "n_missing": 0,
+     "mean": 0.04956516236640111,
+     "min": 0.03155659763437867,
+     "max": 0.08614189679602036
+    },
+    "separated": true
+   },
+   "E58_over_B": {
+    "late_erythroid": {
+     "n": 11,
+     "n_missing": 0,
+     "mean": 8.16148043349926,
+     "min": 3.3484623895887875,
+     "max": 13.507867965230727
+    },
+    "non_erythroid": {
+     "n": 5,
+     "n_missing": 0,
+     "mean": 0.2570967668576904,
+     "min": 0.09440335439097841,
+     "max": 0.3596727499857305
+    },
+    "separated": true
+   },
+   "max_over_B": {
+    "late_erythroid": {
+     "n": 11,
+     "n_missing": 0,
+     "mean": 16.941070584701027,
+     "min": 4.883174012801367,
+     "max": 36.22338048295101
+    },
+    "non_erythroid": {
+     "n": 5,
+     "n_missing": 0,
+     "mean": 0.694293747340705,
+     "min": 0.4091456606444821,
+     "max": 1.2611774305041852
+    },
+    "separated": true
+   }
+  },
+  "gm12878": [
+   {
+    "file": "ENCFF428XFI",
+    "P_over_B": 6.595549925273007,
+    "E58_over_B": 0.34992205152837064,
+    "promoter_accessible": true,
+    "E58_accessible": false
+   },
+   {
+    "file": "ENCFF960FMM",
+    "P_over_B": 1.7831114978125633,
+    "E58_over_B": 0.14402473080803982,
+    "promoter_accessible": false,
+    "E58_accessible": false
+   }
+  ],
+  "timing": {
+   "day0_max_E58_over_G": 0.019184118349623525,
+   "by_day": [
+    {
+     "day": 0,
+     "E58_over_G": [
+      0.012355522551139076,
+      0.019184118349623525
+     ],
+     "all_above_day0_max": false
+    },
+    {
+     "day": 4,
+     "E58_over_G": [
+      0.037091765583654616,
+      0.07323414179790166
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 6,
+     "E58_over_G": [
+      0.19003926199708462,
+      0.2697010897404666
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 8,
+     "E58_over_G": [
+      0.3552102350415718,
+      0.36754933855957267,
+      0.36756625051130687
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 11,
+     "E58_over_G": [
+      0.4842874980657877,
+      0.34737913323314545,
+      0.605165530382877
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 13,
+     "E58_over_G": [
+      0.8423065120640356,
+      0.8515346037117051
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 15,
+     "E58_over_G": [
+      0.5918953657586026,
+      0.6454555603588573
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 17,
+     "E58_over_G": [
+      0.39522947196746894,
+      0.5283524716966362
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 18,
+     "E58_over_G": [
+      0.37951121862724974
+     ],
+     "all_above_day0_max": true
+    },
+    {
+     "day": 20,
+     "E58_over_G": [
+      0.2739392743809565
+     ],
+     "all_above_day0_max": true
+    }
+   ],
+   "first_day": 4
+  },
+  "k562": [
+   {
+    "file": "ENCFF972GVB",
+    "E58_over_B": 1.1047702414883904,
+    "max_over_B": 1.310658972041866,
+    "E58_over_G": 0.05122111056539406,
+    "P_over_B": 1.75823866426931,
+    "E58_accessible": false
+   }
+  ],
+  "sub_elements_late_erythroid": {
+   "files_where_highest": {
+    "E55": 11,
+    "E58": 0,
+    "E62": 0
+   },
+   "mean_over_G": {
+    "E55": 1.0918844710764755,
+    "E58": 0.5404596945679384,
+    "E62": 0.6602756452229789
+   }
+  },
+  "denominator_check": {
+   "note": "added after review; reported alongside, not instead of, the contrasts above",
+   "lineage_raw_E58": {
+    "late_erythroid": {
+     "n": 11,
+     "n_missing": 0,
+     "mean": 0.683862428933382,
+     "min": 0.21542412745952605,
+     "max": 1.2624417514801025
+    },
+    "non_erythroid": {
+     "n": 5,
+     "n_missing": 0,
+     "mean": 0.0340196210488677,
+     "min": 0.02323642033338547,
+     "max": 0.043204703144729135
+    },
+    "separated": true
+   },
+   "timing_raw_E58": {
+    "day0_max_raw_E58": 0.03655854641646147,
+    "by_day": [
+     {
+      "day": 0,
+      "raw_E58": [
+       0.03655854641646147,
+       0.03539374418929219
+      ],
+      "all_above_day0_max": false
+     },
+     {
+      "day": 4,
+      "raw_E58": [
+       0.14934232990443708,
+       0.3746801892369986
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 6,
+      "raw_E58": [
+       0.8758673620820046,
+       0.9157111086249351
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 8,
+      "raw_E58": [
+       1.169574056327343,
+       1.456482793301344,
+       1.4236896945238113
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 11,
+      "raw_E58": [
+       0.3307315929532051,
+       0.7565685600936413,
+       1.0806607269644737
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 13,
+      "raw_E58": [
+       0.628984040260315,
+       0.9972835114002228
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 15,
+      "raw_E58": [
+       0.8292400559186935,
+       1.2624417514801025
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 17,
+      "raw_E58": [
+       0.5217754639983178,
+       0.5057291307449341
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 18,
+      "raw_E58": [
+       0.3936477569937706
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 20,
+      "raw_E58": [
+       0.21542412745952605
+      ],
+      "all_above_day0_max": true
+     }
+    ],
+    "first_day": 4
+   },
+   "timing_E58_over_B": {
+    "day0_max_E58_over_B": 0.4781897026506482,
+    "by_day": [
+     {
+      "day": 0,
+      "E58_over_B": [
+       0.4781897026506482,
+       0.447971617699669
+      ],
+      "all_above_day0_max": false
+     },
+     {
+      "day": 4,
+      "E58_over_B": [
+       2.07043198554224,
+       5.800272447224881
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 6,
+      "E58_over_B": [
+       10.334561607680188,
+       9.06388492431357
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 8,
+      "E58_over_B": [
+       13.962522781048575,
+       15.607040158860727,
+       15.24073137304254
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 11,
+      "E58_over_B": [
+       4.4031036113829725,
+       9.006832955127788,
+       13.188213097381958
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 13,
+      "E58_over_B": [
+       7.550962102744022,
+       8.656069520287009
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 15,
+      "E58_over_B": [
+       8.809664741044966,
+       13.507867965230727
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 17,
+      "E58_over_B": [
+       7.857290153210641,
+       7.205621765004766
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 18,
+      "E58_over_B": [
+       6.242196467488232
+      ],
+      "all_above_day0_max": true
+     },
+     {
+      "day": 20,
+      "E58_over_B": [
+       3.3484623895887875
+      ],
+      "all_above_day0_max": true
+     }
+    ],
+    "first_day": 4
+   },
+   "G_all_files": {
+    "n": 26,
+    "n_missing": 0,
+    "mean": 2.253436426927264,
+    "min": 0.6829240776896477,
+    "max": 5.116195534467697,
+    "cv": 0.5596256118049311
+   },
+   "B_all_files": {
+    "n": 26,
+    "n_missing": 0,
+    "mean": 0.09698112663298379,
+    "min": 0.05157954953368753,
+    "max": 0.3402974933017045,
+    "cv": 0.5515622450402505
+   },
+   "by_label": {
+    "EPO culture day 0": {
+     "raw_E58": 0.03597614530287683,
+     "raw_G": 2.4019166630804536,
+     "B": 0.07773043606777211,
+     "E58_over_G": 0.0157698204503813,
+     "E58_over_B": 0.4630806601751586
+    },
+    "EPO culture day 4": {
+     "raw_E58": 0.2620112595707178,
+     "raw_G": 4.571244452953339,
+     "B": 0.06836399922063574,
+     "E58_over_G": 0.055162953690778144,
+     "E58_over_B": 3.9353522163835604
+    },
+    "EPO culture day 6": {
+     "raw_E58": 0.8957892353534698,
+     "raw_G": 4.002078644812107,
+     "B": 0.0928899144662777,
+     "E58_over_G": 0.22987017586877562,
+     "E58_over_B": 9.699223265996878
+    },
+    "EPO culture day 8": {
+     "raw_E58": 1.3499155147174995,
+     "raw_G": 3.709532888412476,
+     "B": 0.0901669603199698,
+     "E58_over_G": 0.3634419413708171,
+     "E58_over_B": 14.936764770983947
+    },
+    "EPO culture day 11": {
+     "raw_E58": 0.72265362667044,
+     "raw_G": 1.5488616033991178,
+     "B": 0.08035136484618609,
+     "E58_over_G": 0.47894405389393674,
+     "E58_over_B": 8.86604988796424
+    },
+    "EPO culture day 13": {
+     "raw_E58": 0.8131337758302688,
+     "raw_G": 0.9589501885920764,
+     "B": 0.09925528963059187,
+     "E58_over_G": 0.8469205578878704,
+     "E58_over_B": 8.103515811515516
+    },
+    "EPO culture day 15": {
+     "raw_E58": 1.045840903699398,
+     "raw_G": 1.6784417772889137,
+     "B": 0.09379409039875028,
+     "E58_over_G": 0.6186754630587299,
+     "E58_over_B": 11.158766353137846
+    },
+    "EPO culture day 17": {
+     "raw_E58": 0.513752297371626,
+     "raw_G": 1.1386824697256088,
+     "B": 0.06829594884584658,
+     "E58_over_G": 0.4617909718320526,
+     "E58_over_B": 7.531455959107704
+    },
+    "EPO culture day 18": {
+     "raw_E58": 0.3936477569937706,
+     "raw_G": 1.037249329328537,
+     "B": 0.0630623786104843,
+     "E58_over_G": 0.37951121862724974,
+     "E58_over_B": 6.242196467488232
+    },
+    "EPO culture day 20": {
+     "raw_E58": 0.21542412745952605,
+     "raw_G": 0.786393728852272,
+     "B": 0.06433523880373687,
+     "E58_over_G": 0.2739392743809565,
+     "E58_over_B": 3.3484623895887875
+    },
+    "CD14-positive monocyte": {
+     "raw_E58": 0.032125224858522414,
+     "raw_G": 2.6107386062145235,
+     "B": 0.3402974933017045,
+     "E58_over_G": 0.012305033059247102,
+     "E58_over_B": 0.09440335439097841
+    },
+    "GM12878": {
+     "raw_E58": 0.027769384175539015,
+     "raw_G": 2.171592088729143,
+     "B": 0.126824651919771,
+     "E58_over_G": 0.013193244158681283,
+     "E58_over_B": 0.24697339116820521
+    },
+    "HepG2": {
+     "raw_E58": 0.04121705601736903,
+     "raw_G": 1.7107340517640113,
+     "B": 0.11818549780510366,
+     "E58_over_G": 0.024088277652825472,
+     "E58_over_B": 0.34856684878053157
+    },
+    "K562": {
+     "raw_E58": 0.056983551394194365,
+     "raw_G": 1.1125012863874435,
+     "B": 0.05157954953368753,
+     "E58_over_G": 0.05122111056539406,
+     "E58_over_B": 1.1047702414883904
+    }
+   },
+   "time_course_days": [
+    0,
+    4,
+    6,
+    8,
+    11,
+    13,
+    15,
+    17,
+    18,
+    20
+   ]
+  }
+ },
+ "agent_contrast_calls": {
+  "lineage_separated_E58_over_G": true,
+  "lineage_separated_max_over_G": true,
+  "gm12878_promoter_accessible": null,
+  "gm12878_E58_accessible": false,
+  "first_day_all_reps_above_day0_E58_over_G": 4,
+  "highest_element_late_erythroid": "E55"
+ },
+ "verification": {
+  "passed": true,
+  "cells_expected": 182,
+  "cells_measured_over_mcp": 182,
+  "cells_reported_by_agent": 182,
+  "rel_tolerance": 1e-09,
+  "failures": [],
+  "cells": [
+   {
+    "file": "ENCFF648LHT",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 0.1017276043817401,
+    "pybigwig": 0.1017276043817401
+   },
+   {
+    "file": "ENCFF648LHT",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.03655854641646147,
+    "pybigwig": 0.03655854641646147
+   },
+   {
+    "file": "ENCFF648LHT",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.081342021971941,
+    "pybigwig": 0.081342021971941
+   },
+   {
+    "file": "ENCFF648LHT",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.09981782517395914,
+    "pybigwig": 0.09981782517395914
+   },
+   {
+    "file": "ENCFF648LHT",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.05308612158112228,
+    "pybigwig": 0.05308612158112228
+   },
+   {
+    "file": "ENCFF648LHT",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 2.667924266695976,
+    "pybigwig": 2.667924266695976
+   },
+   {
+    "file": "ENCFF648LHT",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 2.9588830634355543,
+    "pybigwig": 2.9588830634355543
+   },
+   {
+    "file": "ENCFF275EWP",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 0.08018202155828476,
+    "pybigwig": 0.08018202155828476
+   },
+   {
+    "file": "ENCFF275EWP",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.03539374418929219,
+    "pybigwig": 0.03539374418929219
+   },
+   {
+    "file": "ENCFF275EWP",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.108969637747854,
+    "pybigwig": 0.108969637747854
+   },
+   {
+    "file": "ENCFF275EWP",
+    "window": "BG_up",
+    "calls": [
+     10,
+     19
+    ],
+    "mcp": 0.09451537254918367,
+    "pybigwig": 0.09451537254918367
+   },
+   {
+    "file": "ENCFF275EWP",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.0635024249668233,
+    "pybigwig": 0.0635024249668233
+   },
+   {
+    "file": "ENCFF275EWP",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 1.7983270496428012,
+    "pybigwig": 1.7983270496428012
+   },
+   {
+    "file": "ENCFF275EWP",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 1.8449502627253533,
+    "pybigwig": 1.8449502627253533
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 0.4965295668691397,
+    "pybigwig": 0.4965295668691397
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.14934232990443708,
+    "pybigwig": 0.14934232990443708
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.32188170838728547,
+    "pybigwig": 0.32188170838728547
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.08882443613372742,
+    "pybigwig": 0.08882443613372742
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "window": "BG_down",
+    "calls": [
+     11,
+     22
+    ],
+    "mcp": 0.05543756420947611,
+    "pybigwig": 0.05543756420947611
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 1.8184404938519,
+    "pybigwig": 1.8184404938519
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 4.02629337143898,
+    "pybigwig": 4.02629337143898
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 0.6922963909804821,
+    "pybigwig": 0.6922963909804821
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.3746801892369986,
+    "pybigwig": 0.3746801892369986
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.5430965255405754,
+    "pybigwig": 0.5430965255405754
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "window": "BG_up",
+    "calls": [
+     10,
+     19
+    ],
+    "mcp": 0.07836478740070016,
+    "pybigwig": 0.07836478740070016
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.050829209138639274,
+    "pybigwig": 0.050829209138639274
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 2.2307459523528816,
+    "pybigwig": 2.2307459523528816
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 5.116195534467697,
+    "pybigwig": 5.116195534467697
+   },
+   {
+    "file": "ENCFF633NER",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 1.3700117963552474,
+    "pybigwig": 1.3700117963552474
+   },
+   {
+    "file": "ENCFF633NER",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.8758673620820046,
+    "pybigwig": 0.8758673620820046
+   },
+   {
+    "file": "ENCFF633NER",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.9254607259277254,
+    "pybigwig": 0.9254607259277254
+   },
+   {
+    "file": "ENCFF633NER",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.09029432783275843,
+    "pybigwig": 0.09029432783275843
+   },
+   {
+    "file": "ENCFF633NER",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.07920823944229632,
+    "pybigwig": 0.07920823944229632
+   },
+   {
+    "file": "ENCFF633NER",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 1.789829987153411,
+    "pybigwig": 1.789829987153411
+   },
+   {
+    "file": "ENCFF633NER",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 4.608875833749771,
+    "pybigwig": 4.608875833749771
+   },
+   {
+    "file": "ENCFF434ACR",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 1.4478924903273582,
+    "pybigwig": 1.4478924903273582
+   },
+   {
+    "file": "ENCFF434ACR",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.9157111086249351,
+    "pybigwig": 0.9157111086249351
+   },
+   {
+    "file": "ENCFF434ACR",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.9139497090131045,
+    "pybigwig": 0.9139497090131045
+   },
+   {
+    "file": "ENCFF434ACR",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.09445062422705815,
+    "pybigwig": 0.09445062422705815
+   },
+   {
+    "file": "ENCFF434ACR",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.1076064663629979,
+    "pybigwig": 0.1076064663629979
+   },
+   {
+    "file": "ENCFF434ACR",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 1.4095907240509986,
+    "pybigwig": 1.4095907240509986
+   },
+   {
+    "file": "ENCFF434ACR",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 3.395281455874443,
+    "pybigwig": 3.395281455874443
+   },
+   {
+    "file": "ENCFF141GMK",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 2.6765867501497267,
+    "pybigwig": 2.6765867501497267
+   },
+   {
+    "file": "ENCFF141GMK",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 1.169574056327343,
+    "pybigwig": 1.169574056327343
+   },
+   {
+    "file": "ENCFF141GMK",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 1.4832679538950324,
+    "pybigwig": 1.4832679538950324
+   },
+   {
+    "file": "ENCFF141GMK",
+    "window": "BG_up",
+    "calls": [
+     10,
+     19
+    ],
+    "mcp": 0.06898491541855037,
+    "pybigwig": 0.06898491541855037
+   },
+   {
+    "file": "ENCFF141GMK",
+    "window": "BG_down",
+    "calls": [
+     11,
+     22
+    ],
+    "mcp": 0.09854556237086654,
+    "pybigwig": 0.09854556237086654
+   },
+   {
+    "file": "ENCFF141GMK",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 1.3089501006156206,
+    "pybigwig": 1.3089501006156206
+   },
+   {
+    "file": "ENCFF141GMK",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 3.2926248766183854,
+    "pybigwig": 3.2926248766183854
+   },
+   {
+    "file": "ENCFF814GPA",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 3.131937365680933,
+    "pybigwig": 3.131937365680933
+   },
+   {
+    "file": "ENCFF814GPA",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 1.456482793301344,
+    "pybigwig": 1.456482793301344
+   },
+   {
+    "file": "ENCFF814GPA",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 1.5115924578905107,
+    "pybigwig": 1.5115924578905107
+   },
+   {
+    "file": "ENCFF814GPA",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.07880212963931263,
+    "pybigwig": 0.07880212963931263
+   },
+   {
+    "file": "ENCFF814GPA",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.10784220246672631,
+    "pybigwig": 0.10784220246672631
+   },
+   {
+    "file": "ENCFF814GPA",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 1.5957549624741076,
+    "pybigwig": 1.5957549624741076
+   },
+   {
+    "file": "ENCFF814GPA",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 3.962686476349831,
+    "pybigwig": 3.962686476349831
+   },
+   {
+    "file": "ENCFF774LKB",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 4.046009455621243,
+    "pybigwig": 4.046009455621243
+   },
+   {
+    "file": "ENCFF774LKB",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 1.4236896945238113,
+    "pybigwig": 1.4236896945238113
+   },
+   {
+    "file": "ENCFF774LKB",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 1.5526187573224306,
+    "pybigwig": 1.5526187573224306
+   },
+   {
+    "file": "ENCFF774LKB",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.07943924652785063,
+    "pybigwig": 0.07943924652785063
+   },
+   {
+    "file": "ENCFF774LKB",
+    "window": "BG_down",
+    "calls": [
+     11,
+     22
+    ],
+    "mcp": 0.10738770549651236,
+    "pybigwig": 0.10738770549651236
+   },
+   {
+    "file": "ENCFF774LKB",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 1.6056040392518043,
+    "pybigwig": 1.6056040392518043
+   },
+   {
+    "file": "ENCFF774LKB",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 3.873287312269211,
+    "pybigwig": 3.873287312269211
+   },
+   {
+    "file": "ENCFF746ODB",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 0.8016643208265305,
+    "pybigwig": 0.8016643208265305
+   },
+   {
+    "file": "ENCFF746ODB",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.3307315929532051,
+    "pybigwig": 0.3307315929532051
+   },
+   {
+    "file": "ENCFF746ODB",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.5709749580398202,
+    "pybigwig": 0.5709749580398202
+   },
+   {
+    "file": "ENCFF746ODB",
+    "window": "BG_up",
+    "calls": [
+     10,
+     19
+    ],
+    "mcp": 0.0690760539183393,
+    "pybigwig": 0.0690760539183393
+   },
+   {
+    "file": "ENCFF746ODB",
+    "window": "BG_down",
+    "calls": [
+     11,
+     22
+    ],
+    "mcp": 0.08115052357949316,
+    "pybigwig": 0.08115052357949316
+   },
+   {
+    "file": "ENCFF746ODB",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 0.19928080209344626,
+    "pybigwig": 0.19928080209344626
+   },
+   {
+    "file": "ENCFF746ODB",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 0.6829240776896477,
+    "pybigwig": 0.6829240776896477
+   },
+   {
+    "file": "ENCFF878PBI",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 1.9875196918845177,
+    "pybigwig": 1.9875196918845177
+   },
+   {
+    "file": "ENCFF878PBI",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.7565685600936413,
+    "pybigwig": 0.7565685600936413
+   },
+   {
+    "file": "ENCFF878PBI",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.9582594863176346,
+    "pybigwig": 0.9582594863176346
+   },
+   {
+    "file": "ENCFF878PBI",
+    "window": "BG_up",
+    "calls": [
+     10,
+     19
+    ],
+    "mcp": 0.06894894395023585,
+    "pybigwig": 0.06894894395023585
+   },
+   {
+    "file": "ENCFF878PBI",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.09904985515326262,
+    "pybigwig": 0.09904985515326262
+   },
+   {
+    "file": "ENCFF878PBI",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 0.665530960187316,
+    "pybigwig": 0.665530960187316
+   },
+   {
+    "file": "ENCFF878PBI",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 2.1779332369565965,
+    "pybigwig": 2.1779332369565965
+   },
+   {
+    "file": "ENCFF384JNG",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 1.94415823135525,
+    "pybigwig": 1.94415823135525
+   },
+   {
+    "file": "ENCFF384JNG",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 1.0806607269644737,
+    "pybigwig": 1.0806607269644737
+   },
+   {
+    "file": "ENCFF384JNG",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 1.0314801679700614,
+    "pybigwig": 1.0314801679700614
+   },
+   {
+    "file": "ENCFF384JNG",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.06109150585345924,
+    "pybigwig": 0.06109150585345924
+   },
+   {
+    "file": "ENCFF384JNG",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.10279130662232637,
+    "pybigwig": 0.10279130662232637
+   },
+   {
+    "file": "ENCFF384JNG",
+    "window": "P",
+    "calls": [
+     12
+    ],
+    "mcp": 0.4939727784246206,
+    "pybigwig": 0.4939727784246206
+   },
+   {
+    "file": "ENCFF384JNG",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 1.7857274955511093,
+    "pybigwig": 1.7857274955511093
+   },
+   {
+    "file": "ENCFF271NTU",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 1.1915444418787957,
+    "pybigwig": 1.1915444418787957
+   },
+   {
+    "file": "ENCFF271NTU",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.628984040260315,
+    "pybigwig": 0.628984040260315
+   },
+   {
+    "file": "ENCFF271NTU",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 0.5894711396172643,
+    "pybigwig": 0.5894711396172643
+   },
+   {
+    "file": "ENCFF271NTU",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.07558945635519922,
+    "pybigwig": 0.07558945635519922
+   },
+   {
+    "file": "ENCFF271NTU",
+    "window": "BG_down",
+    "calls": [
+     11,
+     22
+    ],
+    "mcp": 0.09100760285444558,
+    "pybigwig": 0.09100760285444558
+   },
+   {
+    "file": "ENCFF271NTU",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 0.15192133285850287,
+    "pybigwig": 0.15192133285850287
+   },
+   {
+    "file": "ENCFF271NTU",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 0.7467400895655155,
+    "pybigwig": 0.7467400895655155
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 1.6744590348005295,
+    "pybigwig": 1.6744590348005295
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.9972835114002228,
+    "pybigwig": 0.9972835114002228
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 1.0753217138648032,
+    "pybigwig": 1.0753217138648032
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.08868805735185742,
+    "pybigwig": 0.08868805735185742
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "window": "BG_down",
+    "calls": [
+     11,
+     22
+    ],
+    "mcp": 0.14173604196086526,
+    "pybigwig": 0.14173604196086526
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 0.38344067902863027,
+    "pybigwig": 0.38344067902863027
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 1.171160287618637,
+    "pybigwig": 1.171160287618637
+   },
+   {
+    "file": "ENCFF322YXK",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 1.723445815294981,
+    "pybigwig": 1.723445815294981
+   },
+   {
+    "file": "ENCFF322YXK",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 0.8292400559186935,
+    "pybigwig": 0.8292400559186935
+   },
+   {
+    "file": "ENCFF322YXK",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 1.2059808525294065,
+    "pybigwig": 1.2059808525294065
+   },
+   {
+    "file": "ENCFF322YXK",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.08309921318991109,
+    "pybigwig": 0.08309921318991109
+   },
+   {
+    "file": "ENCFF322YXK",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.10515767973251641,
+    "pybigwig": 0.10515767973251641
+   },
+   {
+    "file": "ENCFF322YXK",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 0.30689160434901713,
+    "pybigwig": 0.30689160434901713
+   },
+   {
+    "file": "ENCFF322YXK",
+    "window": "G",
+    "calls": [
+     13
+    ],
+    "mcp": 1.4009909586906433,
+    "pybigwig": 1.4009909586906433
+   },
+   {
+    "file": "ENCFF404BKX",
+    "window": "E55",
+    "calls": [
+     8
+    ],
+    "mcp": 3.3854275166988375,
+    "pybigwig": 3.3854275166988375
+   },
+   {
+    "file": "ENCFF404BKX",
+    "window": "E58",
+    "calls": [
+     7
+    ],
+    "mcp": 1.2624417514801025,
+    "pybigwig": 1.2624417514801025
+   },
+   {
+    "file": "ENCFF404BKX",
+    "window": "E62",
+    "calls": [
+     9
+    ],
+    "mcp": 1.6442744879722595,
+    "pybigwig": 1.6442744879722595
+   },
+   {
+    "file": "ENCFF404BKX",
+    "window": "BG_up",
+    "calls": [
+     10
+    ],
+    "mcp": 0.0760261573754251,
+    "pybigwig": 0.0760261573754251
+   },
+   {
+    "file": "ENCFF404BKX",
+    "window": "BG_down",
+    "calls": [
+     11
+    ],
+    "mcp": 0.11089331129714847,
+    "pybigwig": 0.11089331129714847
+   },
+   {
+    "file": "ENCFF404BKX",
+    "window": "P",
+    "calls": [
+     12,
+     20
+    ],
+    "mcp": 0.46081756229698656,
+    "pybigwig": 0.46081756229698656
+   },
+   {
+    "file": "ENCFF404BKX",
+    "window": "G",
+    "calls": [
+     13,
+     21
+    ],
+    "mcp": 1.9558925958871842,
+    "pybigwig": 1.9558925958871842
+   },
+   {
+    "file": "ENCFF841CYA",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 1.074771709740162,
+    "pybigwig": 1.074771709740162
+   },
+   {
+    "file": "ENCFF841CYA",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.5217754639983178,
+    "pybigwig": 0.5217754639983178
+   },
+   {
+    "file": "ENCFF841CYA",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.670537039488554,
+    "pybigwig": 0.670537039488554
+   },
+   {
+    "file": "ENCFF841CYA",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.06119366676360369,
+    "pybigwig": 0.06119366676360369
+   },
+   {
+    "file": "ENCFF841CYA",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.07161941607389599,
+    "pybigwig": 0.07161941607389599
+   },
+   {
+    "file": "ENCFF841CYA",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.3434522749632597,
+    "pybigwig": 0.3434522749632597
+   },
+   {
+    "file": "ENCFF841CYA",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 1.32018359208107,
+    "pybigwig": 1.32018359208107
+   },
+   {
+    "file": "ENCFF694WKV",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 1.0382754804193974,
+    "pybigwig": 1.0382754804193974
+   },
+   {
+    "file": "ENCFF694WKV",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.5057291307449341,
+    "pybigwig": 0.5057291307449341
+   },
+   {
+    "file": "ENCFF694WKV",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.7094575281441212,
+    "pybigwig": 0.7094575281441212
+   },
+   {
+    "file": "ENCFF694WKV",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.06722030922025442,
+    "pybigwig": 0.06722030922025442
+   },
+   {
+    "file": "ENCFF694WKV",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.07315040332563222,
+    "pybigwig": 0.07315040332563222
+   },
+   {
+    "file": "ENCFF694WKV",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.29002794210612776,
+    "pybigwig": 0.29002794210612776
+   },
+   {
+    "file": "ENCFF694WKV",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 0.9571813473701477,
+    "pybigwig": 0.9571813473701477
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.5713056157529354,
+    "pybigwig": 0.5713056157529354
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.3936477569937706,
+    "pybigwig": 0.3936477569937706
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.4712599732130766,
+    "pybigwig": 0.4712599732130766
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.06061525994166732,
+    "pybigwig": 0.06061525994166732
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.06550949727930129,
+    "pybigwig": 0.06550949727930129
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.3630372677147388,
+    "pybigwig": 0.3630372677147388
+   },
+   {
+    "file": "ENCFF028ZFZ",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 1.037249329328537,
+    "pybigwig": 1.037249329328537
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.314160166233778,
+    "pybigwig": 0.314160166233778
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.21542412745952605,
+    "pybigwig": 0.21542412745952605
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.23345030594617128,
+    "pybigwig": 0.23345030594617128
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.06008111631125212,
+    "pybigwig": 0.06008111631125212
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.06858936129622162,
+    "pybigwig": 0.06858936129622162
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.34841985842585566,
+    "pybigwig": 0.34841985842585566
+   },
+   {
+    "file": "ENCFF338HAQ",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 0.786393728852272,
+    "pybigwig": 0.786393728852272
+   },
+   {
+    "file": "ENCFF972GVB",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.0676031993702054,
+    "pybigwig": 0.0676031993702054
+   },
+   {
+    "file": "ENCFF972GVB",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.056983551394194365,
+    "pybigwig": 0.056983551394194365
+   },
+   {
+    "file": "ENCFF972GVB",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.035076868396485224,
+    "pybigwig": 0.035076868396485224
+   },
+   {
+    "file": "ENCFF972GVB",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.050517277079168706,
+    "pybigwig": 0.050517277079168706
+   },
+   {
+    "file": "ENCFF972GVB",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.052641821988206355,
+    "pybigwig": 0.052641821988206355
+   },
+   {
+    "file": "ENCFF972GVB",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.09068915827572346,
+    "pybigwig": 0.09068915827572346
+   },
+   {
+    "file": "ENCFF972GVB",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 1.1125012863874435,
+    "pybigwig": 1.1125012863874435
+   },
+   {
+    "file": "ENCFF428XFI",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.11642304934561253,
+    "pybigwig": 0.11642304934561253
+   },
+   {
+    "file": "ENCFF428XFI",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.032302348017692564,
+    "pybigwig": 0.032302348017692564
+   },
+   {
+    "file": "ENCFF428XFI",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.07209711630642414,
+    "pybigwig": 0.07209711630642414
+   },
+   {
+    "file": "ENCFF428XFI",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.1413452812358737,
+    "pybigwig": 0.1413452812358737
+   },
+   {
+    "file": "ENCFF428XFI",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.04328068261295557,
+    "pybigwig": 0.04328068261295557
+   },
+   {
+    "file": "ENCFF428XFI",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.6088548810333013,
+    "pybigwig": 0.6088548810333013
+   },
+   {
+    "file": "ENCFF428XFI",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 2.7611357617378234,
+    "pybigwig": 2.7611357617378234
+   },
+   {
+    "file": "ENCFF960FMM",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.13628065135329961,
+    "pybigwig": 0.13628065135329961
+   },
+   {
+    "file": "ENCFF960FMM",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.02323642033338547,
+    "pybigwig": 0.02323642033338547
+   },
+   {
+    "file": "ENCFF960FMM",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.06449670592695475,
+    "pybigwig": 0.06449670592695475
+   },
+   {
+    "file": "ENCFF960FMM",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.2714461602382362,
+    "pybigwig": 0.2714461602382362
+   },
+   {
+    "file": "ENCFF960FMM",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.051226483592018486,
+    "pybigwig": 0.051226483592018486
+   },
+   {
+    "file": "ENCFF960FMM",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.2876806506216526,
+    "pybigwig": 0.2876806506216526
+   },
+   {
+    "file": "ENCFF960FMM",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 1.5820484157204628,
+    "pybigwig": 1.5820484157204628
+   },
+   {
+    "file": "ENCFF546MZK",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.0566667890176177,
+    "pybigwig": 0.0566667890176177
+   },
+   {
+    "file": "ENCFF546MZK",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.03922940889000893,
+    "pybigwig": 0.03922940889000893
+   },
+   {
+    "file": "ENCFF546MZK",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.05469407745823264,
+    "pybigwig": 0.05469407745823264
+   },
+   {
+    "file": "ENCFF546MZK",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.06679047015495598,
+    "pybigwig": 0.06679047015495598
+   },
+   {
+    "file": "ENCFF546MZK",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.16570700353421272,
+    "pybigwig": 0.16570700353421272
+   },
+   {
+    "file": "ENCFF546MZK",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.1341206355765462,
+    "pybigwig": 0.1341206355765462
+   },
+   {
+    "file": "ENCFF546MZK",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 1.63624607026577,
+    "pybigwig": 1.63624607026577
+   },
+   {
+    "file": "ENCFF113VII",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.056335533391684296,
+    "pybigwig": 0.056335533391684296
+   },
+   {
+    "file": "ENCFF113VII",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.043204703144729135,
+    "pybigwig": 0.043204703144729135
+   },
+   {
+    "file": "ENCFF113VII",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.041748663473874334,
+    "pybigwig": 0.041748663473874334
+   },
+   {
+    "file": "ENCFF113VII",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.0633827706053853,
+    "pybigwig": 0.0633827706053853
+   },
+   {
+    "file": "ENCFF113VII",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.17686174692586065,
+    "pybigwig": 0.17686174692586065
+   },
+   {
+    "file": "ENCFF113VII",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.13168958877399564,
+    "pybigwig": 0.13168958877399564
+   },
+   {
+    "file": "ENCFF113VII",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 1.7852220332622528,
+    "pybigwig": 1.7852220332622528
+   },
+   {
+    "file": "ENCFF389PZY",
+    "window": "E55",
+    "calls": [
+     14
+    ],
+    "mcp": 0.11660463105887174,
+    "pybigwig": 0.11660463105887174
+   },
+   {
+    "file": "ENCFF389PZY",
+    "window": "E58",
+    "calls": [
+     15
+    ],
+    "mcp": 0.032125224858522414,
+    "pybigwig": 0.032125224858522414
+   },
+   {
+    "file": "ENCFF389PZY",
+    "window": "E62",
+    "calls": [
+     16
+    ],
+    "mcp": 0.1392312427125871,
+    "pybigwig": 0.1392312427125871
+   },
+   {
+    "file": "ENCFF389PZY",
+    "window": "BG_up",
+    "calls": [
+     23
+    ],
+    "mcp": 0.6001600616499781,
+    "pybigwig": 0.6001600616499781
+   },
+   {
+    "file": "ENCFF389PZY",
+    "window": "BG_down",
+    "calls": [
+     24
+    ],
+    "mcp": 0.0804349249534309,
+    "pybigwig": 0.0804349249534309
+   },
+   {
+    "file": "ENCFF389PZY",
+    "window": "P",
+    "calls": [
+     17
+    ],
+    "mcp": 0.9234955516755581,
+    "pybigwig": 0.9234955516755581
+   },
+   {
+    "file": "ENCFF389PZY",
+    "window": "G",
+    "calls": [
+     18
+    ],
+    "mcp": 2.6107386062145235,
+    "pybigwig": 2.6107386062145235
+   }
+  ]
+ }
+}

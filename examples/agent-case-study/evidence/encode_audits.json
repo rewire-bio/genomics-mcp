@@ -1,0 +1,188 @@
+{
+ "url": "https://www.encodeproject.org/search/?type=Experiment&format=json&limit=all&field=accession&accession=ENCSR098PTC&accession=ENCSR148VUP&accession=ENCSR564JUY&accession=ENCSR845CFB&accession=ENCSR420NOA&accession=ENCSR855FOP&accession=ENCSR937UWI&accession=ENCSR362JSZ&accession=ENCSR493IAY&accession=ENCSR115YPI&accession=ENCSR000EKS&accession=ENCSR000EMT&accession=ENCSR149XIL&accession=ENCSR000EPK&field=audit.ERROR.category&field=audit.ERROR.detail&field=audit.NOT_COMPLIANT.category&field=audit.NOT_COMPLIANT.detail&field=audit.WARNING.category&field=audit.WARNING.detail",
+ "retrieved_utc": "2026-09-28T15:37:54+00:00",
+ "sha256": "7217b55ab8302c8217ed45d59383b7264835c40a7452dedf06d1f8885e4af96f",
+ "note": "supplementary disclosure after the run; not used for selection",
+ "experiments": {
+  "ENCSR098PTC": {
+   "label": "EPO culture day 0",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": [
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF814EOK|/files/ENCFF814EOK/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.39. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ]
+  },
+  "ENCSR148VUP": {
+   "label": "EPO culture day 4",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": []
+  },
+  "ENCSR564JUY": {
+   "label": "EPO culture day 6",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": []
+  },
+  "ENCSR845CFB": {
+   "label": "EPO culture day 8",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": []
+  },
+  "ENCSR420NOA": {
+   "label": "EPO culture day 11",
+   "ERROR": [
+    {
+     "category": "extremely low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF893TZO|/files/ENCFF893TZO/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.14. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ],
+   "NOT_COMPLIANT": [],
+   "WARNING": [
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF973FCP|/files/ENCFF973FCP/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.27. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF255ALH|/files/ENCFF255ALH/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.26. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ]
+  },
+  "ENCSR855FOP": {
+   "label": "EPO culture day 13",
+   "ERROR": [
+    {
+     "category": "extremely low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF014RMN|/files/ENCFF014RMN/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.17. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "extremely low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF732TJK|/files/ENCFF732TJK/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.23. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ],
+   "NOT_COMPLIANT": [],
+   "WARNING": []
+  },
+  "ENCSR937UWI": {
+   "label": "EPO culture day 15",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": [
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF055PLA|/files/ENCFF055PLA/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.28. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF117JTR|/files/ENCFF117JTR/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.34. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ]
+  },
+  "ENCSR362JSZ": {
+   "label": "EPO culture day 17",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": [
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF185EZR|/files/ENCFF185EZR/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.33. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF110CNG|/files/ENCFF110CNG/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.29. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ]
+  },
+  "ENCSR493IAY": {
+   "label": "EPO culture day 18",
+   "ERROR": [],
+   "NOT_COMPLIANT": [
+    {
+     "category": "unreplicated experiment",
+     "detail": "This experiment is expected to be replicated, but contains only one listed biological replicate."
+    }
+   ],
+   "WARNING": []
+  },
+  "ENCSR115YPI": {
+   "label": "EPO culture day 20",
+   "ERROR": [
+    {
+     "category": "extremely low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF463GFS|/files/ENCFF463GFS/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.22. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ],
+   "NOT_COMPLIANT": [
+    {
+     "category": "unreplicated experiment",
+     "detail": "This experiment is expected to be replicated, but contains only one listed biological replicate."
+    }
+   ],
+   "WARNING": []
+  },
+  "ENCSR000EKS": {
+   "label": "K562",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": [
+    {
+     "category": "mixed read lengths",
+     "detail": "Biological replicate 1 in experiment {ENCSR000EKS|/experiments/ENCSR000EKS/} has mixed sequencing read lengths {50, 36}."
+    },
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF257HEE|/files/ENCFF257HEE/} processed by DNase-seq ENCODE4 v3.0.0 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.32. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ]
+  },
+  "ENCSR000EMT": {
+   "label": "GM12878",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": [
+    {
+     "category": "low read depth",
+     "detail": "Alignment file {ENCFF020WZB|/files/ENCFF020WZB/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ( {ENCPL848KLD|/pipelines/ENCPL848KLD/} ) for GRCh38 assembly has 22289382 mapped reads. According to ENCODE standards, conventional DNase-seq profile requires a minimum of 20 million uniquely mapped reads to generate a reliable SPOT (Signal Portion of Tags) score. The recommended value is > 50 million. For deep, foot-printing depth DNase-seq 150-200 million uniquely mapped reads are recommended. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "low read depth",
+     "detail": "Alignment file {ENCFF729UYK|/files/ENCFF729UYK/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ( {ENCPL848KLD|/pipelines/ENCPL848KLD/} ) for GRCh38 assembly has 38560136 mapped reads. According to ENCODE standards, conventional DNase-seq profile requires a minimum of 20 million uniquely mapped reads to generate a reliable SPOT (Signal Portion of Tags) score. The recommended value is > 50 million. For deep, foot-printing depth DNase-seq 150-200 million uniquely mapped reads are recommended. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF020WZB|/files/ENCFF020WZB/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.39. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF729UYK|/files/ENCFF729UYK/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.36. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ]
+  },
+  "ENCSR149XIL": {
+   "label": "HepG2",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": [
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF839SPF|/files/ENCFF839SPF/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.37. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    },
+    {
+     "category": "low spot score",
+     "detail": "Signal Portion of Tags (SPOT) is a measure of enrichment, analogous to the commonly used fraction of reads in peaks metric. ENCODE processed alignment files {ENCFF474LSZ|/files/ENCFF474LSZ/} processed by DNase-seq ENCODE4 v3.0.0-alpha.2 GRCh38 pipeline ({ENCPL848KLD|/pipelines/ENCPL848KLD/}) for GRCh38 assembly  have a SPOT1 score of 0.34. According to ENCODE standards, SPOT1 score of 0.4 or higher is considered a product of high quality data. Any sample with a SPOT1 score <0.3 should be targeted for replacement with a higher quality sample, and a SPOT1 score of 0.25 is considered minimally acceptable SPOT1 score of 0.25 is considered minimally acceptable for rare and hard to find primary tissues. (See {ENCODE DNase-seq data standards|/data-standards/dnase-seq-encode4/})"
+    }
+   ]
+  },
+  "ENCSR000EPK": {
+   "label": "CD14-positive monocyte",
+   "ERROR": [],
+   "NOT_COMPLIANT": [],
+   "WARNING": []
+  }
+ }
+}

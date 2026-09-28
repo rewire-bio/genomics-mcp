@@ -1,0 +1,849 @@
+[
+ {
+  "n": 1,
+  "id": "toolu_01AXhoQpPbqkCvV5UkpHqNbX",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs7606173",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1475
+ },
+ {
+  "n": 2,
+  "id": "toolu_01NR8DiobArqKm2Byw8BahhW",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs6706648",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1209
+ },
+ {
+  "n": 3,
+  "id": "toolu_01Ju9bBNsEZYUdt3Z5U8wRw4",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs6738440",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1895
+ },
+ {
+  "n": 4,
+  "id": "toolu_01BfQGLaaCEXRG1NukEaMgiz",
+  "tool": "normalize_variant",
+  "input": {
+   "rsid": "rs1427407",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 1209
+ },
+ {
+  "n": 5,
+  "id": "toolu_014UxBZkhCk3dgZBDiLFA7Ft",
+  "tool": "lookup_gene",
+  "input": {
+   "gene": "BCL11A",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 28089
+ },
+ {
+  "n": 6,
+  "id": "toolu_01WGb5E8qFk57tYESWerXP3R",
+  "tool": "lookup_gene",
+  "input": {
+   "gene": "GAPDH",
+   "assembly": "GRCh38"
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [],
+  "result_bytes": 36174
+ },
+ {
+  "n": 7,
+  "id": "toolu_01CQd5q5bx6MaKo2PX5jPUVg",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38"
+   },
+   "max_records": 6,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF972GVB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF428XFI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF546MZK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF389PZY",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": false,
+  "status": "ok",
+  "error": null,
+  "partial_errors": [],
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 2.9588830634355543,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.8449502627253533,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF972GVB",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.1125012863874435,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF428XFI",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 2.7611357617378234,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF546MZK",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 1.63624607026577,
+    "status": "ok",
+    "error": null
+   },
+   {
+    "file": "ENCFF389PZY",
+    "contig": "chr12",
+    "start": 6534016,
+    "end": 6535016,
+    "assembly": "GRCh38",
+    "mean": 2.6107386062145235,
+    "status": "ok",
+    "error": null
+   }
+  ],
+  "result_bytes": 12270
+ },
+ {
+  "n": 8,
+  "id": "toolu_01Mt7dDVoXbgT9suSqxJZ2M1",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": true,
+  "status": "error",
+  "error": {
+   "message": "Connection closed"
+  },
+  "partial_errors": null,
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60497815,
+    "end": 60498815,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   }
+  ],
+  "result_bytes": 17
+ },
+ {
+  "n": 9,
+  "id": "toolu_01XgQvppHj6Ny3bDtXikCpH2",
+  "tool": "compare_samples",
+  "input": {
+   "interval": {
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38"
+   },
+   "max_records": 16,
+   "files": [
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF648LHT",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF275EWP",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF644AXQ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF284MYJ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF633NER",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF434ACR",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF141GMK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF814GPA",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF774LKB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF746ODB",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF878PBI",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF384JNG",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF271NTU",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF462KEZ",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF322YXK",
+     "visibility": "public"
+    },
+    {
+     "uri": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "format": "bigwig",
+     "assembly": "GRCh38",
+     "source": "encode",
+     "accession": "ENCFF404BKX",
+     "visibility": "public"
+    }
+   ]
+  },
+  "is_error": true,
+  "status": "error",
+  "error": {
+   "message": "Connection closed"
+  },
+  "partial_errors": null,
+  "measurements": [
+   {
+    "file": "ENCFF648LHT",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF275EWP",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF644AXQ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF284MYJ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF633NER",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF434ACR",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF141GMK",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF814GPA",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF774LKB",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF746ODB",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF878PBI",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF384JNG",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF271NTU",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF462KEZ",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF322YXK",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   },
+   {
+    "file": "ENCFF404BKX",
+    "contig": "chr2",
+    "start": 60494504,
+    "end": 60495504,
+    "assembly": "GRCh38",
+    "mean": null,
+    "status": "error",
+    "error": "call failed"
+   }
+  ],
+  "result_bytes": 17
+ }
+]
