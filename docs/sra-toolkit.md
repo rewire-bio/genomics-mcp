@@ -22,7 +22,7 @@ Use the toolkit when ENA lists no FASTQ for a run, or when you want NCBI's own c
 
 `convert_sra_run(accession, budget_bytes?, timeout_s?)` accepts only `SRR`, `ERR` or `DRR` run accessions. It starts a job and returns within a few seconds. Poll `get_transfer_status`; stop it with `cancel_transfer`. Discovery tools and region reads never start a conversion.
 
-1. `prefetch <acc> --type sra --transport http --max-size <remaining budget KB> --resume yes --verify yes`. The run file and any dependencies (for example reference sequences of aligned runs) go into the job's directory.
+1. `prefetch <acc> --type sra --transport http --max-size <budget in KB> --resume yes --verify yes`. The run file and any dependencies (for example reference sequences of aligned runs) go into the job's directory.
 2. `fasterq-dump --size-check only --details` reports an output estimate, the sequence table, the spot count and the biological base count. The job fails if any is missing, or if the table is not `SEQUENCE` (for example PacBio `CONSENSUS`).
 3. `fasterq-dump --split-3 --skip-technical`, with the toolkit's remote access turned off, so incomplete local material fails instead of being fetched again.
 4. The server reads every FASTQ record itself. It checks record structure, `<acc>.<spot>` names, mate order, strictly increasing spot numbers across the files, and that reads and bases equal `fasterq-dump`'s "reads written" and the run's biological base count. Any mismatch fails the job; nothing partial is reported complete.
@@ -39,7 +39,7 @@ The response lists each file's path, size, md5, sha256, read and base counts, an
 
 - `budget_bytes` limits the job's disk use: run file, dependencies, scratch and FASTQ together. Default 100 MiB (`limits.max_transfer_bytes`), up to `limits.transfer_budget_ceiling_bytes`. The job reserves its budget in the work dir quota (`limits.workspace_max_bytes`) while queued or running.
 - Enforcement: the job directory is measured every 0.5 s while a toolkit process runs, and again when it exits. Over budget, the process group is killed and the job fails with `budget_exceeded`. This is a watchdog, not a filesystem quota: between samples a process can exceed the budget by what it writes in 0.5 s.
-- `prefetch --max-size` applies per file. Network bytes are not metered separately: `prefetch` writes what it downloads and resumes rather than restarting.
+- `prefetch --max-size` applies per file, so it is set to the whole budget. Network bytes are not metered separately: `prefetch` writes what it downloads and resumes rather than restarting.
 - Before converting, the job needs: bytes already used + 1.25 × output estimate + 1.5 × output estimate for scratch. It also checks free disk space. NCBI's figures are estimates; in testing the output estimate was slightly below the real output.
 - Disk to plan for: NCBI's guide gives about 7× the run file for FASTQ and roughly 17× in total during conversion. Their fasterq-dump page gives different factors. For a 1 GB run file, start with a 17 GB budget.
 - Time: `sra_toolkit.timeout_s` (default 3600 s) includes the download. A call's `timeout_s` can only lower it. On timeout the toolkit is stopped and the download is kept.

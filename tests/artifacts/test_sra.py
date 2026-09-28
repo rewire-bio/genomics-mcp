@@ -548,3 +548,17 @@ async def test_process_group_is_killed_after_its_leader_exits(tmp_path):
             break
         await asyncio.sleep(0.02)
     assert not pid_alive(child)
+
+
+async def test_resume_passes_the_whole_budget_as_prefetch_max_size(svc, toolkit):
+    control(toolkit, prefetch="interrupt", run_bytes=400_000)
+    await run_job(svc, budget_bytes=1_000_000)
+    control(toolkit, prefetch="ok", run_bytes=400_000)
+    done = await run_job(svc, budget_bytes=1_000_000)
+    assert done["data"]["transfer"]["state"] == "completed"
+    sizes = [
+        c["args"][c["args"].index("--max-size") + 1]
+        for c in calls(toolkit)
+        if "--max-size" in c["args"]
+    ]
+    assert sizes == [str(1_000_000 // 1024)] * 2

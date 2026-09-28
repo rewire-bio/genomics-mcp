@@ -11,8 +11,8 @@ The job owns transfers/<id>/sra.part/, removed on cancel or permanent failure:
     scratch/ fastq/         fasterq-dump temporary files and output, reset on every attempt
 
 Steps:
-1. prefetch <acc> --type sra --transport http --max-size <remaining budget KB>, resume and verify
-   on. prefetch continues an interrupted download and checks the finished one.
+1. prefetch <acc> --type sra --transport http --max-size <budget in KB>, resume and verify on.
+   prefetch continues an interrupted download and checks the finished one.
 2. fasterq-dump --size-check only --details gives an output estimate, the sequence table and
    the run's biological base count. Without an estimate or base count, or with a table other than
    SEQUENCE (e.g. PacBio CONSENSUS), the job fails before converting. It needs budget for the
@@ -338,7 +338,9 @@ async def _run(
     watch = _Watch(tm, job, part, root)
     try:
         started = time.monotonic()
-        room_kb = max(1, (job.budget_bytes - dir_usage(root)) // 1024)
+        # --max-size is compared with each file's full size (also when resuming), so it is the
+        # whole budget; the watchdog bounds the total.
+        max_kb = max(1, job.budget_bytes // 1024)
         rc, out = await watch.run(
             [
                 toolkit.prefetch,
@@ -348,7 +350,7 @@ async def _run(
                 "--transport",
                 "http",
                 "--max-size",
-                str(room_kb),
+                str(max_kb),
                 "--resume",
                 "yes",
                 "--verify",
