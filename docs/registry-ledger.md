@@ -1,46 +1,40 @@
 # Release and registry ledger — 0.1.0
 
-Machine-readable copy: [registry/ledger.json](../registry/ledger.json). Updated 2026-09-25.
+Updated 2026-09-28. Machine-readable copy: [registry/ledger.json](../registry/ledger.json).
 
-**Nothing has been published or submitted yet.** "Prepared" means the metadata or workflow exists and was validated as described. Submitted, published and approved are recorded separately, with dates, when they happen.
+**[v0.1.0 is published on GitHub](https://github.com/rewire-bio/genomics-mcp/releases/tag/v0.1.0).** Native Python, the public GHCR container and Linux MCPB bundle are available. The official MCP Registry lists version 0.1.0 with OCI and MCPB packages. Submission does not imply directory approval.
 
-| Route | Prepared | Submitted | Published | Approved | Next step / gate |
-| --- | --- | --- | --- | --- | --- |
-| GitHub release v0.1.0 | 2026-09-25 | — | — | n/a | Run `release.yml` after `package.yml` passes. |
-| GHCR `ghcr.io/rewire-bio/genomics-mcp:0.1.0` | 2026-09-25 | — | — | n/a | Pushed by `release.yml` as private; an org owner sets it Public in package settings; then check anonymous pull. |
-| PyPI `rewire-genomics-mcp` | 2026-09-25 | — | — | n/a | **Needs account setup:** personal PyPI pending publisher (see [release.md](release.md)). Not needed for the GitHub/OCI release. |
-| Official MCP Registry | 2026-09-25 | — | — | — | `publish-mcp-registry.yml` after the release and public GHCR. |
-| GitHub MCP Registry (github.com/mcp) | 2026-09-25 | — | — | — | Populated from the official registry; check the listing after publication. |
-| BioContextAI | 2026-09-25 | — | — | — | Render with the release commit; open the PR. |
-| Docker MCP Catalog | 2026-09-25 | — | — | — | Run `registry-checks.yml` (`task build --tools`); open the PR. |
-| Glama | 2026-09-25 | — | — | — | **Needs account setup:** Glama GitHub sign-in (timini). Search for an existing entry first, then add or claim it. |
-| punkpeye/awesome-mcp-servers | 2026-09-25 | — | — | — | Only after a real Glama listing exists. |
-| mcpservers.org | 2026-09-25 | — | — | — | Free form after the GitHub release (not the $39 option). |
-| Smithery (local MCPB) | 2026-09-25 | — | — | — | **Needs account setup:** Smithery sign-in and an owned namespace (free tier). Use the bundle from the release run. |
-| PulseMCP | — | — | — | — | Deferred: new submissions paused. |
-| MCP.so | — | — | — | — | Deferred: $39 listing fee, outside the unpaid launch. |
+| Route | Confirmed state | Evidence / remaining step |
+| --- | --- | --- |
+| GitHub release | Published 2026-09-25 | [Release](https://github.com/rewire-bio/genomics-mcp/releases/tag/v0.1.0); all seven assets downloaded anonymously and checksums verified. |
+| GHCR container | Published 2026-09-25 | Anonymous image pull and MCP smoke test passed. Organisation package restriction restored after publication. |
+| Official MCP Registry | Published 2026-09-25 | [Active v0.1.0 record](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/0.1.0), rechecked 2026-09-28. OCI and MCPB; no PyPI claim. |
+| GitHub MCP Registry | Not verified | Check for ingestion after official registry publication. |
+| BioContextAI | Submitted 2026-09-25 | [PR #73](https://github.com/biocontext-ai/registry/pull/73), awaiting review. |
+| Docker MCP Catalog | Submitted 2026-09-25 | [PR #5242](https://github.com/docker/mcp-registry/pull/5242), awaiting review. |
+| Glama | Existing public listing observed 2026-09-25 | [Listing](https://glama.ai/mcp/servers/rewire-bio/genomics-mcp) is claimed; maintainer access verified 2026-09-28. Refresh pending the updated product README. No manual submission date is claimed. |
+| Awesome MCP Servers | Submitted 2026-09-25 | [PR #15126](https://github.com/punkpeye/awesome-mcp-servers/pull/15126), awaiting review. |
+| mcpservers.org | Free form prepared | Needs a maintainer-selected personal contact email. Not submitted. |
+| Smithery | Tested release bundle ready | Web sign-in complete. Needs separate CLI authorization and an owned namespace to upload the released bundle. |
+| PyPI | Workflow ready; not published | Needs a personal account and trusted publisher configuration; see [release instructions](release.md). |
+| PulseMCP | Deferred | New submissions paused when checked 2026-09-24. |
+| MCP.so | Excluded from unpaid launch | Requires a $39 listing fee. |
 
-## Validation done (2026-09-25)
+## Release evidence
 
-- `server.json` (OCI only) and the rendered OCI + MCPB + PyPI variant (the PyPI entry carries positional `uvx` runtime arguments that force the pyBigWig source build with the release's `build-constraints.txt`): the 2025-12-11 JSON schema (check-jsonschema 0.34.1) and `mcp-publisher` 1.8.1 `validate` (checksum-verified binary) both pass. `validate` posts the file to the registry's validation endpoint and does not check that packages exist.
-- `glama.json`: passes the live schema at `https://glama.ai/mcp/schemas/server.json`.
-- BioContextAI, against `biocontext-ai/registry` `ed5eb26`:
-  - `meta.yaml` passes `schema.json`, and `mcp.json` passes `mcp_schema.json` (check-jsonschema 0.33.0);
-  - the repository's `validate_mcp_json_schema.py` passes: the single server key `rewire-bio/genomics-mcp` equals the identifier;
-  - the folder name matches, and prettier `--check` passes.
-- Docker MCP Catalog, against `docker/mcp-registry` `49b643c`: `go run ./cmd/validate --name genomics-mcp` (what `task validate` runs) passes every check, on a temporary copy of the repository. `task build --tools` needs Docker and is wired in `registry-checks.yml`; it has not run yet.
-- MCPB: `@anthropic-ai/mcpb` 2.1.2 `validate`, `pack`, `unpack` and `validate` all pass. The launcher is tested over real MCP with a recording `docker` stand-in (`tests/release/test_mcpb_launcher.py`). A real container run is in CI (not yet passed). Host application install flows are untested. The manifest declares Linux only; the recording-`docker` launcher tests are not macOS bundle acceptance.
+Release source: `0487de1b7867c652bcab12cf6a4cd110115a45d4`.
 
-## Submission files
+- [Release workflow](https://github.com/rewire-bio/genomics-mcp/actions/runs/36153523194) passed distribution, real container, MCPB and GitHub release jobs. Container and unpacked bundle initialized over MCP, discovered all 23 tools and returned an exact synthetic sequence.
+- [Package checks](https://github.com/rewire-bio/genomics-mcp/actions/runs/36152920786) and [core tests](https://github.com/rewire-bio/genomics-mcp/actions/runs/36152920824) passed on Linux and macOS before merge. The final implementation suite reported 593 passed and 27 optional skips.
+- Five independently repeated [clean-install demonstrations](demos.md) passed: EGA public-test BAM region, ENA sequence download, bounded ENCODE bigWig, NCBI reference with ClinVar evidence, and synthetic local MinIO. The final published wheel's 97 application modules match the demonstrated wheel; final installation and MCP smoke checks also passed.
+- Published wheel SHA-256: `e283b0e82d1cc18fc13d4a372c5c67f3d7a8f0a9518983f954ebf2abecf57298`. The release includes `SHA256SUMS` for all six payload assets.
+- Tested image digest: `sha256:d80c94467a8b9a39a4e4b7906f553d04018fce3c78e4124ba470283576ab4d19`. Container and MCPB acceptance is Linux amd64 only. Host application install flows remain untested.
 
-`python3 scripts/render_registry.py --commit <40-hex release commit> --out build/registry` writes:
+## Submission validation
 
-- `biocontext/servers/rewire-bio-genomics-mcp/meta.yaml` and `mcp.json`. `mcp.json` runs `uvx` from `git+https://github.com/rewire-bio/genomics-mcp@<commit>` with the pyBigWig source build and pinned build constraints, because no PyPI package exists yet.
-- `docker/servers/genomics-mcp/server.yaml`: title "Genomics", category `database`, source pinned to the commit, and `/data` mounted read-only from the `data` parameter.
+- BioContextAI: upstream pre-commit checks passed at `ed5eb26`, including both schemas, identifier matching and formatting. Its exact Git installation command passed MCP initialization, tool discovery and an exact sequence query without a PyPI package.
+- Docker: [actual upstream Task validation and build](https://github.com/rewire-bio/genomics-mcp/actions/runs/36154432957) passed at registry commit `49b643c`, using the exact release source. The build discovered 23 tools without a static tools file or credentials.
+- Official registry: metadata passed the 2025-12-11 schema and checksum-verified `mcp-publisher` 1.8.1 validation. [Publication workflow](https://github.com/rewire-bio/genomics-mcp/actions/runs/36155986877) subsequently verified public assets and image anonymously, published via GitHub OIDC, and fetched the exact active version record.
+- Glama metadata passed its live schema. The existing listing was observed directly; no claim is made that its evaluation covers v0.1.0.
 
-## External actions only the maintainer or coordinator can take
-
-1. Run the release workflows and make the GHCR package public in the GitHub UI.
-2. Set up a personal PyPI account and pending publisher, then run `publish-pypi.yml`.
-3. Sign in to Glama and Smithery. Use free tiers only.
-4. Open the BioContextAI, Docker and punkpeye PRs and the mcpservers.org form, then record the dates and URLs here.
+Each route's dates and gates are recorded separately in the JSON ledger. Account permissions, external review and paid or paused routes remain explicit.
