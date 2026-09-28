@@ -12,7 +12,7 @@ Updated 2026-09-28. Machine-readable copy: [registry/ledger.json](../registry/le
 | GitHub MCP Registry | Not listed when checked 2026-09-28 | [Search](https://github.com/mcp?search=genomics) returned no MCPs. Official registry publication does not establish inclusion here. |
 | BioContextAI | Submitted 2026-09-25 | [PR #73](https://github.com/biocontext-ai/registry/pull/73), awaiting review. |
 | Docker MCP Catalog | Submitted 2026-09-25 | [PR #5242](https://github.com/docker/mcp-registry/pull/5242), awaiting review. |
-| Glama | Existing public listing observed 2026-09-25 | [Listing](https://glama.ai/mcp/servers/rewire-bio/genomics-mcp) is claimed; maintainer access verified 2026-09-28. Name and description saved; repository sync confirmed the published README at `d782719` on 2026-09-28. No manual initial submission date or fresh evaluation is claimed. |
+| Glama | Updated package published 2026-09-28 | [Listing](https://glama.ai/mcp/servers/rewire-bio/genomics-mcp) claimed and README synced. Glama build passed after adding native build prerequisites; package `0.1.1` is explicitly a Glama packaging revision of project `0.1.0`. Quality evaluation may still lag. |
 | LobeHub | Existing public listing observed 2026-09-28 | [Listing](https://lobehub.com/mcp/rewire-bio-genomics-mcp) still shows old development documentation and Unvalidated status. One metadata refresh attempted; updated content not confirmed. |
 | Awesome MCP Servers | Submitted 2026-09-25 | [PR #15126](https://github.com/punkpeye/awesome-mcp-servers/pull/15126), awaiting review. |
 | mcpservers.org | Free form prepared | Needs a maintainer-selected personal contact email. Not submitted. |
@@ -38,7 +38,7 @@ Release source: `0487de1b7867c652bcab12cf6a4cd110115a45d4`.
 - BioContextAI: upstream pre-commit checks passed at `ed5eb26`, including both schemas, identifier matching and formatting. Its exact Git installation command passed MCP initialization, tool discovery and an exact sequence query without a PyPI package.
 - Docker: [actual upstream Task validation and build](https://github.com/rewire-bio/genomics-mcp/actions/runs/36154432957) passed at registry commit `49b643c`, using the exact release source. The build discovered 23 tools without a static tools file or credentials.
 - Official registry: metadata passed the 2025-12-11 schema and checksum-verified `mcp-publisher` 1.8.1 validation. [Publication workflow](https://github.com/rewire-bio/genomics-mcp/actions/runs/36155986877) subsequently verified public assets and image anonymously, published via GitHub OIDC, and fetched the exact active version record.
-- Glama metadata passed its live schema. The existing listing was observed directly; no claim is made that its evaluation covers v0.1.0.
+- Glama metadata passed its live schema. Its fresh [build test](https://glama.ai/mcp/servers/rewire-bio/genomics-mcp/admin/dockerfile/tests/01a0e71b-f6e5-70cd-b8eb-7fc79f69ae67) passed after adding compiler/libcurl/zlib prerequisites, locked installation and a remote-bigWig assertion. The new package release was verified in the admin page. A refreshed quality evaluation is not claimed.
 
 Each route's dates and gates are recorded separately in the JSON ledger. Account permissions, external review and paid or paused routes remain explicit.
 
