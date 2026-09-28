@@ -13,6 +13,8 @@ Genomics MCP is a local [Model Context Protocol](https://modelcontextprotocol.io
 
 It is a research tool. It retrieves and reports data. It does not give clinical interpretation, call variants or draw biological conclusions.
 
+Read the blog article: [Genomics MCP: genomic data access for AI agents](https://www.rewire.it/blog/genomics-mcp/), including an agent case study at the BCL11A enhancer.
+
 ## Who it is for
 
 Computational biologists and researchers who want an agent to pull data from EGA, ENA, ENCODE, GEO, NCBI or their own indexed files without writing integration code. It also suits people building agents or evaluations who need real data with traceable sources. It does not generate benchmarks itself.
