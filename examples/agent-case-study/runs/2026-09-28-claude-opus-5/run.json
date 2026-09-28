@@ -1,6 +1,5 @@
 {
   "completion": "complete",
-  "session_id": "783458be-0e17-4e42-b201-5b2583f6acb7",
   "model_requested": "claude-opus-5",
   "models_used": [
     "claude-opus-5"

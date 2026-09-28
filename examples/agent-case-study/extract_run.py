@@ -3,7 +3,7 @@
 
     python3 examples/agent-case-study/extract_run.py RUN_DIR
 
-Reads RUN_DIR/raw/transcript.jsonl (git-ignored, never published) and RUN_DIR/launch.json.
+Reads RUN_DIR/raw/transcript.jsonl and RUN_DIR/raw/launch.json (git-ignored, never published).
 Publishes only what the model visibly did: its visible text messages, its MCP tool requests,
 the tool results exactly as returned, and its final message. Hidden thinking, token/rate-limit
 events, request IDs, message UUIDs and local paths are not written. Writes:
@@ -13,7 +13,9 @@ events, request IDs, message UUIDs and local paths are not written. Writes:
 - agent_report.md / agent_report.json: the final message and its JSON block, or an explicit
   incomplete marker when the run produced no final report;
 - run.json: completion status, models, timing, token totals, call counts and the SHA-256 of the
-  unmodified local log.
+  unmodified local log;
+- launch.json: model, Claude Code arguments, runtime provenance and timing, without the internal
+  session ID.
 """
 
 from __future__ import annotations
@@ -100,6 +102,20 @@ def measurements(tool: str | None, args: dict, body: Any) -> list[dict]:
     return out
 
 
+def public_launch(launch: dict) -> dict:
+    """The launch record without the internal Claude session ID."""
+    args, skip = [], False
+    for a in launch.get("claude_args") or []:
+        if skip:
+            skip = False
+            continue
+        if a == "--session-id":
+            skip = True
+            continue
+        args.append(a)
+    return {**{k: v for k, v in launch.items() if k != "session_id"}, "claude_args": args}
+
+
 def final_json(report: str) -> Any:
     blocks = re.findall(r"```json\s*\n(.*?)\n```", report, flags=re.S)
     return parse_json(blocks[-1]) if blocks else None
@@ -108,7 +124,9 @@ def final_json(report: str) -> Any:
 def main(run: Path) -> None:
     raw_path = run / "raw" / "transcript.jsonl"
     raw_bytes = raw_path.read_bytes()
-    launch = json.loads((run / "launch.json").read_text())
+    # Internal launch record (raw/, git-ignored); older runs kept it at the top level.
+    record = run / "raw" / "launch.json"
+    launch = json.loads((record if record.exists() else run / "launch.json").read_text())
     events: list[dict] = []
     calls: dict[str, dict] = {}
     order: list[str] = []
@@ -203,7 +221,6 @@ def main(run: Path) -> None:
     usage = (final or {}).get("usage") or {}
     summary = {
         "completion": completion,
-        "session_id": launch.get("session_id"),
         "model_requested": launch.get("model_requested"),
         "models_used": models,
         "model_fallbacks": [ev for ev in events if ev["type"] == "model_fallback"],
@@ -251,6 +268,7 @@ def main(run: Path) -> None:
         "agent_report.md": report.rstrip("\n") + "\n",
         "agent_report.json": json.dumps(parsed, indent=1) + "\n",
         "run.json": json.dumps(summary, indent=2) + "\n",
+        "launch.json": json.dumps(public_launch(launch), indent=2) + "\n",
     }
     for name, text in outputs.items():
         text = redact(text)

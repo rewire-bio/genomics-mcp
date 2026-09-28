@@ -1,6 +1,5 @@
 {
   "completion": "interrupted: no final result event",
-  "session_id": "4bcb9083-4945-491a-8361-d535ed2dbf93",
   "model_requested": "opus",
   "models_used": [
     "claude-opus-5-5",

@@ -3,6 +3,7 @@
 
     .venv/bin/python examples/agent-case-study/replay.py RUN_DIR            # live replay
     python3 examples/agent-case-study/replay.py RUN_DIR --offline           # saved evidence only
+    python3 examples/agent-case-study/replay.py RUN_DIR --coverage-only     # launcher's check
 
 Live mode:
 1. Resolves the anchors and canonical TSSs independently from the Ensembl REST API (GRCh38) and
@@ -183,7 +184,12 @@ def live(run: Path, manifest: dict, calls: list[dict]) -> dict:
     }
 
 
-def verify(results: dict, manifest: dict, calls: list[dict], agent: dict) -> dict:
+def verify(
+    results: dict, manifest: dict, calls: list[dict], agent: dict, independent: bool = True
+) -> dict:
+    """Cell-by-cell checks. With independent=False (the launcher's --coverage-only check), the
+    windows are the agent's own and there are no pyBigWig values: only coverage, repeats and
+    agent-vs-MCP equality are checked."""
     failures: list[dict] = []
     win = results["coordinates"]["windows"]
     by_interval = {(w["contig"], w["start"], w["end"]): k for k, w in win.items()}
@@ -207,7 +213,7 @@ def verify(results: dict, manifest: dict, calls: list[dict], agent: dict) -> dic
             "window": key[1],
             "calls": [g["call"] for g in got],
             "mcp": ok_vals[-1]["mean"] if ok_vals else None,
-            "pybigwig": replay[key[0]][key[1]],
+            "pybigwig": replay.get(key[0], {}).get(key[1]),
         }
         if not got:
             failures.append({"check": "coverage", **cell, "detail": "never measured over MCP"})
@@ -216,7 +222,7 @@ def verify(results: dict, manifest: dict, calls: list[dict], agent: dict) -> dic
                              "errors": [g.get("error") for g in got]})  # fmt: skip
         elif len({json.dumps(g["mean"]) for g in ok_vals}) > 1:
             failures.append({"check": "repeat", **cell, "detail": "repeated values differ"})
-        elif not close(cell["mcp"], cell["pybigwig"]):
+        elif independent and not close(cell["mcp"], cell["pybigwig"]):
             failures.append({"check": "mcp_vs_pybigwig", **cell})
         cells.append(cell)
 
@@ -239,13 +245,14 @@ def verify(results: dict, manifest: dict, calls: list[dict], agent: dict) -> dic
         failures.append({"check": "agent_unexpected", "file": key[0], "window": key[1]})
 
     agent_win = agent.get("windows") or {}
-    for k in cs.WINDOWS:
+    for k in cs.WINDOWS if independent else ():
         a = {x: (agent_win.get(k) or {}).get(x) for x in ("contig", "start", "end")}
         if a != win[k]:
             failures.append({"check": "window", "window": k, "agent": a, "replay": win[k]})
 
     return {
         "passed": not failures,
+        "independent": independent,
         "cells_expected": len(expected),
         "cells_measured_over_mcp": sum(1 for c in cells if c["mcp"] is not None),
         "cells_reported_by_agent": len(reported),
@@ -259,6 +266,12 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("run", type=Path)
     ap.add_argument("--offline", action="store_true", help="verify saved evidence; no network")
+    ap.add_argument(
+        "--coverage-only",
+        action="store_true",
+        help="no network, no replay: every cell has a successful MCP result equal to the agent's "
+        "value, at the agent's own windows (the launcher's check)",
+    )
     a = ap.parse_args()
     manifest = json.loads((HERE / "manifest.json").read_text())
     calls = json.loads((a.run / "tool_calls.json").read_text())
@@ -267,6 +280,18 @@ def main() -> int:
     if run_info.get("completion") != "complete":
         print(f"run is not complete: {run_info.get('completion')}", file=sys.stderr)
         return 1
+    if a.coverage_only:
+        win = {k: {x: (agent.get("windows") or {}).get(k, {}).get(x) for x in ("contig", "start", "end")}
+               for k in cs.WINDOWS}  # fmt: skip
+        v = verify({"coordinates": {"windows": win}, "files": []}, manifest, calls, agent, False)
+        print(
+            json.dumps(
+                {"coverage_only": True, "passed": v["passed"], "failures": len(v["failures"])}
+            )
+        )
+        for f in v["failures"][:20]:
+            print(json.dumps(f), file=sys.stderr)
+        return 0 if v["passed"] else 1
     if a.offline:
         results = json.loads((a.run / "results.json").read_text())
         rows = [{**r, "metrics": cs.metrics(r["means"])} for r in results["files"]]

@@ -6,7 +6,7 @@ Status: predeclared. The question, panel, windows, metrics and contrasts were co
 
 Is chromatin at the HbF-associated BCL11A intron-2 enhancer (DNase I hypersensitive sites +55, +58 and +62) more accessible in erythroid cells than in non-erythroid cells? When does it open during in vitro erythroid differentiation of adult CD34+ progenitors? Is it open in GM12878, a B-lymphoblastoid line that expresses BCL11A?
 
-This checks known biology with public data. It is not a discovery claim. Bauer et al. (2013) described these sites as an erythroid enhancer and reported, by genome engineering, that it is "required in erythroid but not B-lymphoid cells for BCL11A expression" (PMID 24115442). Canver et al. (2015) mapped its critical sequences by saturating mutagenesis (PMID 26375006). The sites are named by their distance in kb from the BCL11A transcription start site.
+This checks known biology with public data. It is not a discovery claim. Bauer et al. (2013) described these sites as an erythroid enhancer and reported, by genome engineering, that it is "required in erythroid but not B-lymphoid cells for BCL11A expression" (PMID 24115442). That loss-of-function comparison deleted the orthologous mouse enhancer in mouse erythroid (MEL) and mouse pre-B cell lines; the human evidence in that paper is chromatin data. Canver et al. (2015) mapped its critical sequences by saturating mutagenesis (PMID 26375006). The sites are named by their distance in kb from the BCL11A transcription start site.
 
 ## Data (curated, not chosen by the agent)
 
@@ -29,8 +29,8 @@ Anchors are published variants inside each site, as assigned in Sebastiani et al
 | `E55` | `[a(rs7606173) - 500, a(rs7606173) + 500)` |
 | `E58` | centre `c = floor((a(rs6706648) + a(rs6738440)) / 2)`; `[c - 500, c + 500)` |
 | `E62` | `[a(rs1427407) - 500, a(rs1427407) + 500)` |
-| `BG_up` | `[a(rs7606173) + 10000, a(rs7606173) + 20000)`, intronic, towards the promoter |
-| `BG_down` | `[a(rs1427407) - 20000, a(rs1427407) - 10000)`, intronic |
+| `BG_up` | `[a(rs7606173) + 10000, a(rs7606173) + 20000)`, local background towards the promoter |
+| `BG_down` | `[a(rs1427407) - 20000, a(rs1427407) - 10000)`, local background |
 | `P` | BCL11A promoter: 1 kb centred on the 0-based TSS of the Ensembl canonical transcript (minus strand: TSS = transcript end - 1) |
 | `G` | GAPDH promoter, a constitutively accessible control: 1 kb centred on the 0-based TSS of its Ensembl canonical transcript (plus strand: TSS = transcript start) |
 
@@ -39,7 +39,7 @@ Positions are resolved at run time from public reference tools and recorded with
 ## Metrics (per file)
 
 - `mean(W)`: exact mean read-depth normalized signal over window `W` (pyBigWig `stats(exact=True)`, bases without data ignored). `null` means no data; never zero.
-- `B = (mean(BG_up) + mean(BG_down)) / 2`: local intronic background. It can contain other elements; it is a local reference, not a null.
+- `B = (mean(BG_up) + mean(BG_down)) / 2`: local background. It can contain other elements; it is a local reference, not a null.
 - Enrichment: `mean(E*) / B` and `mean(P) / B`.
 - Reference ratio: `mean(E*) / mean(G)`. This is the predeclared primary cross-sample ratio. It is descriptive only. Using a housekeeping promoter does not establish a correction for library signal-to-noise, and the ratio can change because the denominator changes. Raw `mean(E*)`, `mean(G)` and `B` are always reported with it, together with the stability of `G` across files.
 - "Accessible" (descriptive label only): enrichment >= 3.
@@ -75,3 +75,10 @@ On 2026-09-28, after an interrupted first agent run (`runs/2026-09-28-interrupte
 3. Data: the pipeline versions and lab/protocol difference of K562 are stated. Excluding lab-custom analyses is not claimed to make the panel comparable.
 4. Contrasts: "no significance test is valid" replaced by the reason no inferential test is done. Timing is stated as conditional on this culture and its quality.
 5. Added the denominator check (raw `E58` and `E58 / B` alongside `E58 / G`). It is reported in addition to the predeclared contrasts, not instead of them.
+
+## Changes after the complete run (wording only)
+
+On 2026-09-28, after the complete run and a second independent review. No window, formula, panel member, contrast or measured value changed.
+
+6. The background windows were described as "intronic". They lie within the BCL11A gene span, but their intron/exon status was not checked against transcript structure, so they are now called local background windows.
+7. The Bauer et al. quotation now states its model system: the erythroid versus B-lymphoid loss-of-function comparison was done in mouse cell lines. GM12878 was not tested there, so the GM12878 contrast is an inference from accessibility.
