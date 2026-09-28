@@ -151,4 +151,3 @@ jobs:
           path: |
             sra-container.json
             sra-image-id.txt
-
