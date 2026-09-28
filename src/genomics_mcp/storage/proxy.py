@@ -12,7 +12,10 @@ here and the child receives `http://127.0.0.1:<port>/<token>/<name>`:
 - each route has a byte cap and expires at the call deadline; releasing a call closes its
   connections;
 - upstream failures are recorded so the caller sees the typed error (e.g. `unauthorized`)
-  rather than a generic native read failure.
+  rather than a generic native read failure;
+- a route whose public object identity was revalidated in this call is served through the
+  block cache (`HttpAccess.read_blocks`), so later readers of the same file version reuse its
+  header, index and data bytes; byte caps and deadlines apply to hits and misses alike.
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ import time
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
+from genomics_mcp.cache import Identity
 from genomics_mcp.errors import (
     BudgetExceededError,
     DeadlineExceededError,
@@ -56,6 +60,13 @@ class Route:
     writers: set[asyncio.StreamWriter] = field(default_factory=set)
     tasks: set[asyncio.Task] = field(default_factory=set)
     requests: int = 0
+    valid: tuple[Identity, float] | None = None
+    """Object identity and block lifetime when this route may use the block cache."""
+    cached_bytes: int = 0
+
+
+class _CapReached(Exception):
+    pass
 
 
 class RangeProxy:
@@ -83,10 +94,13 @@ class RangeProxy:
         size: int | None = None,
         extra_trusted: Iterable[str] = (),
         byte_cap: int = ROUTE_BYTE_CAP,
+        cache_since: float | None = None,
     ) -> str:
+        """`cache_since`: use cached blocks if the object was revalidated at or after it."""
         await self._ensure_started()
         self._purge()
         token = secrets.token_urlsafe(24)
+        cache = self.http.cache
         self._routes[token] = Route(
             token=token,
             request_id=request_id,
@@ -96,6 +110,9 @@ class RangeProxy:
             expires=expires,
             remaining=byte_cap,
             size=size,
+            valid=cache.validated(upstream, cache_since)
+            if cache is not None and cache_since is not None
+            else None,
         )
         safe = _SAFE_NAME.sub("_", name)[-100:] or "file"
         return f"http://127.0.0.1:{self.port}/{token}/{safe}"
@@ -105,6 +122,9 @@ class RangeProxy:
 
     def requests(self, request_id: str) -> int:
         return sum(r.requests for r in self._routes.values() if r.request_id == request_id)
+
+    def cached_bytes(self, request_id: str) -> int:
+        return sum(r.cached_bytes for r in self._routes.values() if r.request_id == request_id)
 
     async def release(self, request_id: str) -> None:
         """Drop the call's routes, cancel in-flight relays (closing upstream) and wait for them."""
@@ -194,6 +214,8 @@ class RangeProxy:
                 await _reply(writer, 416)
                 return False
             start, end = int(m.group(1)), (int(m.group(2)) if m.group(2) else None)
+        if route.valid is not None:
+            return await self._relay_cached(route, rng, start, end, writer)
         up_range = f"bytes={start}-{'' if end is None else end}"
         left = route.expires - time.monotonic()
         if left <= 0:
@@ -256,6 +278,78 @@ class RangeProxy:
             route.errors.append(exc)
             with contextlib.suppress(ConnectionError):
                 await _reply(writer, 403 if exc.info.code == "unauthorized" else 502)
+            return False
+        except TimeoutError:
+            route.errors.append(DeadlineExceededError("native read passed the call deadline"))
+            return False
+
+    async def _relay_cached(
+        self,
+        route: Route,
+        rng: str | None,
+        start: int,
+        end: int | None,
+        writer: asyncio.StreamWriter,
+    ) -> bool:
+        """Relay one range through the block cache. Returns False when the connection must close.
+
+        Headers are sent with the first byte, so an upstream failure before it still reaches
+        the reader as an HTTP error."""
+        assert route.valid is not None
+        size = route.valid[0].size
+        if start >= size:
+            await _reply(writer, 416, {"Content-Range": f"bytes */{size}"})
+            return True
+        last = size - 1 if end is None else min(end, size - 1)
+        length = last - start + 1
+        if length > route.remaining and end is not None:
+            route.errors.append(_cap_error(route))
+            await _reply(writer, 502)
+            return False
+        left = route.expires - time.monotonic()
+        if left <= 0:
+            route.errors.append(DeadlineExceededError("native read passed the call deadline"))
+            await _reply(writer, 504)
+            return False
+        hdrs = {"Content-Length": str(length), "Accept-Ranges": "bytes"}
+        if rng:
+            hdrs["Content-Range"] = f"bytes {start}-{last}/{size}"
+        started = False
+
+        async def sink(piece: bytes, cached: bool) -> None:
+            nonlocal started
+            if not started:
+                await _reply(writer, 206 if rng else 200, hdrs, body=False)
+                started = True
+            if len(piece) > route.remaining:
+                raise _CapReached
+            route.remaining -= len(piece)
+            if cached:
+                route.cached_bytes += len(piece)
+            writer.write(piece)
+            await writer.drain()
+
+        try:
+            async with asyncio.timeout(left):
+                await self.http.read_blocks(
+                    route.upstream,
+                    start,
+                    last,
+                    route.valid,
+                    sink,
+                    source=route.source,
+                    extra_trusted=route.trusted,
+                    open_ended=end is None,
+                )
+            return True
+        except _CapReached:
+            route.errors.append(_cap_error(route))
+            return False
+        except GenomicsError as exc:
+            route.errors.append(exc)
+            if not started:
+                with contextlib.suppress(ConnectionError):
+                    await _reply(writer, 403 if exc.info.code == "unauthorized" else 502)
             return False
         except TimeoutError:
             route.errors.append(DeadlineExceededError("native read passed the call deadline"))

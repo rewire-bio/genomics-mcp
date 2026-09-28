@@ -20,6 +20,8 @@ from urllib.parse import urlsplit
 import httpx
 from pydantic import SecretStr
 
+from genomics_mcp.cache import MemoryCache
+
 from .adapters.atlas import AtlasClient, AtlasTransport, GrpcAtlasTransport
 from .adapters.clinvar import ClinvarClient
 from .adapters.ensembl import ENSEMBL_ID_RE, EnsemblClient, split_version
@@ -206,6 +208,7 @@ class ReferenceService:
         reference_provider: ReferenceProvider | None = None,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+        cache: MemoryCache | None = None,
     ):
         self.config = config or ReferenceConfig()
         self.clock = clock
@@ -223,6 +226,7 @@ class ReferenceService:
                 sleep=sleep,
                 allowed_hosts=source_hosts(source),
                 gate=self._enabled,
+                cache=cache,
             )
 
         def limiter(rate: int, per: float, source: str | None = None) -> RateLimiter:

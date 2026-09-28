@@ -149,7 +149,12 @@ class EgaClient:
         self.meta = SourceHttp(
             client,
             SourcePolicy(
-                SOURCE, METADATA_HOSTS, min_interval_s=0.2, timeout_s=timeout_s, terms_url=TERMS_URL
+                SOURCE,
+                METADATA_HOSTS,
+                min_interval_s=0.2,
+                timeout_s=timeout_s,
+                terms_url=TERMS_URL,
+                cacheable=True,
             ),
         )
         self.data = SourceHttp(

@@ -32,7 +32,7 @@ class _LazyManager:
 
     def get(self, ctx: OperationContext) -> StorageManager:
         if self.manager is None:
-            self.manager = StorageManager(ctx.settings)
+            self.manager = StorageManager(ctx.settings, ctx.component("cache"))
         return self.manager
 
 

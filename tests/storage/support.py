@@ -87,6 +87,7 @@ class FixtureServer:
            /drop/<n>/<file>         sends at most n body bytes, then closes the connection
            /slow/<file>             4 KiB every 50 ms
            /noetag/<file>           no ETag header
+           /nostore/<file>          Cache-Control: no-store
     """
 
     def __init__(self, root: Path) -> None:
@@ -145,6 +146,7 @@ class FixtureServer:
             "/redirect/",
             "/slow/",
             "/noetag/",
+            "/nostore/",
             "/drop/",
         ):
             if path.startswith(prefix):
@@ -202,6 +204,8 @@ class FixtureServer:
         h.send_header("Last-Modified", formatdate(target.stat().st_mtime, usegmt=True))
         if mode != "noetag":
             h.send_header("ETag", etag)
+        if mode == "nostore":
+            h.send_header("Cache-Control", "no-store")
         if status == 206:
             h.send_header("Content-Range", f"bytes {start}-{end}/{len(data)}")
         h.end_headers()

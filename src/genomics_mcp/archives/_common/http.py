@@ -8,6 +8,10 @@ HTTP failures to source-native error codes (401/403 unauthorized, 404 not_found,
 
 Clients built by `make_client` use `trust_env=False`: no proxy variables, no .netrc,
 no ambient credentials of any kind.
+
+Policies marked `cacheable` (public metadata APIs only) reuse successful credential-free GET
+responses from the server's `MemoryCache` (attached per call by the discovery handlers); see
+`genomics_mcp.cache.cacheable_request`.
 """
 
 from __future__ import annotations
@@ -22,6 +26,7 @@ import time
 from collections.abc import AsyncIterator, Callable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlsplit
@@ -39,6 +44,14 @@ from genomics_mcp.archives._common.errors import (
 )
 from genomics_mcp.archives._common.redact import redact, redact_url
 from genomics_mcp.archives._common.workspace import open_temp, private_dir  # noqa: F401 (re-export)
+from genomics_mcp.cache import (
+    CachedResponse,
+    MemoryCache,
+    cacheable_request,
+    lifetime,
+    note_hit,
+    storable_body,
+)
 from genomics_mcp.security import check_network_destination
 
 USER_AGENT = "rewire-genomics-mcp/0.1 (+https://github.com/rewire-bio/genomics-mcp)"
@@ -69,6 +82,8 @@ class SourcePolicy:
     max_body_bytes: int = DEFAULT_MAX_BODY
     max_retry_after_s: float = 10.0
     terms_url: str | None = None
+    cacheable: bool = False
+    """Public, credential-free metadata API whose GET responses may be shared (see module doc)."""
 
 
 @dataclass
@@ -206,6 +221,7 @@ class SourceHttp:
         self.policy = policy
         self.limiter = limiter or RateLimiter(policy.min_interval_s, clock)
         self._clock = clock
+        self.cache: MemoryCache | None = None
 
     # -- validation --------------------------------------------------------------
     def check_url(self, url: str, *, allowed_hosts: frozenset[str] | None = None) -> None:
@@ -254,18 +270,22 @@ class SourceHttp:
                 source=self.policy.name,
                 details={"url": redact_url(url)},
             )
+        limit = self.policy.max_body_bytes if max_body is None else max_body
+        key = self._cache_key(method, url, params, headers, data)
+        if key is not None and (hit := self._cached(key, url, ok, limit, allowed_hosts)):
+            return hit
         timeout_s = timeout_s or self.policy.timeout_s
         deadline = self._clock() + timeout_s
         try:
             async with asyncio.timeout(timeout_s):
-                return await self._request(
+                result = await self._request(
                     method,
                     url,
                     params=params,
                     headers=headers,
                     data=data,
                     ok=ok,
-                    max_body=self.policy.max_body_bytes if max_body is None else max_body,
+                    max_body=limit,
                     deadline=deadline,
                     allowed_hosts=allowed_hosts,
                 )
@@ -275,6 +295,37 @@ class SourceHttp:
                 source=self.policy.name,
                 details={"url": redact_url(url)},
             ) from exc
+        if key is not None and self.cache is not None and result.status == 200:
+            ttl = lifetime(result.headers, self.cache.settings.ttl_s)
+            if storable_body(result.headers, result.body, graphql=False):
+                value = CachedResponse(
+                    result.status,
+                    result.url,
+                    tuple(result.headers.multi_items()),
+                    result.body,
+                    datetime.now(UTC),
+                )
+                self.cache.put(key, value, len(result.body), ttl)
+        return result
+
+    def _cache_key(self, method, url, params, headers, data) -> tuple | None:
+        if self.cache is None or not self.cache.enabled or not self.policy.cacheable or data:
+            return None
+        key = cacheable_request(self.policy.name, method, url, params, headers or {})
+        if key is None:
+            self.cache.note("api_bypass")
+        return key
+
+    def _cached(self, key, url, ok, limit, allowed_hosts) -> HttpResult | None:
+        """A stored response, if it still fits this call's status, byte and host policy."""
+        assert self.cache is not None
+        hit: CachedResponse | None = self.cache.get(key)
+        if hit is None or hit.status not in ok or len(hit.body) > limit:
+            return None
+        self.check_url(url, allowed_hosts=allowed_hosts)
+        self.check_url(hit.url, allowed_hosts=allowed_hosts)
+        note_hit(self.policy.name, hit.retrieved_at)
+        return HttpResult(hit.status, hit.url, httpx.Headers(list(hit.headers)), hit.body)
 
     async def _request(
         self, method, url, *, params, headers, data, ok, max_body, deadline, allowed_hosts

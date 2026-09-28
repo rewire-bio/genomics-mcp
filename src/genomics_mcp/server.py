@@ -515,7 +515,7 @@ def build_server(service: GenomicsService) -> MCPServer:
     @mcp.resource(
         "genomics://status",
         name="status",
-        description="Source states and non-secret configuration summary.",
+        description="Source states, non-secret configuration summary and aggregate cache metrics.",
         mime_type="application/json",
     )
     def status() -> str:

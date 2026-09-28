@@ -120,6 +120,7 @@ class NcbiDatasetsClient:
                 min_interval_s=0.11 if api_key else 0.21,
                 timeout_s=timeout_s,
                 terms_url=TERMS_URL,
+                cacheable=True,
             ),
         )
 

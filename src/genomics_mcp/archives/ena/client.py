@@ -224,7 +224,12 @@ class EnaClient:
         self.http = SourceHttp(
             client,
             SourcePolicy(
-                SOURCE, API_HOSTS, min_interval_s=0.1, timeout_s=timeout_s, terms_url=TERMS_URL
+                SOURCE,
+                API_HOSTS,
+                min_interval_s=0.1,
+                timeout_s=timeout_s,
+                terms_url=TERMS_URL,
+                cacheable=True,
             ),
         )
         self.files = SourceHttp(
