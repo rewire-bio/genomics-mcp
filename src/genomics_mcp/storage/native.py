@@ -124,20 +124,20 @@ class NativeRunner:
                     _communicate(proc, payload), timeout=max(0.1, timeout_s - KILL_MARGIN_S)
                 )
             except TimeoutError:
-                _kill(proc)
+                kill_process_group(proc)
                 await proc.wait()
                 raise DeadlineExceededError(
                     f"{what} did not finish before the deadline; the reader process was stopped",
                     hint="query a smaller interval",
                 ) from None
             except BaseException:
-                _kill(proc)
+                kill_process_group(proc)
                 with contextlib.suppress(Exception):
                     await proc.wait()
                 raise
             finally:
                 if proc.returncode is None:
-                    _kill(proc)
+                    kill_process_group(proc)
             stderr_text = redact(err.decode("utf-8", errors="replace"))
             elapsed_ms = (time.monotonic() - started) * 1000
             if stderr_text.strip():
@@ -171,7 +171,7 @@ async def _communicate(proc: asyncio.subprocess.Process, payload: bytes) -> tupl
     return out, err
 
 
-def _kill(proc: asyncio.subprocess.Process) -> None:
+def kill_process_group(proc: asyncio.subprocess.Process) -> None:
     if proc.returncode is not None:
         return
     with contextlib.suppress(ProcessLookupError, PermissionError):

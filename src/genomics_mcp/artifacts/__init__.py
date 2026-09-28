@@ -1,7 +1,8 @@
 """E3 artifacts provider: transfers, FASTA sequence and indexed BED/GFF3/GTF features.
 
-Registers fetch_file / get_transfer_status / cancel_transfer (`default`), get_sequence for
-`fasta`, get_features for `bed`, `gff3`, `gtf`, and the `transfers` component.
+Registers fetch_file / get_transfer_status / cancel_transfer / convert_sra_run (`default`),
+get_sequence for `fasta`, get_features for `bed`, `gff3`, `gtf`, and the `transfers` and
+`sra_toolkit` components. convert_sra_run needs the optional SRA Toolkit (artifacts/sra.py).
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from genomics_mcp.artifacts.fetch import (
     fetch_file,
     get_transfer_status,
 )
+from genomics_mcp.artifacts.sra import COMPONENT as SRA_COMPONENT
+from genomics_mcp.artifacts.sra import SraToolkit, convert_sra_run
 from genomics_mcp.context import OperationContext
 from genomics_mcp.errors import ErrorCode, ErrorInfo, InvalidInputError
 from genomics_mcp.registry import Operation, Registry
@@ -139,6 +142,8 @@ def register(registry: Registry) -> None:
         Operation.GET_TRANSFER_STATUS, "default", get_transfer_status, provider=__name__
     )
     registry.register(Operation.CANCEL_TRANSFER, "default", cancel_transfer, provider=__name__)
+    registry.provide(SRA_COMPONENT, SraToolkit())
+    registry.register(Operation.CONVERT_SRA_RUN, "default", convert_sra_run, provider=__name__)
     registry.register(Operation.GET_SEQUENCE, "fasta", get_sequence, provider=__name__)
     for fmt in ("bed", "gff3", "gtf"):
         registry.register(Operation.GET_FEATURES, fmt, get_features, provider=__name__)

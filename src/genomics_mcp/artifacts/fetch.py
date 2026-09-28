@@ -35,7 +35,14 @@ from genomics_mcp.errors import (
     UnsupportedError,
     UpstreamError,
 )
-from genomics_mcp.models import Compression, FileFormat, FileRef, Provenance, ReadinessState
+from genomics_mcp.models import (
+    Compression,
+    FileFormat,
+    FileRef,
+    LocalArtifact,
+    Provenance,
+    ReadinessState,
+)
 from genomics_mcp.public import Deadline
 from genomics_mcp.requests import CancelTransferRequest, FetchFileRequest, TransferStatusRequest
 from genomics_mcp.result import OperationOutput
@@ -91,11 +98,14 @@ def _output(job: Job, extra_notes: list[str] | None = None) -> OperationOutput:
         },
         "notes": [*job.notes, *(extra_notes or [])],
     }
-    prov = (
-        [model.artifact.provenance]
-        if model.artifact
-        else [Provenance(source=job.access, url=job.file["uri"], method="bounded transfer")]
-    )
+    if job.kind != "file":
+        data["artifacts"] = job.artifacts
+    if job.artifacts:
+        prov = [LocalArtifact.model_validate(a).provenance for a in job.artifacts]
+    elif model.artifact:
+        prov = [model.artifact.provenance]
+    else:
+        prov = [Provenance(source=job.access, url=job.file["uri"], method="bounded transfer")]
     return OperationOutput(data=data, provenance=prov)
 
 

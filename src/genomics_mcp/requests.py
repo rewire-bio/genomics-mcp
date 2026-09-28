@@ -103,6 +103,22 @@ class FetchFileRequest(_Request):
     )
 
 
+class ConvertSraRunRequest(_Request):
+    accession: str = Field(
+        pattern=r"^[SED]RR\d{6,9}$",
+        description="Public SRA run accession (SRR, ERR or DRR), e.g. SRR13450355.",
+    )
+    budget_bytes: int | None = Field(
+        default=None,
+        ge=1,
+        description="Peak disk use allowed for the job: download, dependencies, scratch and "
+        "FASTQ output. Default: the transfer limit.",
+    )
+    timeout_s: float | None = Field(
+        default=None, gt=0, description="Lower the job time limit (cannot raise it)."
+    )
+
+
 class TransferStatusRequest(_Request):
     transfer_id: str = Field(min_length=1)
 
@@ -237,6 +253,7 @@ REQUEST_MODELS: dict[Operation, type[BaseModel]] = {
     Operation.FETCH_FILE: FetchFileRequest,
     Operation.GET_TRANSFER_STATUS: TransferStatusRequest,
     Operation.CANCEL_TRANSFER: CancelTransferRequest,
+    Operation.CONVERT_SRA_RUN: ConvertSraRunRequest,
     Operation.GET_READS: ReadsRequest,
     Operation.GET_COVERAGE: CoverageRequest,
     Operation.GET_PILEUP: PileupRequest,
