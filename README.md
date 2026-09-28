@@ -2,86 +2,116 @@
 
 <!-- mcp-name: io.github.rewire-bio/genomics-mcp -->
 
-An MCP server for finding genomic datasets, retrieving bounded data at a locus, and looking up versioned, source-attributed reference evidence. It runs on your machine. Research use only; no clinical verdicts.
+[![Release](https://img.shields.io/github/v/release/rewire-bio/genomics-mcp)](https://github.com/rewire-bio/genomics-mcp/releases/tag/v0.1.0)
+[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.rewire--bio%2Fgenomics--mcp-blue)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/0.1.0)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](docs/install.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**Status: 0.1.0, release prepared, not yet published.** All 23 tools are implemented and tested. The first release will be a GitHub release and a GHCR container image. Current publication state: [docs/registry-ledger.md](docs/registry-ledger.md).
+**Let your AI assistant fetch real genomic data and cite where it came from.**
 
-## What it does
+Genomics MCP is a local [Model Context Protocol](https://modelcontextprotocol.io) server. It lets an agent go from a public dataset to a bounded slice of real data at a locus, then to versioned reference evidence. It does not write glue code or download whole files, and it does not guess coordinates. Every result carries accessions, versions and retrieval dates.
 
-- **Discovery:** EGA, ENA, ENCODE, GEO and NCBI Datasets studies, datasets, samples, phenotypes (as the archive supplies them) and files.
-- **Genomics:** reads, coverage, pileup, variants, sequence, features and signal from indexed BAM/CRAM, VCF/BCF, FASTA, BED/GFF3/GTF and bigWig/bigBed files on local disk, HTTPS or S3. EGA regions come through EGA's htsget.
-- **Transfers:** bounded, resumable, checksummed downloads to a local workspace. Files are returned as paths, never as bytes in MCP text.
-- **Composition:** `inspect_locus` and `compare_samples` across several files.
-- **Reference:** HGNC, Ensembl, ClinVar (germline, somatic clinical impact and oncogenicity kept separate), gnomAD, UniProt, Open Targets, and optional AlphaGenome Atlas precomputed predictions with your own key.
+It is a research tool. It retrieves and reports data. It does not diagnose, classify variants clinically, call variants or draw biological conclusions.
 
-Intervals are 0-based half-open with an explicit assembly. Nothing is lifted over silently. CRAM needs a reference whose MD5 matches the header. Default limits: 1 Mb region, 10,000 records, 1 MiB response, 30 s deadline, 100 MiB transfer.
+## Who it helps
 
-## Install
+- **Computational biologists** who want an agent to pull a region from an archive, a URL or their own indexed files, without writing integration code.
+- **Researchers** asking questions about a locus, gene or variant who need the answer tied to named sources and versions.
+- **Agent and evaluation builders** who need cited, reproducible access to real data. Each record has an accession, version, retrieval date and 0-based half-open coordinates on an explicit assembly, so questions built from it can be traced back to the source. The server does not generate benchmarks itself.
 
-Full options, platform notes and Windows (WSL2/container): [docs/install.md](docs/install.md).
+## What you can ask
 
-### Container (linux/amd64)
+These prompts are illustrative. What happens depends on your MCP client and model. The EGA example uses EGA's documented public test account, which you enable with `GENOMICS_MCP_EGA_PUBLIC_TEST_ACCOUNT=1`.
 
-After the release is published:
+- "Find the files in EGA dataset EGAD00001003338 and show me the reads in GRCh38 chr10:10,000–10,050 from the BAM file."
+- "What is the mean ENCODE signal of ENCFF792QDS over chr1:1,000,000–1,001,000?"
+- "Normalize BRAF c.1799T>A on GRCh38 and show the ClinVar records, keeping germline, somatic and oncogenicity classifications separate."
+- "Compare genotypes at this locus across these two VCFs in my data folder."
+- "Download the ENA FASTA for DQ285577.1 and give me its first 30 bases."
 
-```sh
-docker run --rm -i \
-  --mount type=bind,source="$HOME/genomics-data",target=/data,readonly \
-  --mount type=volume,source=genomics-mcp-work,target=/work \
-  ghcr.io/rewire-bio/genomics-mcp:0.1.0
+## A measured example
+
+From the [clean-install demonstrations](docs/demos.md) (2026-09-25, live data). The file record came from `list_files`; it is abridged here.
+
+```json
+{
+  "tool": "get_signal",
+  "arguments": {
+    "file": {"uri": "https://encode-public.s3.amazonaws.com/…/ENCFF792QDS.bigWig", "format": "bigwig", "assembly": "GRCh38"},
+    "interval": {"contig": "chr1", "start": 1000000, "end": 1001000, "assembly": "GRCh38"}
+  }
+}
 ```
 
-Only `/data` is readable as local input; `/work` holds downloads and indexes (bounded to 10 GiB).
+Result: `"summary": {"type": "mean", "value": 26.361254017233847, "exact": true}`. The value came from HTTP range reads of a 1,413,106,336-byte bigWig; the workspace held 0 bytes afterwards. That is bytes written to disk, not total network traffic. The other demonstrations cover an EGA public-test BAM region (91 records received, 42 overlapping), an ENA sequence artifact, a NC_000007.14 reference check with ClinVar VCV000013961, and a synthetic BAM on local MinIO.
 
-### Python (macOS, Linux)
+## Quickstart
 
-Needs Python 3.12, [uv](https://docs.astral.sh/uv/), a C compiler, and libcurl and zlib development files. pyBigWig is built from source because the published Linux wheel has no remote-file support.
+Choose one route. Details, checksums, Windows (WSL2) and troubleshooting: [docs/install.md](docs/install.md).
+
+### Container (Linux x86_64, Docker)
+
+```sh
+docker pull ghcr.io/rewire-bio/genomics-mcp:0.1.0
+```
+
+Add to your MCP client configuration, replacing the data path:
+
+```json
+{
+  "mcpServers": {
+    "genomics": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "--mount", "type=bind,source=/path/to/your/data,target=/data,readonly",
+        "--mount", "type=volume,source=genomics-mcp-work,target=/work",
+        "ghcr.io/rewire-bio/genomics-mcp:0.1.0"
+      ]
+    }
+  }
+}
+```
+
+The image is linux/amd64 only. It has been tested on Linux x86_64; running it on Apple silicon under emulation is untested.
+
+### From source (macOS arm64, Linux x86_64)
+
+Needs Python 3.12, [uv](https://docs.astral.sh/uv/), a C compiler, and libcurl and zlib development files. pyBigWig is built from source because its published Linux wheel cannot read remote files.
 
 ```sh
 git clone https://github.com/rewire-bio/genomics-mcp
 cd genomics-mcp
+git checkout v0.1.0
 uv sync --locked --no-dev
-uv run genomics-mcp --check-config
+uv run --no-dev genomics-mcp --check-config
 ```
-
-## Use
-
-### stdio (default)
 
 ```json
 {
   "mcpServers": {
     "genomics": {
       "command": "uv",
-      "args": ["--directory", "/path/to/genomics-mcp", "run", "genomics-mcp"],
+      "args": ["--directory", "/path/to/genomics-mcp", "run", "--no-dev", "genomics-mcp"],
       "env": { "GENOMICS_MCP_ALLOWED_ROOTS": "/path/to/your/data" }
     }
   }
 }
 ```
 
-For the container, use `"command": "docker"` with the `run` arguments above.
+There is no PyPI package yet. The release also has a wheel, an MCPB bundle for Linux, and a pinned `uvx` Git command; see [docs/install.md](docs/install.md).
 
-### Streamable HTTP
+## What it covers
 
-HTTP needs a bearer token of at least 32 characters and binds to 127.0.0.1 unless configured otherwise. There is no hosted service.
+| Area | Sources and formats |
+| --- | --- |
+| Discovery | EGA, ENA (incl. SRA accessions), ENCODE, GEO, NCBI Datasets: studies, datasets, samples, phenotypes as the archive supplies them, files |
+| Genomic data | BAM/CRAM, VCF/BCF, FASTA, BED/GFF3/GTF, bigWig/bigBed on local disk, HTTPS or S3; EGA regions via htsget |
+| Transfers | Bounded, resumable, checksummed downloads returned as local paths |
+| Reference evidence | HGNC, Ensembl, ClinVar, gnomAD, UniProt, Open Targets; optional AlphaGenome Atlas with your own key |
 
-```sh
-export GENOMICS_MCP_HTTP_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-uv run genomics-mcp --transport http --port 8765
-# endpoint: http://127.0.0.1:8765/mcp  header: Authorization: Bearer $GENOMICS_MCP_HTTP_TOKEN
-```
-
-### Configuration
-
-Copy [config.example.toml](config.example.toml) and pass it with `--config` or `GENOMICS_MCP_CONFIG`. `genomics-mcp --check-config` prints a summary without secrets.
-
-- Local files are readable only under `paths.allowed_roots`.
-- Ambient cloud credentials (`AWS_*`, `~/.aws`, instance metadata) are never used. For private S3 or MinIO, add a `[storage.profiles.<name>]` entry that names the environment variables holding your keys.
-- EGA controlled files need your own EGA account. `GENOMICS_MCP_EGA_PUBLIC_TEST_ACCOUNT=1` uses EGA's documented public test account.
-- Values derived from files you have not marked `public` are sent to external APIs only when a call sets `allow_external_annotation`.
-
-## Tools
+<details>
+<summary>All 23 tools and the resources</summary>
 
 | Group | Tools |
 | --- | --- |
@@ -91,15 +121,35 @@ Copy [config.example.toml](config.example.toml) and pass it with `--config` or `
 | Composition | `inspect_locus`, `compare_samples` |
 | Reference | `resolve_identifier`, `normalize_variant`, `lookup_variant`, `lookup_gene`, `lookup_protein` |
 
-Resources: `genomics://capabilities`, `genomics://status`, `genomics://schemas`, `genomics://schemas/{name}`.
+Resources: `genomics://capabilities`, `genomics://status`, `genomics://schemas`, `genomics://schemas/{name}`. Every tool returns the same envelope: status, data, per-source errors, provenance, truncation and applied limits.
 
-## Evidence
+</details>
 
-Five clean-install demonstrations with real data ran on 2026-09-25: an EGA public-test BAM region, an ENA sequence artifact, an ENCODE bigWig signal, a reference base plus ClinVar evidence, and a synthetic BAM on local MinIO. Commands and machine-readable results: [docs/demos.md](docs/demos.md).
+## How it behaves
+
+- **Explicit coordinates:** 0-based half-open intervals on a named assembly. No silent liftover. CRAM needs a reference whose MD5 matches the header.
+- **Bounded by default:** 1 Mb region, 10,000 records, 1 MiB response, 30 s deadline, 100 MiB transfer. Truncation is always reported. Larger transfers need an explicit budget.
+- **Local and read-only:** stdio by default, or Streamable HTTP with a bearer token on 127.0.0.1. There is no hosted service. Sources are never modified, and local reads are limited to the folders you allow.
+- **Your credentials only when named:** ambient AWS credentials are never used. Private S3/MinIO and EGA access need explicit configuration.
+- **Consent for egress:** values from files not marked `public` go to external APIs only when a call sets `allow_external_annotation`.
+
+Configuration: copy [config.example.toml](config.example.toml) and pass `--config`. `genomics-mcp --check-config` prints a summary without secrets.
+
+## Status
+
+Version 0.1.0 is [released on GitHub](https://github.com/rewire-bio/genomics-mcp/releases/tag/v0.1.0). It is published as a public GHCR image and listed in the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/0.1.0). Directory listings and PyPI: [publication ledger](docs/registry-ledger.md). Scope and known limits: [PRD.md](PRD.md).
 
 ## Documentation
 
-[PRD.md](PRD.md) (scope and limits) · [docs/architecture.md](docs/architecture.md) · [docs/data-access.md](docs/data-access.md) · [docs/archive-sources.md](docs/archive-sources.md) · [docs/reference-sources.md](docs/reference-sources.md) · [docs/composition.md](docs/composition.md) · [docs/install.md](docs/install.md) · [docs/release.md](docs/release.md) · [SECURITY.md](SECURITY.md)
+- [Installation and platforms](docs/install.md)
+- [Clean-install demonstrations](docs/demos.md)
+- [Data access: storage, transfers, readers](docs/data-access.md)
+- [Archive sources](docs/archive-sources.md)
+- [Reference sources](docs/reference-sources.md)
+- [Composition tools](docs/composition.md)
+- [Architecture and contracts](docs/architecture.md)
+- [Release procedure](docs/release.md)
+- [Security](SECURITY.md)
 
 ## Development
 
@@ -109,7 +159,7 @@ uv run ruff check . && uv run ruff format --check .
 uv run pytest
 ```
 
-Default tests use synthetic data and local subprocesses only. Live-source and MinIO tests are opt-in (see the test modules). samtools/bcftools oracle tests run when those tools are installed.
+Default tests use synthetic data and local subprocesses. Live-source and MinIO tests are opt-in.
 
 ## Licence
 
