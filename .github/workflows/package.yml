@@ -128,6 +128,11 @@ jobs:
           docker image inspect --format '{{.Id}}' genomics-mcp-sra:ci | tee sra-image-id.txt
       - name: Image metadata (labels, user, entrypoint)
         run: python3 scripts/check_image.py genomics-mcp-sra:ci
+      - name: Third-party notices in the image match the repository
+        run: |
+          (cd packaging/sra-toolkit/licenses && sha256sum -- *) > expected-notices.txt
+          docker run --rm --entrypoint sh genomics-mcp-sra:ci -c 'cd /opt/sratoolkit/licenses && sha256sum -- *' > image-notices.txt
+          diff expected-notices.txt image-notices.txt
       - name: Real public runs to FASTQ over MCP stdio
         run: |
           mkdir -p "$RUNNER_TEMP/sra-work"

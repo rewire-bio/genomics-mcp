@@ -95,8 +95,10 @@ ARG SRA_TOOLKIT_VERSION
 LABEL org.opencontainers.image.title="genomics-mcp-sra" \
       org.opencontainers.image.description="genomics-mcp with the optional NCBI SRA Toolkit (prefetch, fasterq-dump)" \
       io.github.rewire-bio.sra-toolkit.version="${SRA_TOOLKIT_VERSION}" \
-      io.github.rewire-bio.sra-toolkit.license="Public domain (US Government work); see /opt/sratoolkit/README.md"
+      io.github.rewire-bio.sra-toolkit.license="NCBI code public domain; bundled bzip2, zlib, Zstandard, Mbed TLS (Apache-2.0) and LGPL-2.1+ ksort; see /opt/sratoolkit/licenses"
 COPY --from=sra-toolkit /opt/sratoolkit /opt/sratoolkit
+# Licence texts and corresponding source for third-party code inside the toolkit binaries.
+COPY packaging/sra-toolkit/licenses /opt/sratoolkit/licenses
 ENV PATH=/opt/sratoolkit/bin:$PATH
 
 # The default target stays the standard image, without SRA Toolkit.

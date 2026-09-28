@@ -131,7 +131,9 @@ It runs as the image's non-root user (uid 10001). Toolkit settings, scratch, dow
 
 ## Licence and dependencies
 
-SRA Toolkit (sra-tools and ncbi-vdb) is a United States Government work in the public domain; see the PUBLIC DOMAIN NOTICE in its `README.md`, copied to `/opt/sratoolkit/` in the image. The binaries include third-party libraries vendored in ncbi-vdb `libs/ext` (bzip2 1.0.8, mbedtls, regex, szip, zlib 1.3.1, zstd), each under its own licence in the ncbi-vdb source tree. The Linux binaries link dynamically only to glibc.
+NCBI's own sra-tools and ncbi-vdb code is a United States Government work in the public domain. The toolkit binaries are not only NCBI code: they statically include bzip2 1.0.8, zlib 1.3.1, Zstandard 1.5.7 (BSD-3-Clause or GPL-2.0), Mbed TLS 3.2.1 (Apache-2.0) and an LGPL-2.1-or-later sort routine from the GNU C Library (ncbi-vdb `libs/klib/qsort.c`). All three shipped binaries contain all of these; ncbi-vdb's vendored `regex` and `szip` were not found in them. They link dynamically only to glibc from the Debian base image.
+
+The image carries the licence texts, the pinned sra-tools and ncbi-vdb commits and the LGPL component's source in `/opt/sratoolkit/licenses`, from [packaging/sra-toolkit/licenses](../packaging/sra-toolkit/licenses/README.md). The genomics-mcp code itself is MIT.
 
 Sources: [prefetch and fasterq-dump](https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump), [fasterq-dump](https://github.com/ncbi/sra-tools/wiki/HowTo:-fasterq-dump), [SRA Toolkit Docker](https://github.com/ncbi/sra-tools/wiki/SRA-tools-docker).
 
