@@ -562,3 +562,38 @@ async def test_resume_passes_the_whole_budget_as_prefetch_max_size(svc, toolkit)
         if "--max-size" in c["args"]
     ]
     assert sizes == [str(1_000_000 // 1024)] * 2
+
+
+async def test_stopping_the_mcp_server_kills_the_toolkit_and_keeps_a_resumable_job(
+    tmp_path, toolkit
+):
+    from mcp.client import Client
+    from mcp.client.stdio import StdioServerParameters, stdio_client
+
+    control(toolkit, prefetch="hang")
+    work = tmp_path / "work"
+    env = {
+        "PATH": os.environ.get("PATH", ""),
+        "HOME": os.environ.get("HOME", ""),
+        "GENOMICS_MCP_WORK_DIR": str(work),
+        "GENOMICS_MCP_SRA_TOOLKIT_DIR": str(toolkit),
+    }
+    params = StdioServerParameters(command=sys.executable, args=["-m", "genomics_mcp"], env=env)
+    with (tmp_path / "stderr.log").open("w") as errlog:
+        async with Client(stdio_client(params, errlog=errlog), mode="legacy") as client:
+            res = await client.call_tool("convert_sra_run", {"accession": ACC})
+            tid = res.structured_content["data"]["transfer"]["transfer_id"]
+            for _ in range(200):
+                if (toolkit / "grandchild.pid").exists():
+                    break
+                await asyncio.sleep(0.05)
+    grandchild = int((toolkit / "grandchild.pid").read_text())
+    for _ in range(100):
+        if not pid_alive(grandchild):
+            break
+        await asyncio.sleep(0.05)
+    assert not pid_alive(grandchild)
+    job = json.loads((work / "transfers" / tid / "job.json").read_text())
+    assert job["state"] == "failed" and job["kind"] == "sra"
+    assert "convert_sra_run again" in job["error"]["message"]
+    assert job["error"]["retryable"] is True
