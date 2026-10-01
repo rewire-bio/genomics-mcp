@@ -144,6 +144,50 @@ jobs:
               --cap-drop ALL --security-opt no-new-privileges \
               --mount type=bind,source="$RUNNER_TEMP/sra-work",target=/work \
               genomics-mcp-sra:ci
+      - name: Disk-space preflight inside container (insufficient free disk)
+        run: |
+          uv run --with "mcp==2.2.0" python3 - << 'EOF'
+          import anyio
+          import json
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from _mcpclient import call, connect, scrub, server_env
+
+          PAIRED = "SRR13450355"
+          BUDGET = 16 * 1024 * 1024
+
+          cmd = [
+              "docker", "run", "--rm", "-i", "--read-only",
+              "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+              "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+              "--tmpfs", "/work:rw,size=8m,uid=10001,gid=10001",
+              "genomics-mcp-sra:ci",
+          ]
+
+          async def main():
+              env = server_env()
+              errlog = Path("sra-disk-stderr.log")
+              async with connect(cmd, env, errlog) as client:
+                  res = await call(
+                      client, "convert_sra_run", {"accession": PAIRED, "budget_bytes": BUDGET}
+                  )
+
+              assert res.get("status") == "error", f"expected status error, got {res.get('status')}"
+              err = res.get("error") or {}
+              assert err.get("code") == "budget_exceeded", f"expected code budget_exceeded, got {err.get('code')}"
+              assert "disk does not have room" in err.get("message", ""), f"expected disk error message, got {err.get('message')}"
+              details = err.get("details") or {}
+              assert details.get("budget_bytes") == BUDGET, f"expected budget_bytes {BUDGET}, got {details.get('budget_bytes')}"
+              assert details.get("free_bytes", float("inf")) < BUDGET, f"free_bytes should be less than {BUDGET}, got {details.get('free_bytes')}"
+              assert res.get("data") is None or "transfer" not in res.get("data", {}), f"expected no transfer queued, got {res.get('data')}"
+
+              Path("sra-disk.json").write_text(json.dumps(scrub(res), indent=2) + "\n")
+              print("Disk preflight verified:", json.dumps(err))
+
+          anyio.run(main)
+          EOF
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -151,3 +195,4 @@ jobs:
           path: |
             sra-container.json
             sra-image-id.txt
+            sra-disk.json

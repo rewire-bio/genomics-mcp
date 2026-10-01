@@ -51,7 +51,7 @@ The response lists each file's path, size, md5, sha256, read and base counts, an
 - Each job has its own `HOME`, `TMPDIR` and `NCBI_SETTINGS` file inside the job directory. Your `~/.ncbi` is not read or written. The settings use a random GUID, no cloud instance identity, no AWS or GCP charges, and no toolkit cache.
 - Only public runs. Controlled-access (dbGaP) runs fail. No `.ngc` or cart files are accepted.
 - Toolkit output is captured and logged at debug level to stderr. It never reaches MCP stdout.
-- Limitation: if the server itself is killed with SIGKILL, a running toolkit process may continue until it exits. A restarted server marks the job failed; calling `convert_sra_run` again resumes it.
+- Limitation: if the server is killed with SIGKILL, automatic cleanup cannot run and running toolkit processes may continue. Stopped-child cleanup removes newly created locks and preserves pre-existing locks. SIGKILL cannot clean up, so an operator must ensure no orphan process owns a lock before manually removing it and retrying. Retrying does not automatically clear old locks.
 
 ## Native installation
 
@@ -115,7 +115,7 @@ It runs as the image's non-root user (uid 10001). Toolkit settings, scratch, dow
 ## Cleanup
 
 - Completed: only the FASTQ files remain, in `<work_dir>/artifacts/<transfer_id>/`. The run file and scratch are deleted. Delete that directory when you no longer need the files.
-- Failed but resumable (for example a timeout or network error): the download stays in `<work_dir>/transfers/<transfer_id>/sra.part/` so the next `convert_sra_run` resumes it. `cancel_transfer` removes it.
+- Failed but resumable (for example a timeout or network error): the download stays in `<work_dir>/transfers/<transfer_id>/sra.part/` so the next `convert_sra_run` resumes it. When a process group is stopped, newly created `.sra.lock` files are cleaned up while preserving partial `.tmp`/`.prf` data; pre-existing locks are preserved. `cancel_transfer` removes it.
 - Failed permanently (budget exceeded while running, invalid output) or cancelled: the job's files are removed.
 
 ## Troubleshooting
@@ -143,5 +143,5 @@ Sources: [prefetch and fasterq-dump](https://github.com/ncbi/sra-tools/wiki/08.-
 - Real toolkit 3.4.1, macOS arm64:
   - `tests/artifacts/test_sra_live.py`: 2 passed. Real `prefetch` and `fasterq-dump` conversion and verification through `convert_sra_run` passed for SRR13450355 (paired, 744 spots) and SRR24157174 (single-end, 1,080 spots) with counts verified against ENA.
   - Native demonstration harness (`scripts/sra_demo.py`): all 8 checks passed (`status`, `invalid`, `budget`, `paired`, `single`, `cancel`, `interrupt`, `interrupt_resume`). Cleanly handles prefetch process group cleanup, mid-download interruption, safe resume with retained `.tmp` partial data, and cancellation.
-- Container: Linux CI runs `scripts/sra_demo.py` under Docker as uid 10001. Harness uses concurrent MCP tool calls and workspace observation to interrupt active downloads before blocking tool call returns.
-- Platforms: macOS arm64 native fully verified; Linux x86_64 container exercised via CI. Other platforms are not claimed.
+- Container: Linux CI ([run 36837416155](https://github.com/rewire-bio/genomics-mcp/actions/runs/36837416155), 1 October 2026, commit `968b7a1`) passed all jobs including all 8 real Linux amd64 `sra-container` checks under Docker as uid 10001 (harness uses concurrent MCP tool calls and workspace observation to interrupt active downloads). CI also checks insufficient disk with an 8 MiB tmpfs.
+- Platforms: macOS arm64 native fully verified; Linux amd64 container verified by that run. Other platforms are not claimed.
