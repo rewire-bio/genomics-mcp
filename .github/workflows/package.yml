@@ -111,3 +111,88 @@ jobs:
             --env GENOMICS_MCP_LAUNCHER_TEST_IMAGE=genomics-mcp:ci -- \
             node "$RUNNER_TEMP/unpacked/server/launcher.cjs" "$(command -v docker)" \
               "$RUNNER_TEMP/bundle-data" "$RUNNER_TEMP/bundle-work"
+
+  sra-container:
+    # Optional SRA Toolkit image variant (`--target sra`): real public runs through MCP stdio,
+    # non-root user, read-only root filesystem, bind-mounted work dir owned by the image user.
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.8.2"
+      - name: Build linux/amd64 SRA image (toolkit checksum verified in the build)
+        run: |
+          docker build --platform linux/amd64 --target sra --build-arg VERSION="$(uv version --short)" -t genomics-mcp-sra:ci .
+          docker image inspect --format '{{.Id}}' genomics-mcp-sra:ci | tee sra-image-id.txt
+      - name: Image metadata (labels, user, entrypoint)
+        run: python3 scripts/check_image.py genomics-mcp-sra:ci
+      - name: Third-party notices in the image match the repository
+        run: |
+          (cd packaging/sra-toolkit/licenses && sha256sum -- *) > expected-notices.txt
+          docker run --rm --entrypoint sh genomics-mcp-sra:ci -c 'cd /opt/sratoolkit/licenses && sha256sum -- *' > image-notices.txt
+          diff expected-notices.txt image-notices.txt
+      - name: Real public runs to FASTQ over MCP stdio
+        run: |
+          mkdir -p "$RUNNER_TEMP/sra-work"
+          sudo chown 10001:10001 "$RUNNER_TEMP/sra-work"
+          uv run --script scripts/sra_demo.py --out sra-container.json \
+            --work-dir "$RUNNER_TEMP/sra-work" --server-work-dir /work --expect-uid 10001 \
+            --image genomics-mcp-sra:ci --image-id "$(cat sra-image-id.txt)" -- \
+            docker run --rm -i --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+              --cap-drop ALL --security-opt no-new-privileges \
+              --mount type=bind,source="$RUNNER_TEMP/sra-work",target=/work \
+              genomics-mcp-sra:ci
+      - name: Disk-space preflight inside container (insufficient free disk)
+        run: |
+          uv run --with "mcp==2.2.0" python3 - << 'EOF'
+          import anyio
+          import json
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from _mcpclient import call, connect, scrub, server_env
+
+          PAIRED = "SRR13450355"
+          BUDGET = 16 * 1024 * 1024
+
+          cmd = [
+              "docker", "run", "--rm", "-i", "--read-only",
+              "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+              "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+              "--tmpfs", "/work:rw,size=8m,uid=10001,gid=10001",
+              "genomics-mcp-sra:ci",
+          ]
+
+          async def main():
+              env = server_env()
+              errlog = Path("sra-disk-stderr.log")
+              async with connect(cmd, env, errlog) as client:
+                  res = await call(
+                      client, "convert_sra_run", {"accession": PAIRED, "budget_bytes": BUDGET}
+                  )
+
+              assert res.get("status") == "error", f"expected status error, got {res.get('status')}"
+              err = res.get("error") or {}
+              assert err.get("code") == "budget_exceeded", f"expected code budget_exceeded, got {err.get('code')}"
+              assert "disk does not have room" in err.get("message", ""), f"expected disk error message, got {err.get('message')}"
+              details = err.get("details") or {}
+              assert details.get("budget_bytes") == BUDGET, f"expected budget_bytes {BUDGET}, got {details.get('budget_bytes')}"
+              assert details.get("free_bytes", float("inf")) < BUDGET, f"free_bytes should be less than {BUDGET}, got {details.get('free_bytes')}"
+              assert res.get("data") is None or "transfer" not in res.get("data", {}), f"expected no transfer queued, got {res.get('data')}"
+
+              Path("sra-disk.json").write_text(json.dumps(scrub(res), indent=2) + "\n")
+              print("Disk preflight verified:", json.dumps(err))
+
+          anyio.run(main)
+          EOF
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: sra-container
+          path: |
+            sra-container.json
+            sra-image-id.txt
+            sra-disk.json

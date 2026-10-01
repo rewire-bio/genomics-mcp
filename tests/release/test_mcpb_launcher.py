@@ -84,7 +84,7 @@ async def test_launcher_round_trip_and_arguments(setup, tmp_path):
     )
     with (tmp_path / "launcher.log").open("w") as errlog:
         async with Client(stdio_client(params, errlog=errlog), mode="legacy") as client:
-            assert len((await client.list_tools()).tools) == 23
+            assert len((await client.list_tools()).tools) == 24
             res = await client.call_tool(
                 "get_sequence",
                 {

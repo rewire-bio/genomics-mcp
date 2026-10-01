@@ -18,6 +18,9 @@ Rules:
 - Checksums: computed over the complete file only, and compared with the checksums given on
   the FileRef. A mismatch fails the job and removes the bytes.
 - Cancel: stops the background task and removes partial bytes; the job never reads completed.
+
+`kind` is "file" for fetch_file jobs and "sra" for convert_sra_run jobs (artifacts/sra.py). An
+SRA job has one directory part (its whole working tree) and several FASTQ `artifacts`.
 """
 
 from __future__ import annotations
@@ -141,6 +144,14 @@ class Job:
     """Checksums of the complete source bytes as received (before any preparation)."""
     source_verified: bool | None = None
     artifact_identity: dict[str, int] | None = None
+    kind: str = "file"
+    artifacts: list[dict[str, Any]] = field(default_factory=list)
+
+    @property
+    def retry_hint(self) -> str:
+        if self.kind == "sra":
+            return "call convert_sra_run again with the same accession to resume"
+        return "call fetch_file again with the same file to resume"
 
     @property
     def bytes_done(self) -> int:
@@ -162,7 +173,7 @@ class Job:
             bytes_total=self.bytes_total,
             resumable=self.state in ("failed", "running", "queued")
             and not self.no_resume
-            and (self.etag is not None or self.last_modified is not None)
+            and (self.etag is not None or self.last_modified is not None or self.kind == "sra")
             and any(p.done for p in self.parts),
             artifact=LocalArtifact.model_validate(self.artifact) if self.artifact else None,
             error=err,
@@ -203,8 +214,7 @@ class TransferManager:
                 job.state = "failed"
                 job.error = ErrorInfo(
                     code=ErrorCode.UPSTREAM_ERROR,
-                    message="transfer was interrupted (server stopped); call fetch_file again "
-                    "with the same file to resume",
+                    message=f"transfer was interrupted (server stopped); {job.retry_hint}",
                     retryable=True,
                 ).model_dump(mode="json")
                 self._persist(job)
@@ -340,7 +350,7 @@ class TransferManager:
                         job.state = "failed"
                         job.error = ErrorInfo(
                             code=ErrorCode.UPSTREAM_ERROR,
-                            message="transfer was interrupted; call fetch_file again to resume",
+                            message=f"transfer was interrupted; {job.retry_hint}",
                             retryable=True,
                         ).model_dump(mode="json")
                         self._persist(job)
@@ -390,6 +400,7 @@ class TransferManager:
         self.discard_artifacts(job)
         job.artifact = None
         job.artifact_file = None
+        job.artifacts = []
         job.notes.append("cancelled; partial and staged bytes removed")
         self._persist(job)
         return job
@@ -405,8 +416,7 @@ class TransferManager:
                 job.state = "failed"
                 job.error = ErrorInfo(
                     code=ErrorCode.UPSTREAM_ERROR,
-                    message="transfer was interrupted (server stopped); call fetch_file again "
-                    "with the same file to resume",
+                    message=f"transfer was interrupted (server stopped); {job.retry_hint}",
                     retryable=True,
                 ).model_dump(mode="json")
                 self._persist(job)
@@ -414,8 +424,11 @@ class TransferManager:
     # ------------------------------------------------------------------ helpers
     def discard_parts(self, job: Job) -> None:
         for part in job.parts:
+            path = self._part_path(job, part)
+            if path.is_dir():
+                shutil.rmtree(path, ignore_errors=True)
             with contextlib.suppress(OSError):
-                self._part_path(job, part).unlink()
+                path.unlink()
             part.done = 0
             part.state = "pending"
 

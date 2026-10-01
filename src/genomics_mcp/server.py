@@ -75,8 +75,16 @@ _TOOL_DOCS: dict[Operation, str] = {
         "Start a bounded download of a file (and index) to the local work dir. Returns a transfer "
         "job; files above the default limit need budget_bytes."
     ),
-    Operation.GET_TRANSFER_STATUS: "Get progress/result of a transfer started by fetch_file.",
-    Operation.CANCEL_TRANSFER: "Cancel a running transfer.",
+    Operation.GET_TRANSFER_STATUS: (
+        "Get progress/result of a job started by fetch_file or convert_sra_run."
+    ),
+    Operation.CANCEL_TRANSFER: "Cancel a running transfer or SRA conversion job.",
+    Operation.CONVERT_SRA_RUN: (
+        "Optional: download a public SRA run with SRA Toolkit prefetch and convert the whole run "
+        "to local FASTQ files with fasterq-dump (paired and unpaired reads kept). Starts a job; "
+        "poll get_transfer_status. Needs SRA Toolkit; ENA FASTQ files via list_files/fetch_file "
+        "do not. FASTQ is not locus-ready."
+    ),
     Operation.GET_READS: (
         "Alignments overlapping an interval from indexed BAM/CRAM. Flag filters follow samtools "
         "-f/-F. CRAM needs a matching reference unless self-contained."
@@ -267,6 +275,19 @@ def build_server(service: GenomicsService) -> MCPServer:
     @tool(Operation.CANCEL_TRANSFER, LOCAL_WRITE)
     async def cancel_transfer(transfer_id: str) -> Result:
         return await run(Operation.CANCEL_TRANSFER, transfer_id=transfer_id)
+
+    @tool(Operation.CONVERT_SRA_RUN, LOCAL_WRITE)
+    async def convert_sra_run(
+        accession: Annotated[str, Field(description="Public SRR, ERR or DRR run accession.")],
+        budget_bytes: Annotated[int | None, Field(ge=1)] = None,
+        timeout_s: Annotated[float | None, Field(gt=0)] = None,
+    ) -> Result:
+        return await run(
+            Operation.CONVERT_SRA_RUN,
+            accession=accession,
+            budget_bytes=budget_bytes,
+            timeout_s=timeout_s,
+        )
 
     # ---------------------------------------------------------------- genomics
     @tool(Operation.GET_READS)

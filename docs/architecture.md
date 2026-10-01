@@ -30,7 +30,7 @@ Each epic owns one provider package. It is imported at start-up if present; a mi
 | Module | Epic | Registers |
 | --- | --- | --- |
 | `genomics_mcp.storage` | E2 | resolvers `file`, `http`, `https`, `s3`, `ftp`; `list_files` for `local` if useful |
-| `genomics_mcp.artifacts` | E3 | `fetch_file`, `get_transfer_status`, `cancel_transfer` (`default`); `get_sequence/fasta`; `get_features/bed,gff3,gtf` |
+| `genomics_mcp.artifacts` | E3 | `fetch_file`, `get_transfer_status`, `cancel_transfer` (`default`); `get_sequence/fasta`; `get_features/bed,gff3,gtf`; `convert_sra_run` (`default`, optional SRA Toolkit, [sra-toolkit.md](sra-toolkit.md)) |
 | `genomics_mcp.readers` | E4 | `get_reads`, `get_coverage`, `get_pileup` for `bam`, `cram` (`sam` optional); `get_variants` for `vcf`, `bcf` |
 | `genomics_mcp.signal` | E5 | `get_signal/bigwig`; `get_features/bigbed` |
 | `genomics_mcp.archives` | E6 | discovery ops for `ega`, `ena`; resolvers `ega`, `htsget` |

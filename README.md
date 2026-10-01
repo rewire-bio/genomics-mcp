@@ -94,16 +94,16 @@ There is no PyPI package yet. Wheel, Linux MCPB bundle, pinned `uvx` command, Wi
 | --- | --- |
 | Discovery | EGA, ENA (incl. SRA accessions), ENCODE, GEO, NCBI Datasets: studies, datasets, samples, phenotypes as supplied, files |
 | Genomic data | BAM/CRAM, VCF/BCF, FASTA, BED/GFF3/GTF, bigWig/bigBed on local disk, HTTPS or S3; EGA regions via htsget |
-| Transfers | Budgeted, resumable, checksummed downloads returned as local paths |
+| Transfers | Budgeted, resumable, checksummed downloads returned as local paths; optional SRA run to FASTQ with SRA Toolkit (unreleased) |
 | Reference | HGNC, Ensembl, ClinVar, gnomAD, UniProt, Open Targets; optional AlphaGenome Atlas with your own key |
 
 <details>
-<summary>All 23 tools and the resources</summary>
+<summary>All 24 tools and the resources</summary>
 
 | Group | Tools |
 | --- | --- |
 | Discovery | `list_sources`, `search_datasets`, `describe_dataset`, `list_files`, `list_samples`, `get_sample_metadata` |
-| Transfers | `fetch_file`, `get_transfer_status`, `cancel_transfer` |
+| Transfers | `fetch_file`, `get_transfer_status`, `cancel_transfer`, `convert_sra_run` (optional, unreleased) |
 | Genomics | `get_reads`, `get_coverage`, `get_pileup`, `get_variants`, `get_sequence`, `get_features`, `get_signal` |
 | Composition | `inspect_locus`, `compare_samples` |
 | Reference | `resolve_identifier`, `normalize_variant`, `lookup_variant`, `lookup_gene`, `lookup_protein` |
@@ -118,6 +118,8 @@ Resources: `genomics://capabilities`, `genomics://status`, `genomics://schemas`,
 - **Local only:** stdio, or Streamable HTTP with a bearer token on 127.0.0.1. There is no hosted service. Local reads are limited to the folders you allow, and source files are never modified.
 - **Credentials and egress:** ambient AWS credentials are never used; private S3 and EGA need explicit configuration. Values from files not marked `public` go to external APIs only when a call sets `allow_external_annotation`.
 - **Cache (unreleased; development checkout only, not in v0.1.0):** a bounded in-memory cache reuses byte ranges of public HTTPS files marked `public` (revalidated by ETag on every call) and public API responses. It is never used for private, signed or authenticated requests. Turn it off with `[cache] enabled = false`; restarting clears it. Details and measurements: [performance](docs/performance.md).
+
+- **SRA Toolkit (unreleased; optional):** `convert_sra_run` turns a public SRR/ERR/DRR run into local FASTQ files with NCBI's `prefetch` and `fasterq-dump`, as a budgeted, cancellable job. It is never started by discovery. ENA FASTQ files need no toolkit. Installation, container variant, limits and current verification status: [SRA Toolkit](docs/sra-toolkit.md).
 
 Configuration: [config.example.toml](config.example.toml). Scope and known limits: [PRD.md](PRD.md). Directory and PyPI status: [publication ledger](docs/registry-ledger.md). Technical details: [data access](docs/data-access.md), [archives](docs/archive-sources.md), [references](docs/reference-sources.md), [composition](docs/composition.md). Security: [SECURITY.md](SECURITY.md).
 

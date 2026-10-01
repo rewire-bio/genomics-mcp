@@ -9,6 +9,7 @@
 packaging/*
 !packaging/uv.toml
 !packaging/container-config.toml
+!packaging/sra-toolkit/licenses
 **/__pycache__
 **/*.pyc
 **/.DS_Store

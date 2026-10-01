@@ -325,11 +325,13 @@ class GenomicsService:
         return {"server_version": __version__, **self.registry.capabilities()}
 
     def status(self) -> dict[str, Any]:
+        sra = self.registry.component("sra_toolkit")
         return {
             "server_version": __version__,
             "sources": [self.describe_source(s) for s in self.registry.sources()],
             "config": self.settings.public_view(),
             "cache": self.cache.metrics(),
+            "sra_toolkit": sra.status(self.settings) if sra is not None else None,
         }
 
     def _log_call(

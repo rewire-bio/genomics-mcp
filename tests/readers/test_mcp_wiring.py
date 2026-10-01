@@ -19,6 +19,7 @@ E2_E5_OPS = {
     "fetch_file",
     "get_transfer_status",
     "cancel_transfer",
+    "convert_sra_run",
     "get_reads",
     "get_coverage",
     "get_pileup",

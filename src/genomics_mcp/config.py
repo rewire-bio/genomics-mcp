@@ -215,6 +215,24 @@ class CacheSettings(_Model):
     )
 
 
+class SraToolkitSettings(_Model):
+    """Optional NCBI SRA Toolkit (prefetch, fasterq-dump) for convert_sra_run."""
+
+    bin_dir: Path | None = Field(
+        default=None,
+        description="Directory containing prefetch and fasterq-dump. Unset: search PATH.",
+    )
+    threads: int = Field(default=4, ge=1, le=64, description="fasterq-dump --threads.")
+    timeout_s: float = Field(
+        default=3600.0, gt=0, description="Longest a conversion job may run, download included."
+    )
+
+    @field_validator("bin_dir")
+    @classmethod
+    def _abs_bin(cls, v: Path | None) -> Path | None:
+        return None if v is None else v.expanduser().resolve()
+
+
 class Settings(_Model):
     limits: Limits = Field(default_factory=Limits)
     http: HttpSettings = Field(default_factory=HttpSettings)
@@ -223,6 +241,7 @@ class Settings(_Model):
     sources: dict[str, SourceSettings] = Field(default_factory=dict)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)
+    sra_toolkit: SraToolkitSettings = Field(default_factory=SraToolkitSettings)
 
     # Environment captured at load time, restricted to named secrets and GENOMICS_MCP_*.
     _env: dict[str, str] = PrivateAttr(default_factory=dict)
@@ -305,6 +324,7 @@ class Settings(_Model):
                 for name, p in self.storage.profiles.items()
             },
             "cache": self.cache.model_dump(),
+            "sra_toolkit": self.sra_toolkit.model_dump(mode="json"),
             "sources": {
                 name: {
                     "enabled": s.enabled,
@@ -350,6 +370,8 @@ def _env_overrides(env: Mapping[str, str]) -> dict[str, Any]:
         put("logging", "level", v.upper())
     if v := env.get(f"{ENV_PREFIX}CACHE_ENABLED"):
         put("cache", "enabled", v)
+    if v := env.get(f"{ENV_PREFIX}SRA_TOOLKIT_DIR"):
+        put("sra_toolkit", "bin_dir", v)
     return data
 
 

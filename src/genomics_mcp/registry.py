@@ -47,6 +47,7 @@ class Operation(StrEnum):
     FETCH_FILE = "fetch_file"
     GET_TRANSFER_STATUS = "get_transfer_status"
     CANCEL_TRANSFER = "cancel_transfer"
+    CONVERT_SRA_RUN = "convert_sra_run"
     GET_READS = "get_reads"
     GET_COVERAGE = "get_coverage"
     GET_PILEUP = "get_pileup"
@@ -92,6 +93,7 @@ OPERATIONS: dict[Operation, OperationSpec] = {
         OperationSpec(_O.FETCH_FILE, _C.TRANSFERS, "default", ("E3",)),
         OperationSpec(_O.GET_TRANSFER_STATUS, _C.TRANSFERS, "default", ("E3",)),
         OperationSpec(_O.CANCEL_TRANSFER, _C.TRANSFERS, "default", ("E3",)),
+        OperationSpec(_O.CONVERT_SRA_RUN, _C.TRANSFERS, "default", ("#47",)),
         OperationSpec(_O.GET_READS, _C.GENOMICS, "format", ("E4",), ("bam", "cram", "sam")),
         OperationSpec(_O.GET_COVERAGE, _C.GENOMICS, "format", ("E4",), ("bam", "cram")),
         OperationSpec(_O.GET_PILEUP, _C.GENOMICS, "format", ("E4",), ("bam", "cram")),
