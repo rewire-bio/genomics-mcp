@@ -1,0 +1,2222 @@
+{
+ "schema": "genomics-mcp/agent-case-study/manifest@1",
+ "curated_by": "case-study author (Claude) with discovery/select_files.py; NOT chosen by the agent",
+ "generated_utc": "2026-09-28T09:00:27+00:00",
+ "assembly": "GRCh38",
+ "assay": "DNase-seq",
+ "output_type": "read-depth normalized signal",
+ "coordinates": "0-based half-open",
+ "experiments": 14,
+ "files": 26,
+ "panel": [
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 0",
+   "experiment": "ENCSR098PTC",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-08-31",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN263FQA",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF648LHT",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1",
+      "1_2"
+     ],
+     "biosample": "ENCBS736SRW",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF648LHT/@@download/ENCFF648LHT.bigWig",
+     "md5": "8b798eca9a9bda749f8f60cbeffc4527",
+     "size_bytes": 721786101,
+     "date_created": "2020-11-06T21:36:43.228008+00:00"
+    },
+    {
+     "file": "ENCFF275EWP",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS107WLD",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF275EWP/@@download/ENCFF275EWP.bigWig",
+     "md5": "960374889209c93437b03a21f18783cf",
+     "size_bytes": 730316484,
+     "date_created": "2020-11-06T21:36:44.381367+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 4",
+   "experiment": "ENCSR148VUP",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 4 days, kit ligand for 4 days, hydrocortisone succinate for 4 days, erythropoietin for 4 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-08-31",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN845FPQ",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF644AXQ",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS924ALK",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF644AXQ/@@download/ENCFF644AXQ.bigWig",
+     "md5": "82609f2777c37d199b94b049502507d1",
+     "size_bytes": 740759649,
+     "date_created": "2020-11-06T21:39:17.541813+00:00"
+    },
+    {
+     "file": "ENCFF284MYJ",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS721DUI",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF284MYJ/@@download/ENCFF284MYJ.bigWig",
+     "md5": "1494341d83ff031746fe8df173c4dc99",
+     "size_bytes": 740028089,
+     "date_created": "2020-11-06T21:39:18.864956+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 6",
+   "experiment": "ENCSR564JUY",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 6 days, kit ligand for 6 days, hydrocortisone succinate for 6 days, erythropoietin for 6 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-08-31",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN909FTS",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF633NER",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS200EQQ",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF633NER/@@download/ENCFF633NER.bigWig",
+     "md5": "8ee2ed55c89af4b6b79c2942fcb79337",
+     "size_bytes": 663924342,
+     "date_created": "2020-11-06T18:19:16.034890+00:00"
+    },
+    {
+     "file": "ENCFF434ACR",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS986SUJ",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF434ACR/@@download/ENCFF434ACR.bigWig",
+     "md5": "b1a974986a008da5ee7c04b15cef5656",
+     "size_bytes": 745854355,
+     "date_created": "2020-11-06T18:19:17.430968+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 8",
+   "experiment": "ENCSR845CFB",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 8 days, kit ligand for 8 days, hydrocortisone succinate for 8 days, erythropoietin for 8 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-08-31",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN485PEZ",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF141GMK",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS169JBH",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF141GMK/@@download/ENCFF141GMK.bigWig",
+     "md5": "4cf2507daf3255f7bba0e55739b8e7e0",
+     "size_bytes": 644573484,
+     "date_created": "2020-11-06T17:59:15.719229+00:00"
+    },
+    {
+     "file": "ENCFF814GPA",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS418LVC",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF814GPA/@@download/ENCFF814GPA.bigWig",
+     "md5": "aa87707abe9c4ceec82a0d65ec9f9766",
+     "size_bytes": 728089235,
+     "date_created": "2020-11-06T17:59:17.049862+00:00"
+    },
+    {
+     "file": "ENCFF774LKB",
+     "biological_replicate": 3,
+     "technical_replicates": [
+      "3_1",
+      "3_2"
+     ],
+     "biosample": "ENCBS575XLE",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF774LKB/@@download/ENCFF774LKB.bigWig",
+     "md5": "a9cc98c1ddf8bdd5c5f227da43323f48",
+     "size_bytes": 752383801,
+     "date_created": "2020-11-06T17:59:18.148018+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 11",
+   "experiment": "ENCSR420NOA",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 11 days, kit ligand for 11 days, hydrocortisone succinate for 11 days, erythropoietin for 11 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-11-05",
+   "audit_flags": [
+    "extremely low spot score"
+   ],
+   "analysis": {
+    "accession": "ENCAN767SHB",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF746ODB",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS378UXT",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF746ODB/@@download/ENCFF746ODB.bigWig",
+     "md5": "ae4a29ce10b2d969a8e895539cf74218",
+     "size_bytes": 763951797,
+     "date_created": "2020-11-06T18:26:38.259600+00:00"
+    },
+    {
+     "file": "ENCFF878PBI",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS013CSB",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF878PBI/@@download/ENCFF878PBI.bigWig",
+     "md5": "8498e6360f3cec9dd8e9208d85ec4f02",
+     "size_bytes": 691294166,
+     "date_created": "2020-11-06T18:26:39.388304+00:00"
+    },
+    {
+     "file": "ENCFF384JNG",
+     "biological_replicate": 3,
+     "technical_replicates": [
+      "3_1"
+     ],
+     "biosample": "ENCBS095TOF",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF384JNG/@@download/ENCFF384JNG.bigWig",
+     "md5": "26f1be69bfa78fcc8cddeb1cf78dfb5b",
+     "size_bytes": 633019354,
+     "date_created": "2020-11-06T18:26:40.512941+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 13",
+   "experiment": "ENCSR855FOP",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 13 days, kit ligand for 13 days, hydrocortisone succinate for 13 days, erythropoietin for 13 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-11-05",
+   "audit_flags": [
+    "extremely low spot score"
+   ],
+   "analysis": {
+    "accession": "ENCAN954LBU",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF271NTU",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS835VCD",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF271NTU/@@download/ENCFF271NTU.bigWig",
+     "md5": "18330d4c9c87839a313bb3d6165f97ce",
+     "size_bytes": 772779984,
+     "date_created": "2020-11-06T22:40:00.916879+00:00"
+    },
+    {
+     "file": "ENCFF462KEZ",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1",
+      "2_2"
+     ],
+     "biosample": "ENCBS787END",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF462KEZ/@@download/ENCFF462KEZ.bigWig",
+     "md5": "135e34b57cbb520ed0ca76870a46c6d7",
+     "size_bytes": 754320219,
+     "date_created": "2020-11-06T22:40:02.334839+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 15",
+   "experiment": "ENCSR937UWI",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 15 days, kit ligand for 15 days, hydrocortisone succinate for 15 days, erythropoietin for 15 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-11-05",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN277EIW",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF322YXK",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS955LWD",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF322YXK/@@download/ENCFF322YXK.bigWig",
+     "md5": "ff29fbe7f18b48bd69a8a353678cd07b",
+     "size_bytes": 767209797,
+     "date_created": "2020-11-06T17:54:29.714894+00:00"
+    },
+    {
+     "file": "ENCFF404BKX",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1",
+      "2_2"
+     ],
+     "biosample": "ENCBS854FBC",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF404BKX/@@download/ENCFF404BKX.bigWig",
+     "md5": "6233f8a3e668a2624be8a42d332ffa5a",
+     "size_bytes": 688752567,
+     "date_created": "2020-11-06T17:54:31.059191+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 17",
+   "experiment": "ENCSR362JSZ",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 17 days, kit ligand for 17 days, hydrocortisone succinate for 17 days, erythropoietin for 17 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-11-05",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN255IQY",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF841CYA",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS335BSM",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF841CYA/@@download/ENCFF841CYA.bigWig",
+     "md5": "5f6f9fd28e8abc043ff18ddfe401efaf",
+     "size_bytes": 740605926,
+     "date_created": "2020-11-06T18:31:25.631458+00:00"
+    },
+    {
+     "file": "ENCFF694WKV",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS448WOE",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF694WKV/@@download/ENCFF694WKV.bigWig",
+     "md5": "79e4f005d1ebb89d569a883daabe6e88",
+     "size_bytes": 801372910,
+     "date_created": "2020-11-06T18:31:26.711560+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 18",
+   "experiment": "ENCSR493IAY",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with interleukin-3 for 18 days, kit ligand for 18 days, hydrocortisone succinate for 18 days, erythropoietin for 18 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2016-05-09",
+   "audit_flags": [
+    "unreplicated experiment"
+   ],
+   "analysis": {
+    "accession": "ENCAN424QSR",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF028ZFZ",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS303WCA",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF028ZFZ/@@download/ENCFF028ZFZ.bigWig",
+     "md5": "e2f229b47bf68366e76684741c203796",
+     "size_bytes": 738236689,
+     "date_created": "2020-11-06T22:08:30.077430+00:00"
+    }
+   ]
+  },
+  {
+   "group": "erythroid_time_course",
+   "label": "EPO culture day 20",
+   "experiment": "ENCSR115YPI",
+   "biosample_term": "hematopoietic multipotent progenitor cell",
+   "biosample_classification": "in vitro differentiated cells",
+   "biosample_summary": "Homo sapiens hematopoietic multipotent progenitor cell treated with erythropoietin for 20 days, hydrocortisone succinate for 20 days, kit ligand for 20 days, interleukin-3 for 20 days",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2018-05-09",
+   "audit_flags": [
+    "extremely low spot score",
+    "unreplicated experiment"
+   ],
+   "analysis": {
+    "accession": "ENCAN159QLZ",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "all released GRCh38 DNase-seq of donor ENCDO937OUY progenitors",
+   "files": [
+    {
+     "file": "ENCFF338HAQ",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS233BAS",
+     "donor": "ENCDO937OUY",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF338HAQ/@@download/ENCFF338HAQ.bigWig",
+     "md5": "73c94d569d5015cb4816cefa3a8b4132",
+     "size_bytes": 739640819,
+     "date_created": "2020-11-06T21:38:04.381067+00:00"
+    }
+   ]
+  },
+  {
+   "group": "reference_cell_types",
+   "label": "K562",
+   "experiment": "ENCSR000EKS",
+   "biosample_term": "K562",
+   "biosample_classification": "cell line",
+   "biosample_summary": "Homo sapiens K562",
+   "lab": "Gregory Crawford, Duke",
+   "date_released": "2011-04-19",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN694OCK",
+    "title": "ENCODE4 v3.0.0 GRCh38",
+    "pipeline_version": "3.0.0"
+   },
+   "selection_rule": "untreated, no ERROR/NOT_COMPLIANT audit, ENCODE4 GRCh38 default analysis; prefer UW lab, then exactly 2 biological replicates, then earliest release, then smallest accession",
+   "files": [
+    {
+     "file": "ENCFF972GVB",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1",
+      "1_2",
+      "1_3"
+     ],
+     "biosample": "ENCBS775AAA",
+     "donor": "ENCDO000AAD",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF972GVB/@@download/ENCFF972GVB.bigWig",
+     "md5": "1b0432087f9087c0a9e4f0f5a9d08deb",
+     "size_bytes": 747881155,
+     "date_created": "2020-11-22T08:12:37.090634+00:00"
+    }
+   ]
+  },
+  {
+   "group": "reference_cell_types",
+   "label": "GM12878",
+   "experiment": "ENCSR000EMT",
+   "biosample_term": "GM12878",
+   "biosample_classification": "cell line",
+   "biosample_summary": "Homo sapiens GM12878",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2011-05-04",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN633XOO",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "untreated, no ERROR/NOT_COMPLIANT audit, ENCODE4 GRCh38 default analysis; prefer UW lab, then exactly 2 biological replicates, then earliest release, then smallest accession",
+   "files": [
+    {
+     "file": "ENCFF428XFI",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS110ENC",
+     "donor": "ENCDO000AAK",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF428XFI/@@download/ENCFF428XFI.bigWig",
+     "md5": "39b5a226cf1053d2aee6fd77eaec07d9",
+     "size_bytes": 541838491,
+     "date_created": "2020-11-18T17:58:14.041915+00:00"
+    },
+    {
+     "file": "ENCFF960FMM",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS857VGC",
+     "donor": "ENCDO000AAK",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF960FMM/@@download/ENCFF960FMM.bigWig",
+     "md5": "e081ee1e8b2770dfa7f5b0f3d0138d2a",
+     "size_bytes": 581914321,
+     "date_created": "2020-11-18T17:58:15.559697+00:00"
+    }
+   ]
+  },
+  {
+   "group": "reference_cell_types",
+   "label": "HepG2",
+   "experiment": "ENCSR149XIL",
+   "biosample_term": "HepG2",
+   "biosample_classification": "cell line",
+   "biosample_summary": "Homo sapiens HepG2",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2015-08-18",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN057UEW",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "untreated, no ERROR/NOT_COMPLIANT audit, ENCODE4 GRCh38 default analysis; prefer UW lab, then exactly 2 biological replicates, then earliest release, then smallest accession",
+   "files": [
+    {
+     "file": "ENCFF546MZK",
+     "biological_replicate": 1,
+     "technical_replicates": [
+      "1_1"
+     ],
+     "biosample": "ENCBS048XFP",
+     "donor": "ENCDO000AAC",
+     "url": "https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF546MZK/@@download/ENCFF546MZK.bigWig",
+     "md5": "855cfc207465beaacbe4d564187c5262",
+     "size_bytes": 613388362,
+     "date_created": "2020-09-24T17:13:05.395167+00:00"
+    },
+    {
+     "file": "ENCFF113VII",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS800QIW",
+     "donor": "ENCDO000AAC",
+     "url": "https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF113VII/@@download/ENCFF113VII.bigWig",
+     "md5": "0a759a5190a76cc68d9f81b44a8e8938",
+     "size_bytes": 712719258,
+     "date_created": "2020-09-24T17:13:06.382218+00:00"
+    }
+   ]
+  },
+  {
+   "group": "reference_cell_types",
+   "label": "CD14-positive monocyte",
+   "experiment": "ENCSR000EPK",
+   "biosample_term": "CD14-positive monocyte",
+   "biosample_classification": "primary cell",
+   "biosample_summary": "Homo sapiens CD14-positive monocyte female",
+   "lab": "John Stamatoyannopoulos, UW",
+   "date_released": "2011-10-19",
+   "audit_flags": [],
+   "analysis": {
+    "accession": "ENCAN204MPS",
+    "title": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "pipeline_version": "3.0.0-alpha.2"
+   },
+   "selection_rule": "untreated, no ERROR/NOT_COMPLIANT audit, ENCODE4 GRCh38 default analysis; prefer UW lab, then exactly 2 biological replicates, then earliest release, then smallest accession",
+   "files": [
+    {
+     "file": "ENCFF389PZY",
+     "biological_replicate": 2,
+     "technical_replicates": [
+      "2_1"
+     ],
+     "biosample": "ENCBS477CHZ",
+     "donor": "ENCDO265AAA",
+     "url": "https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig",
+     "encode_href": "https://www.encodeproject.org/files/ENCFF389PZY/@@download/ENCFF389PZY.bigWig",
+     "md5": "f162ddc40c5747cedaccee5317299877",
+     "size_bytes": 619118579,
+     "date_created": "2020-11-12T05:01:40.615665+00:00"
+    }
+   ]
+  }
+ ],
+ "control_candidates_considered": {
+  "K562": [
+   {
+    "accession": "ENCSR000EKN",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2012-08-28",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR000EKO",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2012-08-28",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR000EKP",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2012-08-28",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR000EKQ",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2012-08-28",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR000EKR",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2012-03-28",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR000EKS",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2011-04-19",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR000EOT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [
+     "extremely low read depth"
+    ],
+    "date_released": "2018-05-09",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR010PPW",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     4,
+     5,
+     6,
+     8
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-30",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR047PMJ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR057VNM",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR070GSY",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-30",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR082QLL",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR082TYA",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR101LUA",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR102SPN",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR133YRZ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR152LUV",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR160FPV",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     4,
+     5,
+     7,
+     8,
+     9,
+     10,
+     17,
+     18,
+     20,
+     22,
+     41,
+     43,
+     45,
+     48,
+     50,
+     55,
+     56,
+     100,
+     101,
+     102,
+     103
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-30",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR183WIP",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR212ZFB",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR222XVJ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR224ZWD",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR227NUB",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR253QZV",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR263BDS",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR295RGD",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR308IDW",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR335RHJ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR359UQN",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR398UMD",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR416PRI",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR425QOB",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     4,
+     5,
+     6
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-30",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR429XWK",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR451YGS",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR461PLT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR464HIM",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR500NAJ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR558GSX",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR574BOG",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR577KGS",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR578GHZ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR581WTK",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-30",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR621ZDQ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR625KXT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR654EFD",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR680QDV",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR710DKJ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR719SDH",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR736XRU",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR820VVZ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR828ZUY",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR840YOF",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR844SKG",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR845BLM",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR880PSE",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR892UMF",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR911UZT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR946BYE",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR950OFC",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR952FRY",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR970WFK",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR986KCO",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "unreplicated experiment"
+    ],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   }
+  ],
+  "GM12878": [
+   {
+    "accession": "ENCSR000EMT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2011-05-04",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR507IEF",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR581CCT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR910MAP",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     20,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-10-13",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   }
+  ],
+  "HepG2": [
+   {
+    "accession": "ENCSR000EJV",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [
+     "insufficient read length"
+    ],
+    "date_released": "2012-03-28",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR094FWH",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR149XIL",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2015-08-18",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   }
+  ],
+  "CD14-positive monocyte": [
+   {
+    "accession": "ENCSR000ELE",
+    "lab": "Gregory Crawford, Duke",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [
+     "extremely low spot score"
+    ],
+    "date_released": "2012-08-28",
+    "default_analysis": "ENCODE4 v3.0.0 GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR000EPK",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2011-10-19",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR073CPU",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR083DZB",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR101KYT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR103ZWK",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR201XLV",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR213GEE",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-30",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR223HHH",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR229QWH",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR241BNZ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2020-10-05",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR277ZHX",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2020-10-05",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR288RCG",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR343TXL",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR364YDG",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR376UDG",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR451UAB",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR452DCM",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2013-07-31",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR464ETX",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2022-06-07",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR476KXY",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR491DPW",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR500ZQD",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR514NZF",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR539ZYY",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR601HWV",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR609PYW",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR629GFF",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR674JIL",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2013-07-31",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR695AUY",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2013-07-31",
+    "default_analysis": "ENCODE4 v3.0.0-alpha.2 GRCh38",
+    "eligible": true
+   },
+   {
+    "accession": "ENCSR700VUT",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR781KKA",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR889CFS",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR906STR",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR913VNJ",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2025-09-19",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR916HXX",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR943TGB",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     2,
+     3
+    ],
+    "treated": true,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR943WGU",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR956AOH",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1,
+     3
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR974QPL",
+    "lab": "John Stamatoyannopoulos, UW",
+    "biological_replicates": [
+     1
+    ],
+    "treated": false,
+    "audit_flags": [],
+    "date_released": "2025-09-20",
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   }
+  ],
+  "erythroblast": [
+   {
+    "accession": "ENCSR059YWJ",
+    "biological_replicates": [
+     1
+    ],
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   },
+   {
+    "accession": "ENCSR514POY",
+    "biological_replicates": [
+     1
+    ],
+    "default_analysis": "Lab custom GRCh38",
+    "eligible": false
+   }
+  ]
+ }
+}

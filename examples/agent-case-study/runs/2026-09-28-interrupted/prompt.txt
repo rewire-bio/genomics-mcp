@@ -1,0 +1,156 @@
+You are a research agent. You have one MCP server, `genomics` (Genomics MCP 0.1.0), and no other tools: no shell, no web, no files. Everything you report must come from tool results in this session.
+
+Carry out the predeclared protocol below and report what you find.
+
+## What is fixed, and what you decide
+
+Fixed by the protocol author (not your choice): the question, the file panel, the window formulas, the metrics and the contrasts.
+
+You decide: which reference tools to use to resolve coordinates, how to verify the files, how to group and run the measurement calls, whether to make extra checks within the budget, and how to interpret the result. Say why you made each choice.
+
+## Rules
+
+- Use only the files in the panel. Do not search for or add other datasets.
+- Budget: at most 45 MCP tool calls in total. Do not call `fetch_file` or download whole files. Keep each region at or below 100 kb. `compare_samples` accepts at most 16 files per call. Set `max_records` to keep responses small (for example, the number of files in the call).
+- A bigWig FileRef looks like `{"uri": URL, "format": "bigwig", "assembly": "GRCh38", "source": "encode", "accession": ENCFF, "visibility": "public"}`.
+- Coordinates are GRCh38, 0-based half-open. Reference tools may name the chromosome `2`; the bigWigs use `chr2`. State this conversion explicitly. Never lift over.
+- If a call fails, you may retry it once. Report every failure and retry.
+- Copy numeric values exactly as returned, at full precision, into the JSON block. Never estimate or invent a value. Use `null` for a missing value and say why.
+- Keep observation, interpretation and hypothesis separate. Known biology is not a discovery. Replicates from one donor are not independent donors. Cell lines are not tissues. Accessibility does not show causality. No clinical interpretation and no wet-lab protocols.
+- Ratios you compute yourself are approximate: round them to 2 significant figures and say so. A separate deterministic replay recomputes them exactly.
+
+## Report
+
+End with one final message in Markdown with these sections:
+
+1. Coordinates: a table with window, contig, start, end, and how it was derived (tool and source).
+2. File verification: what you checked and any discrepancies.
+3. Observations: per-file means (you may abbreviate the table; the JSON block must be complete).
+4. Contrasts 1–5, as predeclared.
+5. Interpretation.
+6. One testable follow-up hypothesis, and the public data or study design that would test it.
+7. Limitations.
+8. Call log: the number of MCP calls you made, failures and retries.
+
+Then a fenced `json` block with exactly this shape:
+
+```json
+{
+  "anchors": {"rs7606173": {"vcf_pos": 0, "source": ""}, "rs6706648": {}, "rs6738440": {}, "rs1427407": {}},
+  "tss": {"BCL11A": {"transcript": "", "strand": -1, "tss_0based": 0, "source": ""}, "GAPDH": {}},
+  "windows": {"E55": {"contig": "chr2", "start": 0, "end": 0}, "E58": {}, "E62": {}, "BG_up": {}, "BG_down": {}, "P": {}, "G": {}},
+  "files": [{"file": "ENCFF...", "experiment": "ENCSR...", "label": "", "biological_replicate": 1,
+             "mean": {"E55": 0.0, "E58": 0.0, "E62": 0.0, "BG_up": 0.0, "BG_down": 0.0, "P": 0.0, "G": 0.0}}],
+  "contrast_calls": {"lineage_separated_E58_over_G": null, "lineage_separated_max_over_G": null,
+                     "gm12878_promoter_accessible": null, "gm12878_E58_accessible": null,
+                     "first_day_all_reps_above_day0_E58_over_G": null, "highest_element_late_erythroid": null},
+  "calls": {"total": 0, "failed": 0, "retried": 0}
+}
+```
+
+The protocol and the panel follow.
+
+# Protocol
+
+# Protocol: BCL11A erythroid enhancer accessibility in public ENCODE DNase-seq
+
+Status: predeclared. Written and committed before any signal value was read. Changes after measurement are listed at the end, with reasons.
+
+## Question
+
+Is chromatin at the HbF-associated BCL11A intron-2 enhancer (DNase I hypersensitive sites +55, +58 and +62) more accessible in erythroid cells than in non-erythroid cells? When does it open during in vitro erythroid differentiation of adult CD34+ progenitors? Is it open in GM12878, a B-lymphoblastoid line that expresses BCL11A?
+
+This checks known biology with public data. It is not a discovery claim. Bauer et al. (2013) described these sites as an erythroid enhancer and reported, by genome engineering, that it is "required in erythroid but not B-lymphoid cells for BCL11A expression" (PMID 24115442). Canver et al. (2015) mapped its critical sequences by saturating mutagenesis (PMID 26375006). The sites are named by their distance in kb from the BCL11A transcription start site.
+
+## Data (curated, not chosen by the agent)
+
+`manifest.json`, produced by `discovery/select_files.py` from the ENCODE REST API. The raw responses, their URLs, UTC times and SHA-256 hashes are in `evidence/encode_metadata.json`.
+
+- Assay: DNase-seq. Assembly: GRCh38. Output: `read-depth normalized signal` bigWig from each experiment's default analysis, which must be the ENCODE4 uniform pipeline. One file per biological replicate; no pooled files.
+- Erythroid time course: every released GRCh38 DNase-seq experiment of donor ENCDO937OUY's hematopoietic multipotent progenitors, cultured with EPO, SCF (kit ligand), IL-3 and hydrocortisone for 0–20 days. 10 experiments, 20 files. All come from one adult donor, so biological replicates here are not independent donors.
+- Reference cell types: K562 (erythroleukaemia line), GM12878 (B-lymphoblastoid), HepG2 (hepatoblastoma line) and CD14-positive monocytes. Rule: untreated, no ENCODE `ERROR` or `NOT_COMPLIANT` audit, ENCODE4 GRCh38 default analysis; prefer the UW lab (same lab as the time course), then exactly two biological replicates, then the earliest release, then the smallest accession. 4 experiments, 6 files.
+- Excluded: fetal erythroblast DNase-seq (ENCSR059YWJ, ENCSR514POY) has only a lab-custom default analysis. Mixing pipelines would make values not comparable.
+- ENCODE audits are reported, not used to drop time-course data: days 11, 13 and 20 are flagged `extremely low spot score` (low signal-to-noise); days 18 and 20 are unreplicated. K562 (Duke lab, a different DNase protocol) and the monocyte experiment have one replicate each.
+
+## Coordinates
+
+Everything is GRCh38, 0-based half-open. No liftover. Ensembl/NCBI name the chromosome `2`; the ENCODE bigWigs name it `chr2`. This is a naming change within one assembly, and it must be stated.
+
+Anchors are published variants inside each site, as assigned in Sebastiani et al. 2015, Table 2 (PMID 25703683, PMC4341902): rs7606173 (+55), rs6706648 and rs6738440 (+58), rs1427407 (+62). For an anchor with VCF POS `p`, `a = p - 1` (the 0-based position; equal to the SPDI position).
+
+| Window | Definition |
+| --- | --- |
+| `E55` | `[a(rs7606173) - 500, a(rs7606173) + 500)` |
+| `E58` | centre `c = floor((a(rs6706648) + a(rs6738440)) / 2)`; `[c - 500, c + 500)` |
+| `E62` | `[a(rs1427407) - 500, a(rs1427407) + 500)` |
+| `BG_up` | `[a(rs7606173) + 10000, a(rs7606173) + 20000)`, intronic, towards the promoter |
+| `BG_down` | `[a(rs1427407) - 20000, a(rs1427407) - 10000)`, intronic |
+| `P` | BCL11A promoter: 1 kb centred on the 0-based TSS of the Ensembl canonical transcript (minus strand: TSS = transcript end - 1) |
+| `G` | GAPDH promoter, a constitutively accessible control: 1 kb centred on the 0-based TSS of its Ensembl canonical transcript (plus strand: TSS = transcript start) |
+
+Positions are resolved at run time from public reference tools and recorded with their source.
+
+## Metrics (per file)
+
+- `mean(W)`: exact mean read-depth normalized signal over window `W` (pyBigWig `stats(exact=True)`, bases without data ignored). `null` means no data; never zero.
+- `B = (mean(BG_up) + mean(BG_down)) / 2`: local intronic background. It can contain other elements; it is a local reference, not a null.
+- Enrichment: `mean(E*) / B` and `mean(P) / B`.
+- Constitutive-normalised: `mean(E*) / mean(G)`. This is the primary cross-sample metric, because it partly corrects for library signal-to-noise (several time points have low SPOT scores).
+- "Accessible" (descriptive label only): enrichment >= 3.
+
+## Contrasts (descriptive; no p-values)
+
+With one donor and one to three replicates per group, no significance test is valid. "Separated" means every replicate value of one group lies above every replicate value of the other.
+
+1. Lineage: `E58 / G` and `max(E55, E58, E62) / G` in late erythroid culture (days 11–20, 11 files) versus non-erythroid references (GM12878, HepG2, CD14 monocyte; 5 files). The same with enrichment.
+2. Promoter/enhancer uncoupling in GM12878: `P / B` versus `E58 / B`.
+3. Timing: for each day, whether all replicates exceed the maximum day-0 replicate on `E58 / G`; the first such day.
+4. K562: reported descriptively (erythroleukaemia line, different lab).
+5. Sub-elements: which of +55/+58/+62 is highest in late erythroid files (descriptive).
+
+## Replicates
+
+Values are reported per file. Per experiment: n, mean and range across biological replicates. Technical replicates are not separate data points; each file here is one biological replicate. Time-course replicates share a donor. Cell lines are not tissues, and in vitro culture is not in vivo erythropoiesis.
+
+## Interpretation limits
+
+- Accessibility is not activity, and neither shows causality or which gene an element regulates.
+- Read-depth normalized signal is comparable only within this assay and pipeline, and only approximately across libraries of different quality.
+- No clinical interpretation.
+
+## Changes after measurement
+
+None yet.
+
+# Panel
+
+Curated by the protocol author with discovery/select_files.py on 2026-09-28T09:00:27+00:00: 14 experiments, 26 files. Assay DNase-seq, output 'read-depth normalized signal', assembly GRCh38.
+
+| group | label | experiment | biological replicate | file | donor | ENCODE audit flags | url |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| erythroid_time_course | EPO culture day 0 | ENCSR098PTC | 1 | ENCFF648LHT | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/27ced81a-82ce-4998-8f14-004195eb958f/ENCFF648LHT.bigWig |
+| erythroid_time_course | EPO culture day 0 | ENCSR098PTC | 2 | ENCFF275EWP | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/418d40bd-2326-4c2f-aaec-3fc85304185b/ENCFF275EWP.bigWig |
+| erythroid_time_course | EPO culture day 4 | ENCSR148VUP | 1 | ENCFF644AXQ | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/bc28d228-8c14-4aeb-9de2-bc141382ada2/ENCFF644AXQ.bigWig |
+| erythroid_time_course | EPO culture day 4 | ENCSR148VUP | 2 | ENCFF284MYJ | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/d5474839-9e44-498b-958a-9838cb998f94/ENCFF284MYJ.bigWig |
+| erythroid_time_course | EPO culture day 6 | ENCSR564JUY | 1 | ENCFF633NER | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/e5815b9c-643e-4647-a942-c1946b82e7b3/ENCFF633NER.bigWig |
+| erythroid_time_course | EPO culture day 6 | ENCSR564JUY | 2 | ENCFF434ACR | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/08a04d37-9e72-460d-a8f3-5d0daf11644b/ENCFF434ACR.bigWig |
+| erythroid_time_course | EPO culture day 8 | ENCSR845CFB | 1 | ENCFF141GMK | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/38372855-29d5-4bd1-a261-59859bddea7d/ENCFF141GMK.bigWig |
+| erythroid_time_course | EPO culture day 8 | ENCSR845CFB | 2 | ENCFF814GPA | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/35bdef90-8b27-4b4d-9c34-ef100bb8b9fd/ENCFF814GPA.bigWig |
+| erythroid_time_course | EPO culture day 8 | ENCSR845CFB | 3 | ENCFF774LKB | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/5ab237f1-5724-403f-9c8e-cd2464e0021a/ENCFF774LKB.bigWig |
+| erythroid_time_course | EPO culture day 11 | ENCSR420NOA | 1 | ENCFF746ODB | ENCDO937OUY | extremely low spot score | https://encode-public.s3.amazonaws.com/2020/11/06/70d6b145-3dfb-4f6f-90a8-43eb0c5deeda/ENCFF746ODB.bigWig |
+| erythroid_time_course | EPO culture day 11 | ENCSR420NOA | 2 | ENCFF878PBI | ENCDO937OUY | extremely low spot score | https://encode-public.s3.amazonaws.com/2020/11/06/fbbc6d75-a45b-4478-8a2d-272e4e8469c0/ENCFF878PBI.bigWig |
+| erythroid_time_course | EPO culture day 11 | ENCSR420NOA | 3 | ENCFF384JNG | ENCDO937OUY | extremely low spot score | https://encode-public.s3.amazonaws.com/2020/11/06/f9cd4d7d-3579-4c84-b320-33235f0b40d9/ENCFF384JNG.bigWig |
+| erythroid_time_course | EPO culture day 13 | ENCSR855FOP | 1 | ENCFF271NTU | ENCDO937OUY | extremely low spot score | https://encode-public.s3.amazonaws.com/2020/11/06/c9a9609c-56f1-4d36-ac26-7f37c60fe68a/ENCFF271NTU.bigWig |
+| erythroid_time_course | EPO culture day 13 | ENCSR855FOP | 2 | ENCFF462KEZ | ENCDO937OUY | extremely low spot score | https://encode-public.s3.amazonaws.com/2020/11/06/1343c49f-9b36-4336-9ab7-e8259d41e147/ENCFF462KEZ.bigWig |
+| erythroid_time_course | EPO culture day 15 | ENCSR937UWI | 1 | ENCFF322YXK | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/679a0281-7038-4347-a2dc-4d1175536859/ENCFF322YXK.bigWig |
+| erythroid_time_course | EPO culture day 15 | ENCSR937UWI | 2 | ENCFF404BKX | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/c176b86b-6193-4361-84ee-2ff00cc45b65/ENCFF404BKX.bigWig |
+| erythroid_time_course | EPO culture day 17 | ENCSR362JSZ | 1 | ENCFF841CYA | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/164e687f-85af-439e-8296-f05fa680da61/ENCFF841CYA.bigWig |
+| erythroid_time_course | EPO culture day 17 | ENCSR362JSZ | 2 | ENCFF694WKV | ENCDO937OUY | - | https://encode-public.s3.amazonaws.com/2020/11/06/006910ca-c50d-46b0-baee-e976c2b5c5d2/ENCFF694WKV.bigWig |
+| erythroid_time_course | EPO culture day 18 | ENCSR493IAY | 1 | ENCFF028ZFZ | ENCDO937OUY | unreplicated experiment | https://encode-public.s3.amazonaws.com/2020/11/06/70b48123-ac54-4d87-a1ab-2a51ff61792f/ENCFF028ZFZ.bigWig |
+| erythroid_time_course | EPO culture day 20 | ENCSR115YPI | 1 | ENCFF338HAQ | ENCDO937OUY | extremely low spot score, unreplicated experiment | https://encode-public.s3.amazonaws.com/2020/11/06/933f613b-90d5-460d-a16a-c199d7b30f13/ENCFF338HAQ.bigWig |
+| reference_cell_types | K562 | ENCSR000EKS | 1 | ENCFF972GVB | ENCDO000AAD | - | https://encode-public.s3.amazonaws.com/2020/11/22/953ca40d-376f-4043-8dc9-710dd64a5ea9/ENCFF972GVB.bigWig |
+| reference_cell_types | GM12878 | ENCSR000EMT | 1 | ENCFF428XFI | ENCDO000AAK | - | https://encode-public.s3.amazonaws.com/2020/11/18/0943d9e8-f3dc-4bba-933c-1387d68c1cc3/ENCFF428XFI.bigWig |
+| reference_cell_types | GM12878 | ENCSR000EMT | 2 | ENCFF960FMM | ENCDO000AAK | - | https://encode-public.s3.amazonaws.com/2020/11/18/54621b02-3cb5-4ca1-b7c5-974c0fda6774/ENCFF960FMM.bigWig |
+| reference_cell_types | HepG2 | ENCSR149XIL | 1 | ENCFF546MZK | ENCDO000AAC | - | https://encode-public.s3.amazonaws.com/2020/09/24/93fa54ce-2b55-43ff-bc8e-0e4a6b5186ee/ENCFF546MZK.bigWig |
+| reference_cell_types | HepG2 | ENCSR149XIL | 2 | ENCFF113VII | ENCDO000AAC | - | https://encode-public.s3.amazonaws.com/2020/09/24/b6ad9c75-9865-4986-a447-f6b7b07176b0/ENCFF113VII.bigWig |
+| reference_cell_types | CD14-positive monocyte | ENCSR000EPK | 2 | ENCFF389PZY | ENCDO265AAA | - | https://encode-public.s3.amazonaws.com/2020/11/12/31cec132-6555-4b4e-a906-18ba1b587b94/ENCFF389PZY.bigWig |

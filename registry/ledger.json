@@ -2,7 +2,7 @@
   "project": "rewire-bio/genomics-mcp",
   "registry_name": "io.github.rewire-bio/genomics-mcp",
   "version": "0.1.0",
-  "updated": "2026-09-28",
+  "updated": "2026-10-01",
   "states": [
     "prepared",
     "needs_account_setup",
@@ -14,7 +14,7 @@
     "needs_contact_email",
     "observed_existing_listing"
   ],
-  "note": "Dates record observed actions, not promises. null means no confirmed event. Existing automatically indexed listings use observed_existing_listing rather than an invented submission date.",
+  "note": "Dates record observed actions, not promises. null means no confirmed event. Existing automatically indexed listings use observed_existing_listing rather than an invented submission date. Issue #36 closed (eligible unpaid submissions and evidence-backed ledger met acceptance); issues #34 and #35 remain open for PyPI.",
   "routes": [
     {
       "route": "github_release",
@@ -30,7 +30,8 @@
         "https://github.com/rewire-bio/genomics-mcp/actions/runs/36153523194",
         "https://github.com/rewire-bio/genomics-mcp/releases/tag/v0.1.0"
       ],
-      "validated": "All seven release files downloaded anonymously and SHA256SUMS verified. Published wheel and sdist match the independently checked final artifacts. Exact Git commit install also passed MCP initialization, 23-tool discovery and a sequence query."
+      "validated": "All 6 release payload assets and SHA256SUMS downloaded anonymously and re-verified 2026-09-30 in build/independent-publication. Clean install and MCP smoke tests (23 tools, get_sequence, dummy ambient AWS unused) passed on 2026-09-30 for both the release wheel (Sonnet session 8db0c76c-b871-4e9a-86bc-f6195281e99f, build/task-isolation) and release sdist (coordinator verification, build/independent-publication). Audited 2026-10-01 in session baa4f216-8e13-4ef8-a11d-061fa8ff7ae4.",
+      "last_verified": "2026-09-30"
     },
     {
       "route": "ghcr_oci",
@@ -56,7 +57,9 @@
       "published": null,
       "approved": null,
       "state": "needs_account_setup",
-      "gate": "Personal PyPI account with a pending GitHub publisher: project rewire-genomics-mcp, owner rewire-bio, repo genomics-mcp, workflow publish-pypi.yml, environment pypi. Plus the repository environment 'pypi'. Not required for the GitHub/OCI release."
+      "gate": "Personal PyPI account with a pending GitHub publisher: project rewire-genomics-mcp, owner rewire-bio, repo genomics-mcp, workflow publish-pypi.yml, environment pypi. Plus the repository environment 'pypi'. Issues #34 and #35 remain open.",
+      "last_verified": "2026-09-30",
+      "validated": "https://pypi.org/pypi/rewire-genomics-mcp/json returned HTTP 404 on 2026-09-30 (package unlisted). Release artifacts verified ready via local clean install and MCP smoke tests (2026-09-30); publication blocked on personal account login and trusted publishing configuration."
     },
     {
       "route": "official_mcp_registry",
@@ -71,7 +74,7 @@
       "state": "published",
       "published_at": "2026-09-25T15:42:52.805002Z",
       "evidence": "https://github.com/rewire-bio/genomics-mcp/actions/runs/36155986877",
-      "last_verified": "2026-09-28",
+      "last_verified": "2026-09-30",
       "packages": [
         "oci",
         "mcpb"
@@ -85,9 +88,9 @@
       "submitted": null,
       "published": null,
       "approved": null,
-      "gate": "Official registry version is active, but GitHub MCP Registry search for genomics returned no MCPs on 2026-09-28. No separate eligible submission form found. Automatic ingestion is not assumed.",
+      "gate": "Official registry version is active, but GitHub MCP Registry search for genomics still returned no MCPs on 2026-09-30 (\"No MCPs found matching genomics\"). No separate eligible submission form found. Automatic ingestion is not assumed.",
       "state": "deferred",
-      "last_verified": "2026-09-28",
+      "last_verified": "2026-09-30",
       "evidence": "https://github.com/mcp?search=genomics"
     },
     {
@@ -99,9 +102,9 @@
       "submitted": "2026-09-25",
       "published": null,
       "approved": null,
-      "gate": "Awaiting upstream review; not approved or listed.",
+      "gate": "Awaiting upstream review; not approved or listed. Rechecked 2026-09-30 via gh pr view: still OPEN and MERGEABLE, no new activity since submission.",
       "state": "submitted",
-      "last_verified": "2026-09-28"
+      "last_verified": "2026-09-30"
     },
     {
       "route": "docker_mcp_catalog",
@@ -112,9 +115,9 @@
       "submitted": "2026-09-25",
       "published": null,
       "approved": null,
-      "gate": "Awaiting Docker team review; no Docker catalog approval claimed.",
+      "gate": "Awaiting Docker team review; no Docker catalog approval claimed. Rechecked 2026-09-30 via gh pr view: still OPEN and MERGEABLE, no new activity since submission.",
       "state": "submitted",
-      "last_verified": "2026-09-28"
+      "last_verified": "2026-09-30"
     },
     {
       "route": "glama",
@@ -129,7 +132,7 @@
       "gate": null,
       "observed_existing_listing": "2026-09-25",
       "claimed": "2026-09-28",
-      "last_verified": "2026-09-28",
+      "last_verified": "2026-09-30",
       "refreshed": "2026-09-28",
       "synced_commit": "d7827194669202d555f81c9e389f80bd61b03157",
       "glama_package_version": "0.1.1",
@@ -144,9 +147,9 @@
       "submitted": "2026-09-25",
       "published": null,
       "approved": null,
-      "gate": "Awaiting upstream review. Glama listing and TDQS evaluation are current. Upstream merge conflict resolved at 63a901d on 2026-09-28; PR is mergeable and the Glama submission check passes. Diff against upstream remains one README entry.",
+      "gate": "Awaiting upstream review. Glama listing and TDQS evaluation are current. Upstream merge conflict resolved at 63a901d on 2026-09-28; PR is mergeable and the Glama submission check passes. Diff against upstream remains one README entry. Rechecked 2026-09-30 via gh pr view: still OPEN and MERGEABLE, both checks still SUCCESS.",
       "state": "submitted",
-      "last_verified": "2026-09-28"
+      "last_verified": "2026-09-30"
     },
     {
       "route": "mcpservers_org",
@@ -194,10 +197,10 @@
       "submitted": null,
       "published": null,
       "approved": null,
-      "last_verified": "2026-09-28",
+      "last_verified": "2026-09-30",
       "refresh_attempted": "2026-09-28",
       "how": "Existing public auto-indexed listing observed; Refresh Metadata requested once through the public page. No manual initial submission date claimed.",
-      "gate": "Listing still shows an old development README and Unvalidated status. No success receipt or updated content confirmed after refresh; do not claim it is current."
+      "gate": "Listing still shows an old development README and Unvalidated status, rechecked live 2026-09-30. No success receipt or updated content confirmed after refresh; do not claim it is current."
     },
     {
       "route": "mcp_market",

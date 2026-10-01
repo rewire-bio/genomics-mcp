@@ -1,0 +1,11 @@
+# Server configuration for the case-study agent. run_agent.py fills in WORK_DIR.
+# No local input roots: the agent reads only public ENCODE files over HTTPS range requests.
+
+[paths]
+allowed_roots = []
+work_dir = "WORK_DIR"
+
+[limits]
+max_region_bp = 100000
+max_records = 2000
+max_transfer_bytes = 1048576      # no whole-file downloads are needed or expected
