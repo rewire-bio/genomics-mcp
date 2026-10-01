@@ -276,14 +276,31 @@ async def test_interrupted_download_resumes_in_the_same_job(svc, toolkit):
     transfer = failed["data"]["transfer"]
     assert transfer["state"] == "failed" and transfer["resumable"] is True
     assert transfer["error"]["retryable"] is True
-    partial = job_dir(svc, failed) / "download" / ACC / f"{ACC}.sra.tmp"
+    root = job_dir(svc, failed)
+    partial = root / "download" / ACC / f"{ACC}.sra.tmp"
     assert partial.stat().st_size == 2000
+    lock = root / "download" / ACC / f"{ACC}.sra.lock"
+    assert not lock.exists()
+    prf = root / "download" / ACC / f"{ACC}.sra.prf"
+    assert prf.exists()
     control(toolkit, prefetch="ok", run_bytes=4000)
     done = await run_job(svc)
     assert done["data"]["transfer"]["transfer_id"] == transfer["transfer_id"]
     assert done["data"]["transfer"]["state"] == "completed"
     assert (toolkit / "resumed.txt").read_text() == "2000"
     assert any("resuming" in n for n in done["data"]["notes"])
+
+
+async def test_pre_existing_lock_is_preserved_and_not_cleaned(svc, toolkit):
+    control(toolkit, prefetch="interrupt", run_bytes=4000)
+    failed = await run_job(svc)
+    d = job_dir(svc, failed) / "download" / ACC
+    foreign_lock = d / f"{ACC}.sra.lock"
+    foreign_lock.touch()
+    again = await run_job(svc)
+    assert again["data"]["transfer"]["state"] == "failed"
+    assert "lock exists" in again["data"]["transfer"]["error"]["details"]["toolkit_output"]
+    assert foreign_lock.exists()
 
 
 async def test_cancel_kills_the_process_group_and_removes_files(svc, toolkit):

@@ -160,17 +160,51 @@ async def wait_final(client, tid: str, seconds: float = 900) -> dict:
     raise Failed(f"{tid} did not finish in {seconds}s")
 
 
-async def wait_downloading(client, tid: str, seconds: float = 120) -> dict:
+async def find_transfer_id(work_dir: Path, accession: str, timeout: float = 60.0) -> str:
+    """Find the transfer_id for accession by observing job.json files in work/transfers."""
+    deadline = time.monotonic() + timeout
+    transfers = work_dir / "transfers"
+    while time.monotonic() < deadline:
+        if transfers.exists():
+            for d in sorted(
+                transfers.iterdir(),
+                key=lambda p: p.stat().st_mtime if p.exists() else 0,
+                reverse=True,
+            ):
+                if d.is_dir() and len(d.name) == 32:
+                    jf = d / "job.json"
+                    if jf.exists():
+                        try:
+                            data = json.loads(jf.read_text())
+                            parts = data.get("parts") or []
+                            if parts and parts[0].get("name") == accession:
+                                if data.get("state") in ("running", "queued"):
+                                    return d.name
+                        except (OSError, json.JSONDecodeError):
+                            pass
+        await anyio.sleep(0.05)
+    raise Failed(f"transfer for {accession} did not appear in workspace")
+
+
+async def wait_downloading(
+    client, tid: str, host_job_dir: Path | None = None, seconds: float = 120
+) -> dict:
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
+        disk_bytes = 0
+        if host_job_dir and host_job_dir.exists():
+            tmp_files = list(host_job_dir.rglob("*.tmp"))
+            disk_bytes = sum(f.stat().st_size for f in tmp_files if f.is_file())
         res = await call(client, "get_transfer_status", {"transfer_id": tid})
         state = res["data"]["transfer"]["state"]
         if state != "running" and state != "queued":
             raise Failed(f"{tid} ended ({state}) before it could be interrupted")
-        if res["data"]["transfer"]["bytes_done"] > 1_000_000:
+        bytes_done = max(res["data"]["transfer"]["bytes_done"], disk_bytes)
+        if bytes_done > 1_000_000:
+            res["data"]["transfer"]["bytes_done"] = bytes_done
             return res
-        await anyio.sleep(0.2)
-    raise Failed(f"{tid} did not start downloading")
+        await anyio.sleep(0.1)
+    raise Failed(f"{tid} did not start downloading within {seconds}s")
 
 
 def summary(res: dict) -> dict:
@@ -267,13 +301,21 @@ async def run(args: argparse.Namespace) -> dict:
         await step("single", lambda: convert(SINGLE, SMALL_BUDGET))
 
         async def s_cancel():
-            res = await call(
-                client, "convert_sra_run", {"accession": CANCEL, "budget_bytes": MID_BUDGET}
-            )
-            tid = res["data"]["transfer"]["transfer_id"]
-            await wait_downloading(client, tid)
-            cancelled = await call(client, "cancel_transfer", {"transfer_id": tid})
-            check(cancelled["data"]["transfer"]["state"] == "cancelled", "cancelled")
+            tid = None
+            async with anyio.create_task_group() as tg:
+
+                async def run_convert():
+                    await call(
+                        client, "convert_sra_run", {"accession": CANCEL, "budget_bytes": MID_BUDGET}
+                    )
+
+                tg.start_soon(run_convert)
+                tid = await find_transfer_id(work, CANCEL)
+                await wait_downloading(client, tid, work / "transfers" / tid)
+                cancelled = await call(client, "cancel_transfer", {"transfer_id": tid})
+                check(cancelled["data"]["transfer"]["state"] == "cancelled", "cancelled")
+                tg.cancel_scope.cancel()
+
             await anyio.sleep(1)
             left = list((work / "transfers" / tid).rglob("*"))
             check([p for p in left if p.name != "job.json"] == [], f"job files removed: {left}")
@@ -284,12 +326,23 @@ async def run(args: argparse.Namespace) -> dict:
 
         async def s_interrupt():
             nonlocal interrupted
-            res = await call(
-                client, "convert_sra_run", {"accession": INTERRUPT, "budget_bytes": MID_BUDGET}
-            )
-            check(res["status"] == "ok", f"started: {res.get('error')}")
-            interrupted = res["data"]["transfer"]["transfer_id"]
-            before = await wait_downloading(client, interrupted)
+            before = None
+            async with anyio.create_task_group() as tg:
+
+                async def run_convert():
+                    await call(
+                        client,
+                        "convert_sra_run",
+                        {"accession": INTERRUPT, "budget_bytes": MID_BUDGET},
+                    )
+
+                tg.start_soon(run_convert)
+                interrupted = await find_transfer_id(work, INTERRUPT)
+                before = await wait_downloading(
+                    client, interrupted, work / "transfers" / interrupted
+                )
+                tg.cancel_scope.cancel()
+
             return {
                 "transfer_id": interrupted,
                 "bytes_done_when_stopped": before["data"]["transfer"]["bytes_done"],

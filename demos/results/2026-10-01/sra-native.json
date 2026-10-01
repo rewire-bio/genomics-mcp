@@ -1,0 +1,504 @@
+{
+  "date": "2026-10-01T08:35:20+00:00",
+  "platform": "Darwin arm64",
+  "command": [
+    "~/Documents/projects/personal/genomics-mcp-sra-toolkit/build/independent-review-20261001/clean-venv/bin/genomics-mcp"
+  ],
+  "image": null,
+  "harness_uid": 501,
+  "expected_fastq_uid": 501,
+  "child_rusage": {
+    "max_rss": 787578880,
+    "max_rss_unit": "bytes",
+    "cpu_s": 5.6,
+    "note": "server and toolkit processes it waited for (for docker run: the CLI only)"
+  },
+  "checks": {
+    "status": {
+      "ok": true,
+      "sra_toolkit": {
+        "available": true,
+        "version": "3.4.1",
+        "tested_version": "3.4.1",
+        "prefetch": "$SRA_TOOLKIT_BIN/prefetch",
+        "fasterq_dump": "$SRA_TOOLKIT_BIN/fasterq-dump",
+        "detail": "ok"
+      },
+      "server_version": "0.1.0",
+      "seconds": 0.0
+    },
+    "invalid": {
+      "ok": true,
+      "code": "invalid_input",
+      "seconds": 0.0
+    },
+    "budget": {
+      "ok": true,
+      "error": {
+        "code": "budget_exceeded",
+        "message": "the run file is larger than the remaining budget; prefetch skipped it"
+      },
+      "seconds": 2.1
+    },
+    "paired": {
+      "ok": true,
+      "result": {
+        "state": "completed",
+        "transfer_id": "4f16c4b08edb44b99dc31af988079267",
+        "error": null,
+        "notes": [
+          "the previous result is not reusable; converting again"
+        ],
+        "toolkit": {
+          "version": "3.4.1",
+          "prefetch": "$SRA_TOOLKIT_BIN/prefetch",
+          "fasterq_dump": "$SRA_TOOLKIT_BIN/fasterq-dump"
+        },
+        "run_file": {
+          "name": "SRR13450355.sra",
+          "size_bytes": 329210,
+          "note": "SRA Normalized format (full base quality scores)"
+        },
+        "dependencies": [],
+        "sequence_table": "SEQUENCE",
+        "spot_count": 744,
+        "conversion": {
+          "mode": "split-3",
+          "technical_reads": "skipped (--skip-technical)",
+          "deflines": "fasterq-dump default",
+          "remote_access_during_conversion": "disabled",
+          "note": "split-3 writes mates to <acc>_1/_2.fastq and reads without a mate to <acc>.fastq"
+        },
+        "estimates": {
+          "run_bytes_on_disk": 329729,
+          "output_bytes_estimate": 836256,
+          "required_bytes": 2629433,
+          "rule": "bytes used + 1.25 x output estimate + 1.5 x output estimate for scratch"
+        },
+        "verification": {
+          "reads_written_by_fasterq_dump": 1488,
+          "reads_counted": 1488,
+          "bases_counted": 372000,
+          "biological_bases_in_run": 372000,
+          "all_biological_bases_written": true,
+          "spot_numbers_strictly_increasing": true,
+          "pairs": 744,
+          "unpaired_reads": 0,
+          "records_well_formed": true,
+          "mate_read_names_match": true
+        },
+        "resources": {
+          "peak_job_bytes_sampled": 1171073,
+          "download_s": 2.95,
+          "conversion_s": 1.12
+        },
+        "fastq": [
+          {
+            "role": "mate_1",
+            "reads": 744,
+            "bases": 186000,
+            "readiness": {
+              "state": "not_locus_ready",
+              "reasons": [
+                "FASTQ reads are unaligned and cannot be queried by locus"
+              ],
+              "checked_at": null
+            }
+          },
+          {
+            "role": "mate_2",
+            "reads": 744,
+            "bases": 186000,
+            "readiness": {
+              "state": "not_locus_ready",
+              "reasons": [
+                "FASTQ reads are unaligned and cannot be queried by locus"
+              ],
+              "checked_at": null
+            }
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "$WORK/artifacts/4f16c4b08edb44b99dc31af988079267/SRR13450355_1.fastq",
+            "size_bytes": 420672,
+            "checksums": [
+              {
+                "algorithm": "md5",
+                "value": "f7e4f62a9670da37212b7af5c4bc1ee8"
+              },
+              {
+                "algorithm": "sha256",
+                "value": "459b68cf061e85927339db0cffdcb67194246d28789fa0f8e8f5b6687dd6a645"
+              }
+            ]
+          },
+          {
+            "path": "$WORK/artifacts/4f16c4b08edb44b99dc31af988079267/SRR13450355_2.fastq",
+            "size_bytes": 420672,
+            "checksums": [
+              {
+                "algorithm": "md5",
+                "value": "ef92538efaf80c4651a11d178fe4239b"
+              },
+              {
+                "algorithm": "sha256",
+                "value": "c10d654463946ee3e27e954647255ef4966555bb30c62669df5fe5130c454394"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          {
+            "source": "sra",
+            "source_record_id": "SRR13450355",
+            "url": "https://www.ncbi.nlm.nih.gov/sra/SRR13450355",
+            "method": "SRA Toolkit 3.4.1: prefetch, fasterq-dump --split-3 --skip-technical",
+            "retrieved_at": "2026-10-01T08:34:46.241620Z",
+            "source_version": null,
+            "source_updated_at": null,
+            "terms_url": null,
+            "transformations": [
+              "whole SRA run converted to FASTQ by fasterq-dump",
+              "split-3 writes mates to <acc>_1/_2.fastq and reads without a mate to <acc>.fastq",
+              "technical reads skipped (fasterq-dump default)"
+            ]
+          },
+          {
+            "source": "sra",
+            "source_record_id": "SRR13450355",
+            "url": "https://www.ncbi.nlm.nih.gov/sra/SRR13450355",
+            "method": "SRA Toolkit 3.4.1: prefetch, fasterq-dump --split-3 --skip-technical",
+            "retrieved_at": "2026-10-01T08:34:46.241620Z",
+            "source_version": null,
+            "source_updated_at": null,
+            "terms_url": null,
+            "transformations": [
+              "whole SRA run converted to FASTQ by fasterq-dump",
+              "split-3 writes mates to <acc>_1/_2.fastq and reads without a mate to <acc>.fastq",
+              "technical reads skipped (fasterq-dump default)"
+            ]
+          }
+        ]
+      },
+      "independent": {
+        "files": {
+          "SRR13450355_1.fastq": {
+            "reads": 744,
+            "bases": 186000,
+            "uid": 501,
+            "md5": "f7e4f62a9670da37212b7af5c4bc1ee8",
+            "sha256": "459b68cf061e85927339db0cffdcb67194246d28789fa0f8e8f5b6687dd6a645"
+          },
+          "SRR13450355_2.fastq": {
+            "reads": 744,
+            "bases": 186000,
+            "uid": 501,
+            "md5": "ef92538efaf80c4651a11d178fe4239b",
+            "sha256": "c10d654463946ee3e27e954647255ef4966555bb30c62669df5fe5130c454394"
+          }
+        },
+        "spots": 744,
+        "bases": 372000,
+        "archive": {
+          "ena": {
+            "read_count": "744",
+            "base_count": "372000",
+            "library_layout": "PAIRED"
+          },
+          "ncbi_runinfo": {
+            "spots": "744",
+            "bases": "372000",
+            "LibraryLayout": "PAIRED",
+            "size_MB": "0"
+          }
+        }
+      },
+      "seconds": 6.6
+    },
+    "single": {
+      "ok": true,
+      "result": {
+        "state": "completed",
+        "transfer_id": "14fd158485934e6ca07529ed5fd03dd4",
+        "error": null,
+        "notes": [],
+        "toolkit": {
+          "version": "3.4.1",
+          "prefetch": "$SRA_TOOLKIT_BIN/prefetch",
+          "fasterq_dump": "$SRA_TOOLKIT_BIN/fasterq-dump"
+        },
+        "run_file": {
+          "name": "SRR24157174.sra",
+          "size_bytes": 157715,
+          "note": "SRA Normalized format (full base quality scores)"
+        },
+        "dependencies": [],
+        "sequence_table": "SEQUENCE",
+        "spot_count": 1080,
+        "conversion": {
+          "mode": "split-3",
+          "technical_reads": "skipped (--skip-technical)",
+          "deflines": "fasterq-dump default",
+          "remote_access_during_conversion": "disabled",
+          "note": "split-3 writes mates to <acc>_1/_2.fastq and reads without a mate to <acc>.fastq"
+        },
+        "estimates": {
+          "run_bytes_on_disk": 158234,
+          "output_bytes_estimate": 448426,
+          "required_bytes": 1391406,
+          "rule": "bytes used + 1.25 x output estimate + 1.5 x output estimate for scratch"
+        },
+        "verification": {
+          "reads_written_by_fasterq_dump": 1080,
+          "reads_counted": 1080,
+          "bases_counted": 189653,
+          "biological_bases_in_run": 189653,
+          "all_biological_bases_written": true,
+          "spot_numbers_strictly_increasing": true,
+          "pairs": 0,
+          "unpaired_reads": 1080,
+          "records_well_formed": true,
+          "mate_read_names_match": false
+        },
+        "resources": {
+          "peak_job_bytes_sampled": 608464,
+          "download_s": 2.75,
+          "conversion_s": 1.12
+        },
+        "fastq": [
+          {
+            "role": "unpaired",
+            "reads": 1080,
+            "bases": 189653,
+            "readiness": {
+              "state": "not_locus_ready",
+              "reasons": [
+                "FASTQ reads are unaligned and cannot be queried by locus"
+              ],
+              "checked_at": null
+            }
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "$WORK/artifacts/14fd158485934e6ca07529ed5fd03dd4/SRR24157174.fastq",
+            "size_bytes": 450230,
+            "checksums": [
+              {
+                "algorithm": "md5",
+                "value": "07057f249872726e0f5ba33574a76397"
+              },
+              {
+                "algorithm": "sha256",
+                "value": "4835f860c0740ae929cce73212b3d54c58c3ea1011d7c4ab45cb96890c7f3a2c"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          {
+            "source": "sra",
+            "source_record_id": "SRR24157174",
+            "url": "https://www.ncbi.nlm.nih.gov/sra/SRR24157174",
+            "method": "SRA Toolkit 3.4.1: prefetch, fasterq-dump --split-3 --skip-technical",
+            "retrieved_at": "2026-10-01T08:34:52.608969Z",
+            "source_version": null,
+            "source_updated_at": null,
+            "terms_url": null,
+            "transformations": [
+              "whole SRA run converted to FASTQ by fasterq-dump",
+              "split-3 writes mates to <acc>_1/_2.fastq and reads without a mate to <acc>.fastq",
+              "technical reads skipped (fasterq-dump default)"
+            ]
+          }
+        ]
+      },
+      "independent": {
+        "files": {
+          "SRR24157174.fastq": {
+            "reads": 1080,
+            "bases": 189653,
+            "uid": 501,
+            "md5": "07057f249872726e0f5ba33574a76397",
+            "sha256": "4835f860c0740ae929cce73212b3d54c58c3ea1011d7c4ab45cb96890c7f3a2c"
+          }
+        },
+        "spots": 1080,
+        "bases": 189653,
+        "archive": {
+          "ena": {
+            "read_count": "1080",
+            "base_count": "189653",
+            "library_layout": "SINGLE"
+          },
+          "ncbi_runinfo": {
+            "spots": "1080",
+            "bases": "189653",
+            "LibraryLayout": "SINGLE",
+            "size_MB": "0"
+          }
+        }
+      },
+      "seconds": 5.4
+    },
+    "cancel": {
+      "ok": true,
+      "transfer_id": "8845444838ba4ff3a8ce26c224477424",
+      "remaining": [
+        "job.json"
+      ],
+      "seconds": 4.4
+    },
+    "interrupt": {
+      "ok": true,
+      "transfer_id": "9a4e809ccfc24c7dae007c1e94d6dad4",
+      "bytes_done_when_stopped": 1495611,
+      "seconds": 3.4
+    },
+    "interrupt_resume": {
+      "ok": true,
+      "after_restart": {
+        "state": "failed",
+        "resumable": true,
+        "error": {
+          "code": "upstream_error",
+          "message": "transfer was interrupted; call convert_sra_run again with the same accession to resume",
+          "source": null,
+          "retryable": true,
+          "hint": null,
+          "details": {}
+        }
+      },
+      "partial_files_before_resume": [
+        "SRR10063098.sra.tmp"
+      ],
+      "result": {
+        "state": "completed",
+        "transfer_id": "9a4e809ccfc24c7dae007c1e94d6dad4",
+        "error": null,
+        "notes": [
+          "resuming: prefetch continues and verifies the download; conversion starts again"
+        ],
+        "toolkit": {
+          "version": "3.4.1",
+          "prefetch": "$SRA_TOOLKIT_BIN/prefetch",
+          "fasterq_dump": "$SRA_TOOLKIT_BIN/fasterq-dump"
+        },
+        "run_file": {
+          "name": "SRR10063098.sra",
+          "size_bytes": 37646119,
+          "note": "SRA Normalized format (full base quality scores)"
+        },
+        "dependencies": [],
+        "sequence_table": "SEQUENCE",
+        "spot_count": 236740,
+        "conversion": {
+          "mode": "split-3",
+          "technical_reads": "skipped (--skip-technical)",
+          "deflines": "fasterq-dump default",
+          "remote_access_during_conversion": "disabled",
+          "note": "split-3 writes mates to <acc>_1/_2.fastq and reads without a mate to <acc>.fastq"
+        },
+        "estimates": {
+          "run_bytes_on_disk": 37646638,
+          "output_bytes_estimate": 124998720,
+          "required_bytes": 381393118,
+          "rule": "bytes used + 1.25 x output estimate + 1.5 x output estimate for scratch"
+        },
+        "verification": {
+          "reads_written_by_fasterq_dump": 236740,
+          "reads_counted": 236740,
+          "bases_counted": 54450200,
+          "biological_bases_in_run": 54450200,
+          "all_biological_bases_written": true,
+          "spot_numbers_strictly_increasing": true,
+          "pairs": 0,
+          "unpaired_reads": 236740,
+          "records_well_formed": true,
+          "mate_read_names_match": false
+        },
+        "resources": {
+          "peak_job_bytes_sampled": 164568338,
+          "download_s": 14.57,
+          "conversion_s": 2.06
+        },
+        "fastq": [
+          {
+            "role": "unpaired",
+            "reads": 236740,
+            "bases": 54450200,
+            "readiness": {
+              "state": "not_locus_ready",
+              "reasons": [
+                "FASTQ reads are unaligned and cannot be queried by locus"
+              ],
+              "checked_at": null
+            }
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "$WORK/artifacts/9a4e809ccfc24c7dae007c1e94d6dad4/SRR10063098.fastq",
+            "size_bytes": 126921700,
+            "checksums": [
+              {
+                "algorithm": "md5",
+                "value": "77ab74bebafa1bdf19c2a57ed1cae629"
+              },
+              {
+                "algorithm": "sha256",
+                "value": "7b024508ec4baa5d28fb98c7d7e8c6757d952a9112934324bd5041a9f2b795c3"
+              }
+            ]
+          }
+        ],
+        "provenance": [
+          {
+            "source": "sra",
+            "source_record_id": "SRR10063098",
+            "url": "https://www.ncbi.nlm.nih.gov/sra/SRR10063098",
+            "method": "SRA Toolkit 3.4.1: prefetch, fasterq-dump --split-3 --skip-technical",
+            "retrieved_at": "2026-10-01T08:35:19.216320Z",
+            "source_version": null,
+            "source_updated_at": null,
+            "terms_url": null,
+            "transformations": [
+              "whole SRA run converted to FASTQ by fasterq-dump",
+              "split-3 writes mates to <acc>_1/_2.fastq and reads without a mate to <acc>.fastq",
+              "technical reads skipped (fasterq-dump default)"
+            ]
+          }
+        ]
+      },
+      "independent": {
+        "files": {
+          "SRR10063098.fastq": {
+            "reads": 236740,
+            "bases": 54450200,
+            "uid": 501,
+            "md5": "77ab74bebafa1bdf19c2a57ed1cae629",
+            "sha256": "7b024508ec4baa5d28fb98c7d7e8c6757d952a9112934324bd5041a9f2b795c3"
+          }
+        },
+        "spots": 236740,
+        "bases": 54450200,
+        "archive": {
+          "ena": {
+            "read_count": "236740",
+            "base_count": "54450200",
+            "library_layout": "PAIRED"
+          },
+          "ncbi_runinfo": {
+            "spots": "236740",
+            "bases": "54450200",
+            "LibraryLayout": "PAIRED",
+            "size_MB": "35"
+          }
+        }
+      },
+      "seconds": 19.4
+    }
+  },
+  "passed": true
+}

@@ -137,10 +137,11 @@ The image carries the licence texts, the pinned sra-tools and ncbi-vdb commits a
 
 Sources: [prefetch and fasterq-dump](https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump), [fasterq-dump](https://github.com/ncbi/sra-tools/wiki/HowTo:-fasterq-dump), [SRA Toolkit Docker](https://github.com/ncbi/sra-tools/wiki/SRA-tools-docker).
 
-## Verification status (28 September 2026)
+## Verification status (1 October 2026)
 
-- Offline tests (`tests/artifacts/test_sra.py`, scripted toolkit): missing or old toolkit, invalid and unknown accessions, controlled access, interrupted download and resume, cancellation (process group and descendants killed, files removed), timeout, disk and budget limits, missing estimates, unsupported tables, incomplete, inconsistent or duplicated output, environment and settings isolation, workspace reservation on resume.
-- Real toolkit 3.4.1, macOS arm64 (`tests/artifacts/test_sra_live.py`): the real `fasterq-dump` conversion and verification through `convert_sra_run` passed for SRR13450355 (paired, 744 spots) and SRR24157174 (single-end, 1,080 spots). The run files came anonymously from NCBI's public SRA bucket over HTTPS, standing in for `prefetch`. Read and base counts matched ENA's run report.
-- Blocked: the real `prefetch` step. From 14:10 to 14:41 UTC NCBI's locator (`locate.ncbi.nlm.nih.gov/sdl/2/retrieve`) returned `404 no data` for every public run tried, including NCBI's documentation example SRR390728. The coordinator reproduced this independently. The full MCP demonstration (`scripts/sra_demo.py`) therefore stopped at `not_found`, reported as such.
-- Container: the CI job `sra-container` (`.github/workflows/package.yml`) builds the variant and runs the same MCP demonstration as uid 10001. It has not run yet.
-- Platforms: only macOS arm64 (native) has been exercised. Linux x86_64 is untested until the container job runs. Other platforms are not claimed.
+- Offline tests (`tests/artifacts/test_sra.py`, scripted toolkit): 52 passed. Missing or old toolkit, invalid and unknown accessions, controlled access, interrupted download and resume, pre-existing lock preservation, cancellation (process group and descendants killed, files removed), timeout, disk and budget limits, missing estimates, unsupported tables, incomplete, inconsistent or duplicated output, environment and settings isolation, workspace reservation on resume.
+- Real toolkit 3.4.1, macOS arm64:
+  - `tests/artifacts/test_sra_live.py`: 2 passed. Real `prefetch` and `fasterq-dump` conversion and verification through `convert_sra_run` passed for SRR13450355 (paired, 744 spots) and SRR24157174 (single-end, 1,080 spots) with counts verified against ENA.
+  - Native demonstration harness (`scripts/sra_demo.py`): all 8 checks passed (`status`, `invalid`, `budget`, `paired`, `single`, `cancel`, `interrupt`, `interrupt_resume`). Cleanly handles prefetch process group cleanup, mid-download interruption, safe resume with retained `.tmp` partial data, and cancellation.
+- Container: Linux CI runs `scripts/sra_demo.py` under Docker as uid 10001. Harness uses concurrent MCP tool calls and workspace observation to interrupt active downloads before blocking tool call returns.
+- Platforms: macOS arm64 native fully verified; Linux x86_64 container exercised via CI. Other platforms are not claimed.

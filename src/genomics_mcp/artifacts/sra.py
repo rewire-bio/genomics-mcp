@@ -632,6 +632,12 @@ class _Watch:
 
     async def run(self, argv: list[str], env: dict[str, str]) -> tuple[int, str]:
         """Run one command without a shell in its own process group; return (rc, output)."""
+        download_dir = self.root / "download"
+        is_prefetch = "prefetch" in Path(argv[0]).name
+        pre_existing_locks: set[Path] = set()
+        if is_prefetch and download_dir.exists():
+            pre_existing_locks = {p for p in download_dir.rglob("*.lock") if p.is_file()}
+
         proc = await asyncio.create_subprocess_exec(
             *argv,
             stdin=asyncio.subprocess.DEVNULL,
@@ -667,6 +673,11 @@ class _Watch:
                     await proc.wait()
             for task in (reader, waiter):
                 task.cancel()
+            if is_prefetch and download_dir.exists():
+                for lock in download_dir.rglob("*.lock"):
+                    if lock.is_file() and lock not in pre_existing_locks:
+                        with contextlib.suppress(OSError):
+                            lock.unlink()
         log.debug("sra %s rc=%s output: %s", Path(argv[0]).name, proc.returncode, output[-2000:])
         return proc.returncode or 0, output
 

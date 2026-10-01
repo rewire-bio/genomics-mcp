@@ -66,13 +66,22 @@ def prefetch():
     if mode == "too_large":
         print(f"1) '{acc}' (4 KB) is larger than maximum allowed: skipped")
         sys.exit(0)
+    run_dir.mkdir(parents=True, exist_ok=True)
+    lock = run_dir / f"{acc}.sra.lock"
+    if lock.exists():
+        print(
+            f"prefetch.3.4.1 warn: lock exists while copying file - Lock file {lock} exists: download canceled\n"
+            f"prefetch.3.4.1 int: lock exists while copying file - 1) failed to download '{acc}'",
+            file=sys.stderr,
+        )
+        sys.exit(3)
+    lock.touch()
     if mode == "hang":
         hang()
     if mode == "orphan":
         # A descendant that outlives this process and keeps the output pipe open.
         child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
         (HERE / "grandchild.pid").write_text(str(child.pid))
-    run_dir.mkdir(parents=True, exist_ok=True)
     tmp = run_dir / f"{acc}.sra.tmp"
     if mode == "grow":
         with tmp.open("ab") as fh:
@@ -86,6 +95,7 @@ def prefetch():
     if mode == "interrupt":
         with tmp.open("ab") as fh:
             fh.write(b"s" * (size // 2 - have))
+        (run_dir / f"{acc}.sra.prf").touch()
         print("prefetch.3.4.1 err: connection reset by peer while reading file", file=sys.stderr)
         sys.exit(3)
     if not (run_dir / f"{acc}.sra").exists():
@@ -94,6 +104,11 @@ def prefetch():
         tmp.rename(run_dir / f"{acc}.sra")
     for dep in control.get("deps", []):
         (run_dir / dep).write_bytes(b"r" * 100)
+    if lock.exists():
+        lock.unlink()
+    prf = run_dir / f"{acc}.sra.prf"
+    if prf.exists():
+        prf.unlink()
     print(f"1) '{acc}' was downloaded successfully")
 
 
