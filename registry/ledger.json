@@ -2,7 +2,7 @@
   "project": "rewire-bio/genomics-mcp",
   "registry_name": "io.github.rewire-bio/genomics-mcp",
   "version": "0.1.0",
-  "updated": "2026-10-01",
+  "updated": "2026-10-02",
   "states": [
     "prepared",
     "needs_account_setup",
@@ -14,7 +14,7 @@
     "needs_contact_email",
     "observed_existing_listing"
   ],
-  "note": "Dates record observed actions, not promises. null means no confirmed event. Existing automatically indexed listings use observed_existing_listing rather than an invented submission date. Issue #36 closed (eligible unpaid submissions and evidence-backed ledger met acceptance); issues #34 and #35 remain open for PyPI.",
+  "note": "Dates record observed actions, not promises. null means no confirmed event. Existing automatically indexed listings use observed_existing_listing rather than an invented submission date. Issue #36 closed (eligible unpaid submissions and evidence-backed ledger met acceptance).",
   "routes": [
     {
       "route": "github_release",
@@ -54,18 +54,22 @@
       "how": ".github/workflows/publish-pypi.yml (manual, trusted publishing, environment pypi)",
       "prepared": "2026-09-25",
       "submitted": null,
-      "published": null,
+      "published": "2026-10-02",
       "approved": null,
-      "state": "needs_account_setup",
-      "gate": "Personal PyPI account with a pending GitHub publisher: project rewire-genomics-mcp, owner rewire-bio, repo genomics-mcp, workflow publish-pypi.yml, environment pypi. Plus the repository environment 'pypi'. Issues #34 and #35 remain open.",
-      "last_verified": "2026-09-30",
-      "validated": "https://pypi.org/pypi/rewire-genomics-mcp/json returned HTTP 404 on 2026-09-30 (package unlisted). Release artifacts verified ready via local clean install and MCP smoke tests (2026-09-30); publication blocked on personal account login and trusted publishing configuration."
+      "gate": null,
+      "state": "published",
+      "evidence": [
+        "https://github.com/rewire-bio/genomics-mcp/actions/runs/36987431002",
+        "https://pypi.org/pypi/rewire-genomics-mcp/0.1.0/json"
+      ],
+      "last_verified": "2026-10-02",
+      "validated": "Published 2026-10-02 via workflow 36987431002 (release asset verification, clean install, twine check --strict, GitHub OIDC trusted publishing). GitHub environment pypi verified present; trusted publisher was configured with exact repository, workflow, and environment, and successful OIDC upload verified. Public PyPI JSON confirms wheel SHA-256 e283b0e82d1cc18fc13d4a372c5c67f3d7a8f0a9518983f954ebf2abecf57298 and sdist SHA-256 7eb575762b0734caebe76a2caf2e0d885502ba333597f0cd5bd9299a9750c332, equal to original GitHub v0.1.0 assets."
     },
     {
       "route": "official_mcp_registry",
       "artifact": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.rewire-bio%2Fgenomics-mcp/versions/0.1.0",
       "how": ".github/workflows/publish-mcp-registry.yml (manual, GitHub OIDC); server.json + scripts/render_server_json.py",
-      "validated": "2026-09-25: server.json (OCI) and the rendered OCI+MCPB+PyPI variant pass the 2025-12-11 JSON schema and mcp-publisher 1.8.1 validate. validate does not check package existence; the workflow checks each package anonymously first. The PyPI entry uses positional uvx runtimeArguments (python 3.12, forced pyBigWig source build, release-asset build constraints); publish-mcp-registry.yml runs that exact launch on Linux and requires pyBigWig.remote == 1 before listing it.",
+      "validated": "2026-09-25: server.json (OCI) and the rendered OCI+MCPB+PyPI variant pass the 2025-12-11 JSON schema and mcp-publisher 1.8.1 validate. validate does not check package existence; the workflow checks each package anonymously first. The PyPI entry uses positional uvx runtimeArguments (python 3.12, forced pyBigWig source build, release-asset build constraints); publish-mcp-registry.yml runs that exact launch on Linux and requires pyBigWig.remote == 1 before listing it. On 2026-10-02, workflow 36987556269 attempted to add PyPI to v0.1.0: PyPI verification and live uvx launch with remote pyBigWig passed, but mcp-publisher publish failed with HTTP 400 (invalid version: cannot publish duplicate version). Version 0.1.0 remains live with OCI and MCPB packages; PyPI registry entry deferred to next fresh release version.",
       "prepared": "2026-09-25",
       "submitted": "2026-09-25",
       "published": "2026-09-25",
@@ -73,8 +77,11 @@
       "gate": null,
       "state": "published",
       "published_at": "2026-09-25T15:42:52.805002Z",
-      "evidence": "https://github.com/rewire-bio/genomics-mcp/actions/runs/36155986877",
-      "last_verified": "2026-09-30",
+      "evidence": [
+        "https://github.com/rewire-bio/genomics-mcp/actions/runs/36155986877",
+        "https://github.com/rewire-bio/genomics-mcp/actions/runs/36987556269"
+      ],
+      "last_verified": "2026-10-02",
       "packages": [
         "oci",
         "mcpb"

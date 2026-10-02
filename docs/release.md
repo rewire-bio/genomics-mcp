@@ -29,9 +29,9 @@ docker --config "$empty" pull --platform linux/amd64 ghcr.io/rewire-bio/genomics
 python3 scripts/check_image.py ghcr.io/rewire-bio/genomics-mcp:X.Y.Z --docker-config "$empty"
 ```
 
-## 2. PyPI — `publish-pypi.yml` (manual, needs a PyPI account)
+## 2. PyPI — `publish-pypi.yml` (manual, GitHub OIDC trusted publishing)
 
-One-time setup in a personal PyPI account: Account → Publishing → add a pending GitHub publisher:
+One-time setup in personal PyPI account (completed for `rewire-genomics-mcp`): Account → Publishing → add a pending GitHub publisher:
 
 | Field | Value |
 | --- | --- |
@@ -41,13 +41,13 @@ One-time setup in a personal PyPI account: Account → Publishing → add a pend
 | Workflow | `publish-pypi.yml` |
 | Environment | `pypi` |
 
-Also create the `pypi` environment in the repository settings (optionally with required reviewers). A pending publisher does not reserve the name; the first upload creates the project.
+The `pypi` environment exists in the repository settings. A pending publisher does not reserve the name; the first upload creates the project.
 
-The workflow downloads the wheel and sdist from release `vX.Y.Z`, verifies `SHA256SUMS`, re-runs the clean install and `twine check --strict`, and uploads with trusted publishing (no token). It refuses if the version is already on PyPI. Until this runs, no PyPI package exists and none is listed anywhere.
+The workflow downloads the wheel and sdist from release `vX.Y.Z`, verifies `SHA256SUMS`, re-runs the clean install and `twine check --strict`, and uploads with trusted publishing (no token). It refuses if the version is already on PyPI. Version 0.1.0 was published on 2026-10-02 (workflow 36987431002).
 
 ## 3. Official MCP Registry — `publish-mcp-registry.yml` (manual)
 
-Inputs: `version`, `include_mcpb` (default true), `include_pypi` (default false; set true only after step 2 succeeded).
+Inputs: `version`, `include_mcpb` (default true), `include_pypi` (default false; set true only after step 2 succeeded for a new version).
 
 Before publishing it checks, without credentials:
 
@@ -60,6 +60,8 @@ Then it renders `server.publish.json` (`scripts/render_server_json.py`), validat
 With `include_pypi`, it also runs the exact `uvx` launch the entry advertises (`python3 scripts/render_server_json.py --print-uvx-args`: forced pyBigWig source build, release-asset build constraints) on Linux against PyPI, and requires `pyBigWig.remote == 1`.
 
 `mcp-publisher validate` checks the schema only. It does not check that packages exist; that is why the workflow checks them first. The committed `server.json` lists only the OCI image; the MCPB and PyPI entries are added only at publication.
+
+Registry versions are immutable: `mcp-publisher` rejects republishing an existing version with HTTP 400 (duplicate version). Workflow 36987556269 attempted to add PyPI to v0.1.0: PyPI verification and live `uvx` smoke passed, but publication returned HTTP 400. Version 0.1.0 remains live with OCI and MCPB packages; `include_pypi: true` should be set on initial publication of a fresh release version.
 
 ## 4. Directory submissions
 
