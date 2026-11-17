@@ -96,9 +96,10 @@ There is no PyPI package yet. Wheel, Linux MCPB bundle, pinned `uvx` command, Wi
 | Genomic data | BAM/CRAM, VCF/BCF, FASTA, BED/GFF3/GTF, bigWig/bigBed on local disk, HTTPS or S3; EGA regions via htsget |
 | Transfers | Budgeted, resumable, checksummed downloads returned as local paths; optional SRA run to FASTQ with SRA Toolkit (unreleased) |
 | Reference | HGNC, Ensembl, ClinVar, gnomAD, UniProt, Open Targets; optional AlphaGenome Atlas with your own key |
+| Synthetic data (unreleased) | Catalogue of published spike-in, read-mixture and simulation protocols; pinned GIAB and HPRC HG002 truth files with digests. Read-only: nothing is simulated |
 
 <details>
-<summary>All 24 tools and the resources</summary>
+<summary>All 27 tools and the resources</summary>
 
 | Group | Tools |
 | --- | --- |
@@ -107,6 +108,7 @@ There is no PyPI package yet. Wheel, Linux MCPB bundle, pinned `uvx` command, Wi
 | Genomics | `get_reads`, `get_coverage`, `get_pileup`, `get_variants`, `get_sequence`, `get_features`, `get_signal` |
 | Composition | `inspect_locus`, `compare_samples` |
 | Reference | `resolve_identifier`, `normalize_variant`, `lookup_variant`, `lookup_gene`, `lookup_protein` |
+| Synthetic data (unreleased) | `list_synthetic_protocols`, `describe_synthetic_protocol`, `get_truth_set` |
 
 Resources: `genomics://capabilities`, `genomics://status`, `genomics://schemas`, `genomics://schemas/{name}`.
 
@@ -121,7 +123,7 @@ Resources: `genomics://capabilities`, `genomics://status`, `genomics://schemas`,
 
 - **SRA Toolkit (unreleased; optional):** `convert_sra_run` turns a public SRR/ERR/DRR run into local FASTQ files with NCBI's `prefetch` and `fasterq-dump`, as a budgeted, cancellable job. It is never started by discovery. ENA FASTQ files need no toolkit. Installation, container variant, limits and current verification status: [SRA Toolkit](docs/sra-toolkit.md).
 
-Configuration: [config.example.toml](config.example.toml). Scope and known limits: [PRD.md](PRD.md). Directory and PyPI status: [publication ledger](docs/registry-ledger.md). Technical details: [data access](docs/data-access.md), [archives](docs/archive-sources.md), [references](docs/reference-sources.md), [composition](docs/composition.md). Security: [SECURITY.md](SECURITY.md).
+Configuration: [config.example.toml](config.example.toml). Scope and known limits: [PRD.md](PRD.md). Directory and PyPI status: [publication ledger](docs/registry-ledger.md). Technical details: [data access](docs/data-access.md), [synthetic data](docs/synthetic-data.md), [archives](docs/archive-sources.md), [references](docs/reference-sources.md), [composition](docs/composition.md). Security: [SECURITY.md](SECURITY.md).
 
 ## Development
 

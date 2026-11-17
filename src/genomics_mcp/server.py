@@ -113,6 +113,20 @@ _TOOL_DOCS: dict[Operation, str] = {
     ),
     Operation.LOOKUP_GENE: "Gene identifiers, transcripts and source-attributed annotations.",
     Operation.LOOKUP_PROTEIN: "Protein identity, function and features from UniProt and cross-references.",
+    Operation.LIST_SYNTHETIC_PROTOCOLS: (
+        "List curated, published protocols for making synthetic sequencing data with known truth "
+        "(spike-in, read mixtures, read and SV simulation). Filter by variant type, method, "
+        "setting or words. Read-only: nothing is simulated."
+    ),
+    Operation.DESCRIBE_SYNTHETIC_PROTOCOL: (
+        "Describe one synthetic-data protocol: citations, pinned simulator, parameters with "
+        "defaults and published values, linked truth sets and the reserved rewirebench recipe ID."
+    ),
+    Operation.GET_TRUTH_SET: (
+        "Get pinned truth-set bundles (GIAB benchmark VCF, regions BED and reference; HPRC/T2T "
+        "HG002 assembly) as FileRefs with digests. Files of one bundle share one assembly; "
+        "nothing is lifted over. Use with get_variants or fetch_file."
+    ),
 }
 
 
@@ -519,6 +533,46 @@ def build_server(service: GenomicsService) -> MCPServer:
     @tool(Operation.LOOKUP_PROTEIN)
     async def lookup_protein(protein: str, sources: Sources = None) -> Result:
         return await run(Operation.LOOKUP_PROTEIN, protein=protein, sources=sources)
+
+    # ---------------------------------------------------------------- synthetic data
+    @tool(Operation.LIST_SYNTHETIC_PROTOCOLS)
+    async def list_synthetic_protocols(
+        variant_type: Literal["snv", "indel", "sv"] | None = None,
+        method: Literal["spike_in", "read_mixture", "read_simulation", "sv_simulation"]
+        | None = None,
+        setting: Literal["somatic", "germline"] | None = None,
+        query: str | None = None,
+    ) -> Result:
+        return await run(
+            Operation.LIST_SYNTHETIC_PROTOCOLS,
+            variant_type=variant_type,
+            method=method,
+            setting=setting,
+            query=query,
+        )
+
+    @tool(Operation.DESCRIBE_SYNTHETIC_PROTOCOL)
+    async def describe_synthetic_protocol(protocol_id: str) -> Result:
+        return await run(Operation.DESCRIBE_SYNTHETIC_PROTOCOL, protocol_id=protocol_id)
+
+    @tool(Operation.GET_TRUTH_SET)
+    async def get_truth_set(
+        truth_set_id: str | None = None,
+        sample: str | None = None,
+        assembly: str | None = None,
+        variant_type: Literal["snv", "indel", "sv"] | None = None,
+        provider: Literal["giab", "hprc"] | None = None,
+        contig: str | None = None,
+    ) -> Result:
+        return await run(
+            Operation.GET_TRUTH_SET,
+            truth_set_id=truth_set_id,
+            sample=sample,
+            assembly=assembly,
+            variant_type=variant_type,
+            provider=provider,
+            contig=contig,
+        )
 
     # ---------------------------------------------------------------- resources
     def dump(data: Any) -> str:
