@@ -41,6 +41,9 @@ TOOLS = {
     "lookup_variant",
     "lookup_gene",
     "lookup_protein",
+    "list_synthetic_protocols",
+    "describe_synthetic_protocol",
+    "get_truth_set",
 }
 
 # Injected into every server process to show ambient AWS credentials are never used.

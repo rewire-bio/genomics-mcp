@@ -35,6 +35,7 @@ class Category(StrEnum):
     GENOMICS = "genomics"
     COMPOSITION = "composition"
     REFERENCE = "reference"
+    SYNTHETIC = "synthetic"
 
 
 class Operation(StrEnum):
@@ -62,6 +63,9 @@ class Operation(StrEnum):
     LOOKUP_VARIANT = "lookup_variant"
     LOOKUP_GENE = "lookup_gene"
     LOOKUP_PROTEIN = "lookup_protein"
+    LIST_SYNTHETIC_PROTOCOLS = "list_synthetic_protocols"
+    DESCRIBE_SYNTHETIC_PROTOCOL = "describe_synthetic_protocol"
+    GET_TRUTH_SET = "get_truth_set"
 
 
 Dispatch = Literal["builtin", "source", "format", "default", "fanout"]
@@ -110,6 +114,9 @@ OPERATIONS: dict[Operation, OperationSpec] = {
         OperationSpec(_O.LOOKUP_VARIANT, _C.REFERENCE, "fanout", ("E8",)),
         OperationSpec(_O.LOOKUP_GENE, _C.REFERENCE, "fanout", ("E8",)),
         OperationSpec(_O.LOOKUP_PROTEIN, _C.REFERENCE, "fanout", ("E8",)),
+        OperationSpec(_O.LIST_SYNTHETIC_PROTOCOLS, _C.SYNTHETIC, "default", ("#69",)),
+        OperationSpec(_O.DESCRIBE_SYNTHETIC_PROTOCOL, _C.SYNTHETIC, "default", ("#69",)),
+        OperationSpec(_O.GET_TRUTH_SET, _C.SYNTHETIC, "default", ("#69",)),
     ]
 }
 
@@ -123,6 +130,7 @@ PROVIDER_MODULES: dict[str, str] = {
     "genomics_mcp.catalogs": "E7",
     "genomics_mcp.evidence": "E8",
     "genomics_mcp.composition": "E9",
+    "genomics_mcp.synthetic": "#69",
 }
 
 Handler = Callable[[Any, "OperationContext"], Awaitable["OperationOutput"]]

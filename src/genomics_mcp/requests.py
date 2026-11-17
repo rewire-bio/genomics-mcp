@@ -243,6 +243,47 @@ class LookupProteinRequest(_SourceSelect):
     protein: str = Field(min_length=1, max_length=100)
 
 
+# --- synthetic data ----------------------------------------------------------------
+
+SyntheticVariantType = Literal["snv", "indel", "sv"]
+
+
+class ListSyntheticProtocolsRequest(_Request):
+    variant_type: SyntheticVariantType | None = Field(
+        default=None, description="Keep protocols whose truth includes this variant type."
+    )
+    method: Literal["spike_in", "read_mixture", "read_simulation", "sv_simulation"] | None = None
+    setting: Literal["somatic", "germline"] | None = None
+    query: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+        description="Case-insensitive words matched against id, title, summary and simulator.",
+    )
+
+
+class DescribeSyntheticProtocolRequest(_Request):
+    protocol_id: str = Field(
+        min_length=1, max_length=100, description="Protocol ID from list_synthetic_protocols."
+    )
+
+
+class GetTruthSetRequest(_Request):
+    truth_set_id: str | None = Field(default=None, max_length=100)
+    sample: str | None = Field(default=None, max_length=50, description="e.g. HG002.")
+    assembly: str | None = Field(
+        default=None, max_length=50, description="e.g. GRCh38. Never lifted over."
+    )
+    variant_type: SyntheticVariantType | None = None
+    provider: Literal["giab", "hprc"] | None = None
+    contig: str | None = Field(
+        default=None,
+        max_length=50,
+        description="Return the whole-contig interval for this contig, named as in the "
+        "truth files (chr20 on GRCh38, 20 on GRCh37).",
+    )
+
+
 REQUEST_MODELS: dict[Operation, type[BaseModel]] = {
     Operation.LIST_SOURCES: ListSourcesRequest,
     Operation.SEARCH_DATASETS: SearchDatasetsRequest,
@@ -268,4 +309,7 @@ REQUEST_MODELS: dict[Operation, type[BaseModel]] = {
     Operation.LOOKUP_VARIANT: LookupVariantRequest,
     Operation.LOOKUP_GENE: LookupGeneRequest,
     Operation.LOOKUP_PROTEIN: LookupProteinRequest,
+    Operation.LIST_SYNTHETIC_PROTOCOLS: ListSyntheticProtocolsRequest,
+    Operation.DESCRIBE_SYNTHETIC_PROTOCOL: DescribeSyntheticProtocolRequest,
+    Operation.GET_TRUTH_SET: GetTruthSetRequest,
 }

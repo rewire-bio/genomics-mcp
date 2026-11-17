@@ -39,7 +39,7 @@ Clinical verdicts, ACMG/AMP automation, treatment recommendations, variant calli
 
 ## 4. Tools
 
-All tools return the same envelope (section 6). 24 tools in five groups (`convert_sra_run` is unreleased and needs the optional SRA Toolkit):
+All tools return the same envelope (section 6). 27 tools in six groups (`convert_sra_run` is unreleased and needs the optional SRA Toolkit; the synthetic-data tools are unreleased):
 
 | Group | Tools |
 | --- | --- |
@@ -48,6 +48,7 @@ All tools return the same envelope (section 6). 24 tools in five groups (`conver
 | Genomics | `get_reads`, `get_coverage`, `get_pileup`, `get_variants`, `get_sequence`, `get_features`, `get_signal` |
 | Composition | `inspect_locus`, `compare_samples` |
 | Reference | `resolve_identifier`, `normalize_variant`, `lookup_variant`, `lookup_gene`, `lookup_protein` |
+| Synthetic data | `list_synthetic_protocols`, `describe_synthetic_protocol`, `get_truth_set` |
 
 Read-only resources: `genomics://capabilities`, `genomics://status`, `genomics://schemas`, `genomics://schemas/{name}`.
 
@@ -110,4 +111,5 @@ Release gates are listed in `docs/implementation-plan.md` and apply unchanged.
 - gnomAD's public API is rate limited (about 10 requests/minute), so gnomAD-backed lookups are slow by design.
 - Remote region reads depend on the server honouring HTTP range requests; files are checked, not assumed.
 - Unreleased after 0.1.0: a bounded in-memory cache for public file ranges and public API responses (#49, #50). It covers only files marked public with a strong ETag and credential-free API requests. Measurements and exclusions are in `docs/performance.md`.
+- Unreleased after 0.1.0: read-only synthetic-data discovery (#69): a curated catalogue of published spike-in, read-mixture and simulation protocols with reserved rewirebench recipe IDs, and pinned GIAB/HPRC HG002 truth files as FileRefs with digests. No simulator runs in this server; see `docs/synthetic-data.md`.
 - Unreleased after 0.1.0: optional `convert_sra_run` (#47, #48) converts a public SRA run to FASTQ with SRA Toolkit 3.x as a budgeted job; see `docs/sra-toolkit.md`. Real `fasterq-dump` conversion is verified on macOS arm64. The real `prefetch` step is blocked while NCBI's run locator returns 404 for public runs (28 September 2026). The optional container variant is not yet run in CI or published.

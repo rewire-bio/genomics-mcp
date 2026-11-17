@@ -37,6 +37,7 @@ Each epic owns one provider package. It is imported at start-up if present; a mi
 | `genomics_mcp.catalogs` | E7 | discovery ops for `encode`, `geo`, `ncbi_datasets` |
 | `genomics_mcp.evidence` | E8 | reference ops per source (`hgnc`, `ensembl`, `clinvar`, `gnomad`, `uniprot`, `open_targets`, `alphagenome_atlas`) or a `default` planner |
 | `genomics_mcp.composition` | E9 | `inspect_locus`, `compare_samples` (`default`) |
+| `genomics_mcp.synthetic` | #69 | `list_synthetic_protocols`, `describe_synthetic_protocol`, `get_truth_set` (`default`; static curated data, [synthetic-data.md](synthetic-data.md)) |
 
 ```python
 # genomics_mcp/readers/__init__.py

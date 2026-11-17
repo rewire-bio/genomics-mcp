@@ -8,7 +8,7 @@
     uv run --script scripts/mcp_smoke.py --data-dir "$PWD/smoke" --server-data-dir /data -- \\
         docker run --rm -i --mount type=bind,source="$PWD/smoke",target=/data,readonly IMAGE
 
-Checks initialize, tools/list (all 24 tools available), resources, list_sources and an exact
+Checks initialize, tools/list (all 27 tools available), resources, list_sources and an exact
 synthetic FASTA region, with dummy ambient AWS credentials present and unused. Without the
 optional SRA Toolkit, convert_sra_run must return an actionable `unsupported` error.
 """
